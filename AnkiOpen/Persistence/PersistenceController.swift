@@ -12,16 +12,13 @@ final class PersistenceController {
         notebook.createdAt = Date()
         notebook.updatedAt = Date()
 
-        let card = FlashcardMO(context: context)
-        card.id = UUID()
-        card.front = "What is spaced repetition?"
-        card.back = "A learning technique that schedules reviews over increasing intervals."
-        card.frontAudioFileName = nil
-        card.backAudioFileName = nil
-        card.createdAt = Date()
-        card.updatedAt = Date()
-        card.dueAt = Date()
-        card.notebook = notebook
+        let unit = NotebookUnitMO.insert(name: "Unit 1", notebook: notebook, context: context)
+        _ = FlashcardMO.insert(
+            front: "What is spaced repetition?",
+            back: "A learning technique that schedules reviews over increasing intervals.",
+            unit: unit,
+            context: context
+        )
         try? context.save()
         return controller
     }()

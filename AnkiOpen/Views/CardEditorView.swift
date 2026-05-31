@@ -2,7 +2,8 @@ import SwiftUI
 
 struct CardEditorView: View {
     enum Mode {
-        case create(NotebookMO)
+        case create(NotebookUnitMO)
+        case createInNotebook(NotebookMO)
         case edit(FlashcardMO)
     }
 
@@ -16,7 +17,7 @@ struct CardEditorView: View {
     init(mode: Mode) {
         self.mode = mode
         switch mode {
-        case .create:
+        case .create, .createInNotebook:
             _front = State(initialValue: "")
             _back = State(initialValue: "")
         case .edit(let card):
@@ -57,7 +58,7 @@ struct CardEditorView: View {
 
     private var title: String {
         switch mode {
-        case .create: return "New Card"
+        case .create, .createInNotebook: return "New Card"
         case .edit: return "Edit Card"
         }
     }
@@ -65,13 +66,18 @@ struct CardEditorView: View {
     private func save() {
         let now = Date()
         switch mode {
-        case .create(let notebook):
+        case .create(let unit):
+            _ = FlashcardMO.insert(front: front.trimmed, back: back.trimmed, unit: unit, context: viewContext)
+            unit.updatedAt = now
+            unit.notebook.updatedAt = now
+        case .createInNotebook(let notebook):
             _ = FlashcardMO.insert(front: front.trimmed, back: back.trimmed, notebook: notebook, context: viewContext)
             notebook.updatedAt = now
         case .edit(let card):
             card.front = front.trimmed
             card.back = back.trimmed
             card.updatedAt = now
+            card.unit?.updatedAt = now
             card.notebook.updatedAt = now
         }
 

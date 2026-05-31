@@ -52,12 +52,24 @@ enum DueCardQuery {
         mode: StudyMode,
         at date: Date = Date()
     ) -> NSFetchRequest<FlashcardMO> {
+        fetchRequest(for: notebook, unit: nil, mode: mode, at: date)
+    }
+
+    static func fetchRequest(
+        for notebook: NotebookMO?,
+        unit: NotebookUnitMO?,
+        mode: StudyMode,
+        at date: Date = Date()
+    ) -> NSFetchRequest<FlashcardMO> {
         let request = FlashcardMO.fetchRequest()
 
         var predicates: [NSPredicate] = [
             NSPredicate(format: "isArchived == NO")
         ]
-        if let notebook {
+
+        if let unit {
+            predicates.append(NSPredicate(format: "unit == %@", unit))
+        } else if let notebook {
             predicates.append(NSPredicate(format: "notebook == %@", notebook))
         }
 
@@ -86,6 +98,16 @@ enum DueCardQuery {
         context: NSManagedObjectContext
     ) throws -> [FlashcardMO] {
         try context.fetch(fetchRequest(for: notebook, mode: mode, at: date))
+    }
+
+    static func forNotebook(
+        _ notebook: NotebookMO?,
+        unit: NotebookUnitMO?,
+        mode: StudyMode,
+        at date: Date = Date(),
+        context: NSManagedObjectContext
+    ) throws -> [FlashcardMO] {
+        try context.fetch(fetchRequest(for: notebook, unit: unit, mode: mode, at: date))
     }
 
     private static func sortDescriptors(for mode: StudyMode) -> [NSSortDescriptor] {

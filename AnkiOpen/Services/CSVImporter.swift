@@ -71,8 +71,8 @@ final class CSVImporter {
                 continue
             }
 
-            let front = row[0].trimmingCharacters(in: .whitespacesAndNewlines)
-            let back = row[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            let front = mapping.front(from: row) ?? ""
+            let back = mapping.back(from: row) ?? ""
             guard !front.isEmpty, !back.isEmpty else {
                 errors.append("Line \(sourceLine): front and back must both be non-empty.")
                 skipped += 1
@@ -85,6 +85,11 @@ final class CSVImporter {
                 continue
             }
 
+            let unit = NotebookUnitMO.findOrCreate(
+                named: mapping.unitName(from: row),
+                in: notebook,
+                context: context
+            )
             let audioNames = mapping.audioFileNames(from: row)
             let frontAudioFileName = copyAudioIfNeeded(
                 audioNames.front,
@@ -103,7 +108,7 @@ final class CSVImporter {
             _ = FlashcardMO.insert(
                 front: front,
                 back: back,
-                notebook: notebook,
+                unit: unit,
                 context: context,
                 frontAudioFileName: frontAudioFileName,
                 backAudioFileName: backAudioFileName
@@ -168,35 +173,60 @@ private struct CSVColumnMapping {
     private let frontAudioIndex: Int?
     private let backAudioIndex: Int?
     private let sharedAudioIndex: Int?
+    private let unitIndex: Int?
+    private let frontIndex: Int
+    private let backIndex: Int
 
     init(rows: [[String]]) {
         guard let first = rows.first, first.count >= 2 else {
             bodyRows = rows
             hasHeader = false
+            frontIndex = 0
+            backIndex = 1
             frontAudioIndex = rows.first?.indices.contains(2) == true ? 2 : nil
             backAudioIndex = rows.first?.indices.contains(3) == true ? 3 : nil
             sharedAudioIndex = nil
+            unitIndex = nil
             return
         }
 
         let normalized = first.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-        if normalized[0] == "front", normalized[1] == "back" {
+        if let headerFrontIndex = normalized.firstIndex(of: "front"),
+           let headerBackIndex = normalized.firstIndex(of: "back") {
             bodyRows = Array(rows.dropFirst())
             hasHeader = true
+            frontIndex = headerFrontIndex
+            backIndex = headerBackIndex
             frontAudioIndex = normalized.firstIndex { ["frontaudio", "front_audio", "front audio"].contains($0) }
             backAudioIndex = normalized.firstIndex { ["backaudio", "back_audio", "back audio"].contains($0) }
             sharedAudioIndex = normalized.firstIndex { ["audio", "audiofilename", "audio_file", "audio file"].contains($0) }
+            unitIndex = normalized.firstIndex { ["unit", "unitname", "unit_name", "unit name", "unitnumber", "unit_number", "unit number"].contains($0) }
         } else {
             bodyRows = rows
             hasHeader = false
+            frontIndex = 0
+            backIndex = 1
             frontAudioIndex = first.indices.contains(2) ? 2 : nil
             backAudioIndex = first.indices.contains(3) ? 3 : nil
             sharedAudioIndex = first.indices.contains(2) && !first.indices.contains(3) ? 2 : nil
+            unitIndex = nil
         }
     }
 
+    func front(from row: [String]) -> String? {
+        row.indices.contains(frontIndex) ? row[frontIndex].trimmingCharacters(in: .whitespacesAndNewlines) : nil
+    }
+
+    func back(from row: [String]) -> String? {
+        row.indices.contains(backIndex) ? row[backIndex].trimmingCharacters(in: .whitespacesAndNewlines) : nil
+    }
+
+    func unitName(from row: [String]) -> String? {
+        unitIndex.flatMap { row.indices.contains($0) ? row[$0] : nil }
+    }
+
     func audioFileNames(from row: [String]) -> (front: String?, back: String?) {
-        if let sharedAudioIndex, row.indices.contains(sharedAudioIndex) {
+        if let sharedAudioIndex, row.indices.contains(sharedAudioIndex), sharedAudioIndex != unitIndex {
             let shared = row[sharedAudioIndex].trimmingCharacters(in: .whitespacesAndNewlines)
             return (shared, shared)
         }

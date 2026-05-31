@@ -24,7 +24,7 @@ struct NotebooksView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(notebook.name)
                                 .font(.headline)
-                            Text("\(notebook.activeCardsCount) cards")
+                            Text("\(notebook.unitsCount) units · \(notebook.activeCardsCount) cards")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }

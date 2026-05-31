@@ -1,14 +1,14 @@
 # AnkiOpen
 
-AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI and Core Data. The first MVP focuses on notebook-based flashcards, CSV import, local editing, and FSRS-style spaced repetition scheduling.
+AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI and Core Data. The first MVP focuses on notebook/unit-based flashcards, CSV import, local editing, and FSRS-style spaced repetition scheduling.
 
 ## Current Scope
 
 - iOS 16+ native app
 - Local Core Data persistence
-- Notebook CRUD
+- Notebook and unit CRUD
 - Flashcard CRUD and archive
-- CSV import with `front,back`, optional `audio`, or optional `frontAudio,backAudio` columns
+- CSV import with `front,back`, optional `unit`, optional `audio`, or optional `frontAudio,backAudio` columns
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Audio playback on the front and back side of a card
 - Review logs and due-card querying
@@ -28,6 +28,16 @@ The smallest supported CSV is:
 ```csv
 front,back
 Question,Answer
+```
+
+Cards are organized as `Notebook -> Unit -> Card`. If the CSV does not include a `unit` column, cards are imported into a `Default` unit. Numeric unit values are displayed as `Unit 1`, `Unit 2`, and so on.
+
+Use a unit column:
+
+```csv
+unit,front,back
+1,Question,Answer
+2,Another question,Another answer
 ```
 
 Audio can be attached by selecting the CSV and referenced audio files in the same import picker. Supported audio extensions are `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, and `aif`.
@@ -50,7 +60,7 @@ The app copies selected audio into its local sandbox, so the original files are 
 
 ## Backup Export
 
-Settings includes a `Create JSON Backup` action. The generated backup contains notebooks, cards, audio file references, FSRS state fields, and review logs. Backup restore is intentionally tracked as a follow-up because it needs merge and duplicate-handling rules.
+Settings includes a `Create JSON Backup` action. The generated backup contains notebooks, units, cards, audio file references, FSRS state fields, and review logs. Backup restore is intentionally tracked as a follow-up because it needs merge and duplicate-handling rules.
 
 ## Study Modes
 
@@ -65,7 +75,7 @@ All modes still write review logs and update the card's next due date when a rat
 - [x] Xcode iOS project scaffold
 - [x] SwiftUI app shell
 - [x] Programmatic Core Data model
-- [x] Notebook and card management
+- [x] Notebook, unit, and card management
 - [x] CSV import
 - [x] CSV audio import and playback
 - [x] Study modes and review logs

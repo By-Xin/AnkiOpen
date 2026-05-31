@@ -16,6 +16,15 @@ enum CoreDataModelFactory {
             attribute("updatedAt", .dateAttributeType, optional: false)
         ]
 
+        let unit = entity(name: "NotebookUnit", className: NotebookUnitMO.self)
+        unit.properties = [
+            attribute("id", .UUIDAttributeType, optional: false),
+            attribute("name", .stringAttributeType, optional: false),
+            attribute("sortIndex", .integer32AttributeType, optional: false, defaultValue: 0),
+            attribute("createdAt", .dateAttributeType, optional: false),
+            attribute("updatedAt", .dateAttributeType, optional: false)
+        ]
+
         let flashcard = entity(name: "Flashcard", className: FlashcardMO.self)
         flashcard.properties = [
             attribute("id", .UUIDAttributeType, optional: false),
@@ -63,6 +72,16 @@ enum CoreDataModelFactory {
         notebookFlashcards.inverseRelationship = flashcardNotebook
         flashcardNotebook.inverseRelationship = notebookFlashcards
 
+        let notebookUnits = relationship("units", destination: unit, toMany: true, deleteRule: .cascadeDeleteRule)
+        let unitNotebook = relationship("notebook", destination: notebook, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
+        notebookUnits.inverseRelationship = unitNotebook
+        unitNotebook.inverseRelationship = notebookUnits
+
+        let unitFlashcards = relationship("flashcards", destination: flashcard, toMany: true, deleteRule: .cascadeDeleteRule)
+        let flashcardUnit = relationship("unit", destination: unit, toMany: false, deleteRule: .nullifyDeleteRule)
+        unitFlashcards.inverseRelationship = flashcardUnit
+        flashcardUnit.inverseRelationship = unitFlashcards
+
         let flashcardReviewLogs = relationship("reviewLogs", destination: reviewLog, toMany: true, deleteRule: .cascadeDeleteRule)
         let reviewLogCard = relationship("card", destination: flashcard, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
         flashcardReviewLogs.inverseRelationship = reviewLogCard
@@ -73,12 +92,13 @@ enum CoreDataModelFactory {
         notebookImportBatches.inverseRelationship = importBatchNotebook
         importBatchNotebook.inverseRelationship = notebookImportBatches
 
-        notebook.properties.append(contentsOf: [notebookFlashcards, notebookImportBatches])
-        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardReviewLogs])
+        notebook.properties.append(contentsOf: [notebookFlashcards, notebookUnits, notebookImportBatches])
+        unit.properties.append(contentsOf: [unitNotebook, unitFlashcards])
+        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardUnit, flashcardReviewLogs])
         reviewLog.properties.append(reviewLogCard)
         importBatch.properties.append(importBatchNotebook)
 
-        model.entities = [notebook, flashcard, reviewLog, importBatch]
+        model.entities = [notebook, unit, flashcard, reviewLog, importBatch]
         return model
     }()
 

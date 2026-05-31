@@ -12,6 +12,15 @@ struct BackupNotebook: Codable, Equatable {
     let name: String
     let createdAt: Date
     let updatedAt: Date
+    let units: [BackupUnit]
+}
+
+struct BackupUnit: Codable, Equatable {
+    let id: UUID
+    let name: String
+    let sortIndex: Int32
+    let createdAt: Date
+    let updatedAt: Date
     let flashcards: [BackupFlashcard]
 }
 
@@ -77,11 +86,11 @@ final class BackupExporter {
                 name: notebook.name,
                 createdAt: notebook.createdAt,
                 updatedAt: notebook.updatedAt,
-                flashcards: backupFlashcards(for: notebook)
+                units: backupUnits(for: notebook)
             )
         }
 
-        return BackupEnvelope(schemaVersion: 1, exportedAt: exportedAt, notebooks: notebooks)
+        return BackupEnvelope(schemaVersion: 2, exportedAt: exportedAt, notebooks: notebooks)
     }
 
     func writeBackup(context: NSManagedObjectContext, exportedAt: Date = Date()) throws -> URL {
@@ -107,8 +116,44 @@ final class BackupExporter {
         return "AnkiOpen-Backup-\(formatter.string(from: date)).json"
     }
 
-    private func backupFlashcards(for notebook: NotebookMO) -> [BackupFlashcard] {
-        notebook.flashcards
+    private func backupUnits(for notebook: NotebookMO) -> [BackupUnit] {
+        let existingUnits = notebook.units.sorted {
+            if $0.sortIndex == $1.sortIndex {
+                return $0.createdAt < $1.createdAt
+            }
+            return $0.sortIndex < $1.sortIndex
+        }
+
+        var backupUnits = existingUnits.map { unit in
+            BackupUnit(
+                id: unit.id,
+                name: unit.name,
+                sortIndex: unit.sortIndex,
+                createdAt: unit.createdAt,
+                updatedAt: unit.updatedAt,
+                flashcards: backupFlashcards(Array(unit.flashcards))
+            )
+        }
+
+        let orphanedCards = notebook.flashcards.filter { $0.unit == nil }
+        if !orphanedCards.isEmpty {
+            backupUnits.append(
+                BackupUnit(
+                    id: UUID(),
+                    name: NotebookUnitMO.defaultName,
+                    sortIndex: Int32(backupUnits.count),
+                    createdAt: notebook.createdAt,
+                    updatedAt: notebook.updatedAt,
+                    flashcards: backupFlashcards(Array(orphanedCards))
+                )
+            )
+        }
+
+        return backupUnits
+    }
+
+    private func backupFlashcards(_ flashcards: [FlashcardMO]) -> [BackupFlashcard] {
+        flashcards
             .sorted {
                 if $0.createdAt == $1.createdAt {
                     return $0.front < $1.front

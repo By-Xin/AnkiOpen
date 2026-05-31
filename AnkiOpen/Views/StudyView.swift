@@ -5,6 +5,7 @@ struct StudyView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest private var notebooks: FetchedResults<NotebookMO>
     @State private var selectedNotebook: NotebookMO?
+    @State private var selectedUnit: NotebookUnitMO?
     @State private var studyMode: StudyMode = .due
     @State private var dueCards: [FlashcardMO] = []
     @State private var currentIndex = 0
@@ -14,8 +15,9 @@ struct StudyView: View {
 
     private let scheduler = ReviewScheduler()
 
-    init(initialNotebook: NotebookMO? = nil) {
-        _selectedNotebook = State(initialValue: initialNotebook)
+    init(initialNotebook: NotebookMO? = nil, initialUnit: NotebookUnitMO? = nil) {
+        _selectedNotebook = State(initialValue: initialUnit?.notebook ?? initialNotebook)
+        _selectedUnit = State(initialValue: initialUnit)
         let request = NotebookMO.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \NotebookMO.name, ascending: true)]
         _notebooks = FetchRequest(fetchRequest: request, animation: .default)
@@ -31,14 +33,19 @@ struct StudyView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                Picker("Notebook", selection: notebookSelection) {
-                    Text("All Notebooks").tag(UUID?.none)
-                    ForEach(notebooks) { notebook in
-                        Text(notebook.name).tag(Optional(notebook.id))
+                if let selectedUnit {
+                    LabeledContent("Unit", value: "\(selectedUnit.notebook.name) / \(selectedUnit.name)")
+                        .padding(.horizontal)
+                } else {
+                    Picker("Notebook", selection: notebookSelection) {
+                        Text("All Notebooks").tag(UUID?.none)
+                        ForEach(notebooks) { notebook in
+                            Text(notebook.name).tag(Optional(notebook.id))
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .padding(.horizontal)
                 }
-                .pickerStyle(.menu)
-                .padding(.horizontal)
 
                 Picker("Study Mode", selection: $studyMode) {
                     ForEach(StudyMode.allCases) { mode in
@@ -154,12 +161,13 @@ struct StudyView: View {
             selectedNotebook?.id
         } set: { id in
             selectedNotebook = notebooks.first { $0.id == id }
+            selectedUnit = nil
         }
     }
 
     private func reloadDueCards() {
         do {
-            dueCards = try DueCardQuery.forNotebook(selectedNotebook, mode: studyMode, at: Date(), context: viewContext)
+            dueCards = try DueCardQuery.forNotebook(selectedNotebook, unit: selectedUnit, mode: studyMode, at: Date(), context: viewContext)
             currentIndex = 0
             isShowingBack = false
         } catch {

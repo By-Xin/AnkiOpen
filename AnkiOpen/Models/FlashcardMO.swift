@@ -22,6 +22,7 @@ final class FlashcardMO: NSManagedObject, Identifiable {
     @NSManaged var state: Int16
     @NSManaged var lastReviewAt: Date?
     @NSManaged var notebook: NotebookMO
+    @NSManaged var unit: NotebookUnitMO?
     @NSManaged var reviewLogs: Set<ReviewLogMO>
 }
 
@@ -34,6 +35,25 @@ extension FlashcardMO {
         front: String,
         back: String,
         notebook: NotebookMO,
+        context: NSManagedObjectContext,
+        frontAudioFileName: String? = nil,
+        backAudioFileName: String? = nil
+    ) -> FlashcardMO {
+        let unit = NotebookUnitMO.findOrCreateDefault(in: notebook, context: context)
+        return insert(
+            front: front,
+            back: back,
+            unit: unit,
+            context: context,
+            frontAudioFileName: frontAudioFileName,
+            backAudioFileName: backAudioFileName
+        )
+    }
+
+    static func insert(
+        front: String,
+        back: String,
+        unit: NotebookUnitMO,
         context: NSManagedObjectContext,
         frontAudioFileName: String? = nil,
         backAudioFileName: String? = nil
@@ -57,7 +77,8 @@ extension FlashcardMO {
         card.reps = 0
         card.lapses = 0
         card.state = ReviewState.new.rawValue
-        card.notebook = notebook
+        card.notebook = unit.notebook
+        card.unit = unit
         return card
     }
 }

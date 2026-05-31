@@ -4,31 +4,20 @@ import SwiftUI
 struct NotebookDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var notebook: NotebookMO
-    @FetchRequest private var cards: FetchedResults<FlashcardMO>
-    @State private var searchText = ""
-    @State private var isShowingAddCard = false
-    @State private var cardToEdit: FlashcardMO?
+    @FetchRequest private var units: FetchedResults<NotebookUnitMO>
+    @State private var isShowingAddUnit = false
+    @State private var unitToEdit: NotebookUnitMO?
     @State private var errorMessage: String?
 
     init(notebook: NotebookMO) {
         self.notebook = notebook
-        let request = FlashcardMO.fetchRequest()
-        request.predicate = NSPredicate(format: "notebook == %@ AND isArchived == NO", notebook)
+        let request = NotebookUnitMO.fetchRequest()
+        request.predicate = NSPredicate(format: "notebook == %@", notebook)
         request.sortDescriptors = [
-            NSSortDescriptor(keyPath: \FlashcardMO.updatedAt, ascending: false),
-            NSSortDescriptor(keyPath: \FlashcardMO.createdAt, ascending: false)
+            NSSortDescriptor(keyPath: \NotebookUnitMO.sortIndex, ascending: true),
+            NSSortDescriptor(keyPath: \NotebookUnitMO.createdAt, ascending: true)
         ]
-        _cards = FetchRequest(fetchRequest: request, animation: .default)
-    }
-
-    var filteredCards: [FlashcardMO] {
-        let term = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !term.isEmpty else {
-            return Array(cards)
-        }
-        return cards.filter {
-            $0.front.localizedCaseInsensitiveContains(term) || $0.back.localizedCaseInsensitiveContains(term)
-        }
+        _units = FetchRequest(fetchRequest: request, animation: .default)
     }
 
     var body: some View {
@@ -41,41 +30,43 @@ struct NotebookDetailView: View {
                 }
             }
 
-            Section("Cards") {
-                ForEach(filteredCards) { card in
-                    Button {
-                        cardToEdit = card
+            Section("Units") {
+                ForEach(units) { unit in
+                    NavigationLink {
+                        UnitDetailView(unit: unit)
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(card.front)
+                            Text(unit.name)
                                 .font(.headline)
-                                .foregroundStyle(.primary)
-                            Text(card.back)
+                            Text("\(unit.activeCardsCount) cards")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                            Text("Due \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
                         }
                     }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            archive(card)
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            unitToEdit = unit
                         } label: {
-                            Label("Archive", systemImage: "archivebox")
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        .tint(.blue)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            delete(unit)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Search cards")
         .overlay {
-            if cards.isEmpty {
+            if units.isEmpty {
                 EmptyStateView(
-                    title: "No Cards",
-                    systemImage: "rectangle.stack",
-                    message: "Add a card or import a CSV into this notebook."
+                    title: "No Units",
+                    systemImage: "folder",
+                    message: "Create a unit or import a CSV into this notebook."
                 )
             }
         }
@@ -83,17 +74,18 @@ struct NotebookDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    isShowingAddCard = true
+                    isShowingAddUnit = true
                 } label: {
-                    Label("Add Card", systemImage: "plus")
+                    Label("Add Unit", systemImage: "plus")
                 }
             }
         }
-        .sheet(isPresented: $isShowingAddCard) {
-            CardEditorView(mode: .create(notebook))
+        .onAppear(perform: ensureDefaultUnitsForLegacyCards)
+        .sheet(isPresented: $isShowingAddUnit) {
+            UnitEditorView(mode: .create(notebook))
         }
-        .sheet(item: $cardToEdit) { card in
-            CardEditorView(mode: .edit(card))
+        .sheet(item: $unitToEdit) { unit in
+            UnitEditorView(mode: .edit(unit))
         }
         .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
             Button("OK") { errorMessage = nil }
@@ -102,9 +94,23 @@ struct NotebookDetailView: View {
         })
     }
 
-    private func archive(_ card: FlashcardMO) {
-        card.isArchived = true
-        card.updatedAt = Date()
+    private func delete(_ unit: NotebookUnitMO) {
+        viewContext.delete(unit)
+        do {
+            try viewContext.save()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func ensureDefaultUnitsForLegacyCards() {
+        let orphanedCards = notebook.flashcards.filter { $0.unit == nil }
+        guard !orphanedCards.isEmpty else {
+            return
+        }
+
+        let defaultUnit = NotebookUnitMO.findOrCreateDefault(in: notebook, context: viewContext)
+        orphanedCards.forEach { $0.unit = defaultUnit }
         do {
             try viewContext.save()
         } catch {

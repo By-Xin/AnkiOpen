@@ -39,6 +39,10 @@ struct ImportView: View {
                 }
 
                 Section {
+                    Text("CSV columns: front, back, optional unit, optional audio/frontAudio/backAudio. Blank unit values import into Default.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
                     Button {
                         isShowingImporter = true
                     } label: {

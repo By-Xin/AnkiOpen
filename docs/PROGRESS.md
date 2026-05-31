@@ -5,15 +5,17 @@ Last updated: 2026-05-31
 ## Done
 
 - Created native iOS SwiftUI project targeting iOS 16+.
-- Added local Core Data persistence with notebook, card, review log, and import batch entities.
-- Implemented notebook CRUD, card CRUD, card archive, CSV import, due-card query, and study review flow.
+- Added local Core Data persistence with notebook, unit, card, review log, and import batch entities.
+- Implemented notebook CRUD, unit CRUD, card CRUD, card archive, CSV import, due-card query, and study review flow.
+- Added `Notebook -> Unit -> Card` navigation and unit-scoped study entry points.
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
+- Added optional CSV `unit` column. Blank unit values import into `Default`; numeric values import as `Unit 1`, `Unit 2`, etc.
 - Added local audio file storage and Study playback controls for both card sides.
 - Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
-- Added JSON backup export from Settings, including notebooks, cards, audio references, FSRS fields, and review logs.
+- Added JSON backup export from Settings, including notebooks, units, cards, audio references, FSRS fields, and review logs.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
 - Added a local scheduler fallback so development type-checking can continue when the package is unavailable.
-- Added unit test coverage for CSV import, audio import, duplicate handling, study mode queries, due queries, review scheduling, and backup export.
+- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, review scheduling, and backup export.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -35,15 +37,18 @@ Last updated: 2026-05-31
 - `Due` loads unarchived cards with `dueAt <= now`, ordered by due date.
 - `All` loads all unarchived cards in the selected notebook scope.
 - `Forced` loads unarchived cards with `dueAt > now`, ordered by due date.
-- It supports reviewing all notebooks or one selected notebook.
+- It supports reviewing all notebooks, one selected notebook, or one selected unit.
 - All modes still write review logs and update the card's next due date when a rating is selected.
 
-## CSV Audio Import
+## CSV Import
 
 - Supported CSV shapes:
   - `front,back`
+  - `unit,front,back`
   - `front,back,audio` where one audio file is used on both sides
   - `front,back,frontAudio,backAudio` where each side can use a different file
+- If the `unit` column is absent or blank, cards import into `Default`.
+- Numeric unit values are normalized to `Unit 1`, `Unit 2`, and so on.
 - During import, select the CSV file and any referenced audio files together.
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
@@ -51,8 +56,8 @@ Last updated: 2026-05-31
 ## Backup Export
 
 - Settings now offers `Create JSON Backup`.
-- The backup schema is versioned with `schemaVersion: 1`.
-- JSON backups include notebooks, cards, audio file references, scheduling fields, and review logs.
+- The backup schema is versioned with `schemaVersion: 2`.
+- JSON backups include notebooks, units, cards, audio file references, scheduling fields, and review logs.
 - Restore/import of a JSON backup is not implemented yet.
 
 ## Blocked

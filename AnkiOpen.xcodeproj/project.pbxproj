@@ -16,6 +16,7 @@
 		A00000000000000000000107 /* ReviewLogMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000007 /* ReviewLogMO.swift */; };
 		A00000000000000000000108 /* ImportBatchMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* ImportBatchMO.swift */; };
 		A00000000000000000000109 /* ReviewRating.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* ReviewRating.swift */; };
+		A00000000000000000000129 /* NotebookUnitMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* NotebookUnitMO.swift */; };
 		A00000000000000000000110 /* DueCardQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000010 /* DueCardQuery.swift */; };
 		A00000000000000000000111 /* ReviewScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* ReviewScheduler.swift */; };
 		A00000000000000000000112 /* CSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* CSVImporter.swift */; };
@@ -27,6 +28,8 @@
 		A00000000000000000000118 /* ImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000018 /* ImportView.swift */; };
 		A00000000000000000000119 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000019 /* SettingsView.swift */; };
 		A00000000000000000000124 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* EmptyStateView.swift */; };
+		A00000000000000000000130 /* UnitEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000029 /* UnitEditorView.swift */; };
+		A00000000000000000000131 /* UnitDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000030 /* UnitDetailView.swift */; };
 		A00000000000000000000125 /* AudioFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* AudioFileStore.swift */; };
 		A00000000000000000000126 /* AudioPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* AudioPlaybackController.swift */; };
 		A00000000000000000000127 /* BackupExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* BackupExporter.swift */; };
@@ -64,6 +67,7 @@
 		A00000000000000000000007 /* ReviewLogMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewLogMO.swift; sourceTree = "<group>"; };
 		A00000000000000000000008 /* ImportBatchMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportBatchMO.swift; sourceTree = "<group>"; };
 		A00000000000000000000009 /* ReviewRating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRating.swift; sourceTree = "<group>"; };
+		A00000000000000000000028 /* NotebookUnitMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookUnitMO.swift; sourceTree = "<group>"; };
 		A00000000000000000000010 /* DueCardQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DueCardQuery.swift; sourceTree = "<group>"; };
 		A00000000000000000000011 /* ReviewScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewScheduler.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* CSVImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImporter.swift; sourceTree = "<group>"; };
@@ -78,6 +82,8 @@
 		A00000000000000000000021 /* ReviewSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSchedulerTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000022 /* AnkiOpenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiOpenUITests.swift; sourceTree = "<group>"; };
 		A00000000000000000000023 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A00000000000000000000029 /* UnitEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitEditorView.swift; sourceTree = "<group>"; };
+		A00000000000000000000030 /* UnitDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitDetailView.swift; sourceTree = "<group>"; };
 		A00000000000000000000024 /* AudioFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000025 /* AudioPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackController.swift; sourceTree = "<group>"; };
 		A00000000000000000000026 /* BackupExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporter.swift; sourceTree = "<group>"; };
@@ -132,6 +138,7 @@
 				A00000000000000000000007 /* ReviewLogMO.swift */,
 				A00000000000000000000008 /* ImportBatchMO.swift */,
 				A00000000000000000000009 /* ReviewRating.swift */,
+				A00000000000000000000028 /* NotebookUnitMO.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -197,6 +204,8 @@
 				A00000000000000000000018 /* ImportView.swift */,
 				A00000000000000000000019 /* SettingsView.swift */,
 				A00000000000000000000023 /* EmptyStateView.swift */,
+				A00000000000000000000029 /* UnitEditorView.swift */,
+				A00000000000000000000030 /* UnitDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -318,6 +327,7 @@
 				A00000000000000000000107 /* ReviewLogMO.swift in Sources */,
 				A00000000000000000000108 /* ImportBatchMO.swift in Sources */,
 				A00000000000000000000109 /* ReviewRating.swift in Sources */,
+				A00000000000000000000129 /* NotebookUnitMO.swift in Sources */,
 				A00000000000000000000110 /* DueCardQuery.swift in Sources */,
 				A00000000000000000000111 /* ReviewScheduler.swift in Sources */,
 				A00000000000000000000112 /* CSVImporter.swift in Sources */,
@@ -329,6 +339,8 @@
 				A00000000000000000000118 /* ImportView.swift in Sources */,
 				A00000000000000000000119 /* SettingsView.swift in Sources */,
 				A00000000000000000000124 /* EmptyStateView.swift in Sources */,
+				A00000000000000000000130 /* UnitEditorView.swift in Sources */,
+				A00000000000000000000131 /* UnitDetailView.swift in Sources */,
 				A00000000000000000000125 /* AudioFileStore.swift in Sources */,
 				A00000000000000000000126 /* AudioPlaybackController.swift in Sources */,
 				A00000000000000000000127 /* BackupExporter.swift in Sources */,

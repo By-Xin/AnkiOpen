@@ -7,6 +7,7 @@ final class NotebookMO: NSManagedObject, Identifiable {
     @NSManaged var name: String
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
+    @NSManaged var units: Set<NotebookUnitMO>
     @NSManaged var flashcards: Set<FlashcardMO>
     @NSManaged var importBatches: Set<ImportBatchMO>
 }
@@ -18,5 +19,9 @@ extension NotebookMO {
 
     var activeCardsCount: Int {
         flashcards.filter { !$0.isArchived }.count
+    }
+
+    var unitsCount: Int {
+        units.count
     }
 }
