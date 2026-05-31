@@ -2,6 +2,10 @@ import CoreData
 
 enum CoreDataModelFactory {
     static func makeModel() -> NSManagedObjectModel {
+        model
+    }
+
+    private static let model: NSManagedObjectModel = {
         let model = NSManagedObjectModel()
 
         let notebook = entity(name: "Notebook", className: NotebookMO.self)
@@ -74,7 +78,7 @@ enum CoreDataModelFactory {
 
         model.entities = [notebook, flashcard, reviewLog, importBatch]
         return model
-    }
+    }()
 
     private static func entity<T: NSManagedObject>(name: String, className: T.Type) -> NSEntityDescription {
         let entity = NSEntityDescription()
