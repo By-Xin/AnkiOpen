@@ -5,6 +5,7 @@ struct StudyView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest private var notebooks: FetchedResults<NotebookMO>
     @State private var selectedNotebook: NotebookMO?
+    @State private var studyMode: StudyMode = .due
     @State private var dueCards: [FlashcardMO] = []
     @State private var currentIndex = 0
     @State private var isShowingBack = false
@@ -37,6 +38,14 @@ struct StudyView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .padding(.horizontal)
+
+                Picker("Study Mode", selection: $studyMode) {
+                    ForEach(StudyMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
                 .padding(.horizontal)
 
                 if let card = currentCard {
@@ -108,9 +117,9 @@ struct StudyView: View {
                     .frame(maxHeight: .infinity)
                 } else {
                     EmptyStateView(
-                        title: "No Due Cards",
+                        title: studyMode.emptyTitle,
                         systemImage: "checkmark.circle",
-                        message: "You are caught up for now."
+                        message: studyMode.emptyMessage
                     )
                     .frame(maxHeight: .infinity)
                 }
@@ -127,6 +136,9 @@ struct StudyView: View {
             }
             .onAppear(perform: reloadDueCards)
             .onChange(of: selectedNotebook?.id) { _ in
+                reloadDueCards()
+            }
+            .onChange(of: studyMode) { _ in
                 reloadDueCards()
             }
             .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
@@ -147,7 +159,7 @@ struct StudyView: View {
 
     private func reloadDueCards() {
         do {
-            dueCards = try DueCardQuery.forNotebook(selectedNotebook, at: Date(), context: viewContext)
+            dueCards = try DueCardQuery.forNotebook(selectedNotebook, mode: studyMode, at: Date(), context: viewContext)
             currentIndex = 0
             isShowingBack = false
         } catch {

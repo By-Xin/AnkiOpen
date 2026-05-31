@@ -9,7 +9,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Notebook CRUD
 - Flashcard CRUD and archive
 - CSV import with `front,back`, optional `audio`, or optional `frontAudio,backAudio` columns
-- Study flow with `Again`, `Hard`, `Good`, `Easy`
+- Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Audio playback on the front and back side of a card
 - Review logs and due-card querying
 - FSRS Swift package integration, with a local scheduler fallback for development builds
@@ -47,9 +47,13 @@ Question,Answer,front.mp3,back.mp3
 
 The app copies selected audio into its local sandbox, so the original files are not needed after import.
 
-## Study Mode
+## Study Modes
 
-The current Study tab is scheduled review only: it shows unarchived cards whose `dueAt` is earlier than or equal to now, sorted by due date. Custom study and forced learning of not-yet-due cards are not part of the current MVP yet.
+- `Due`: scheduled review only. Shows unarchived cards whose `dueAt` is earlier than or equal to now.
+- `All`: custom study over all unarchived cards in the selected notebook scope.
+- `Forced`: forced learning for unarchived cards that are not due yet.
+
+All modes still write review logs and update the card's next due date when a rating is selected.
 
 ## Progress
 
@@ -59,7 +63,7 @@ The current Study tab is scheduled review only: it shows unarchived cards whose 
 - [x] Notebook and card management
 - [x] CSV import
 - [x] CSV audio import and playback
-- [x] Study flow and review logs
+- [x] Study modes and review logs
 - [x] Unit and UI test scaffolding
 - [ ] App icon and polished visual identity
 - [ ] Export/backup

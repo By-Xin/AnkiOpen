@@ -9,9 +9,10 @@ Last updated: 2026-05-31
 - Implemented notebook CRUD, card CRUD, card archive, CSV import, due-card query, and study review flow.
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
 - Added local audio file storage and Study playback controls for both card sides.
+- Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
 - Added a local scheduler fallback so development type-checking can continue when the package is unavailable.
-- Added unit test coverage for CSV import, audio import, duplicate handling, due queries, and review scheduling.
+- Added unit test coverage for CSV import, audio import, duplicate handling, study mode queries, due queries, and review scheduling.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -30,9 +31,11 @@ Last updated: 2026-05-31
 
 ## Current Study Behavior
 
-- The Study tab currently loads unarchived cards with `dueAt <= now`, ordered by due date.
+- `Due` loads unarchived cards with `dueAt <= now`, ordered by due date.
+- `All` loads all unarchived cards in the selected notebook scope.
+- `Forced` loads unarchived cards with `dueAt > now`, ordered by due date.
 - It supports reviewing all notebooks or one selected notebook.
-- It does not yet support custom study sessions or forced learning of cards that are not due.
+- All modes still write review logs and update the card's next due date when a rating is selected.
 
 ## CSV Audio Import
 
@@ -51,6 +54,5 @@ Last updated: 2026-05-31
 ## Next
 
 - Decide whether to fork/patch `swift-fsrs` or replace it with an FSRS implementation whose scheduler API is public.
-- Add custom study and forced learning modes.
 - Replace the default app icon and add a basic visual identity.
 - Add export/backup support.
