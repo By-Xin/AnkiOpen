@@ -13,6 +13,7 @@ Last updated: 2026-05-31
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
+- Created initial GitHub Issues for FSRS, CSV import polish, backup/export, visual polish, and CI.
 
 ## Verification
 
@@ -21,16 +22,16 @@ Last updated: 2026-05-31
 - Xcode resolved `open-spaced-repetition/swift-fsrs` 5.0.0 and wrote `Package.resolved`.
 - Passed Xcode build:
   `xcodebuild -project AnkiOpen.xcodeproj -scheme AnkiOpen -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -derivedDataPath DerivedData build CODE_SIGNING_ALLOWED=NO`
+- Passed Xcode tests:
+  `xcodebuild test -project AnkiOpen.xcodeproj -scheme AnkiOpen -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO`
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Blocked
 
-- Full automated UI test execution has not been run yet.
 - The upstream `swift-fsrs` 5.0.0 package builds, but its scheduler initializer and `next` method are not public, so the app currently uses the local scheduler fallback.
 
 ## Next
 
-- Add GitHub Issues for MVP polish, FSRS integration strategy, import UX, and backup/export.
 - Decide whether to fork/patch `swift-fsrs` or replace it with an FSRS implementation whose scheduler API is public.
 - Replace the default app icon and add a basic visual identity.
 - Add export/backup support.
