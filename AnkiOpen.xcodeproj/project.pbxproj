@@ -29,8 +29,10 @@
 		A00000000000000000000124 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* EmptyStateView.swift */; };
 		A00000000000000000000125 /* AudioFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* AudioFileStore.swift */; };
 		A00000000000000000000126 /* AudioPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* AudioPlaybackController.swift */; };
+		A00000000000000000000127 /* BackupExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* BackupExporter.swift */; };
 		A00000000000000000000120 /* CSVImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* CSVImporterTests.swift */; };
 		A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* ReviewSchedulerTests.swift */; };
+		A00000000000000000000128 /* BackupExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* BackupExporterTests.swift */; };
 		A00000000000000000000122 /* AnkiOpenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* AnkiOpenUITests.swift */; };
 		A00000000000000000000123 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000301 /* FSRS */; };
 /* End PBXBuildFile section */
@@ -78,6 +80,8 @@
 		A00000000000000000000023 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		A00000000000000000000024 /* AudioFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000025 /* AudioPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackController.swift; sourceTree = "<group>"; };
+		A00000000000000000000026 /* BackupExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporter.swift; sourceTree = "<group>"; };
+		A00000000000000000000027 /* BackupExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporterTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000503 /* AnkiOpenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -149,6 +153,7 @@
 				A00000000000000000000012 /* CSVImporter.swift */,
 				A00000000000000000000024 /* AudioFileStore.swift */,
 				A00000000000000000000025 /* AudioPlaybackController.swift */,
+				A00000000000000000000026 /* BackupExporter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -158,6 +163,7 @@
 			children = (
 				A00000000000000000000020 /* CSVImporterTests.swift */,
 				A00000000000000000000021 /* ReviewSchedulerTests.swift */,
+				A00000000000000000000027 /* BackupExporterTests.swift */,
 			);
 			path = AnkiOpenTests;
 			sourceTree = "<group>";
@@ -325,6 +331,7 @@
 				A00000000000000000000124 /* EmptyStateView.swift in Sources */,
 				A00000000000000000000125 /* AudioFileStore.swift in Sources */,
 				A00000000000000000000126 /* AudioPlaybackController.swift in Sources */,
+				A00000000000000000000127 /* BackupExporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,6 +341,7 @@
 			files = (
 				A00000000000000000000120 /* CSVImporterTests.swift in Sources */,
 				A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */,
+				A00000000000000000000128 /* BackupExporterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

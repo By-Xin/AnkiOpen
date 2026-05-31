@@ -10,9 +10,10 @@ Last updated: 2026-05-31
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
 - Added local audio file storage and Study playback controls for both card sides.
 - Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
+- Added JSON backup export from Settings, including notebooks, cards, audio references, FSRS fields, and review logs.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
 - Added a local scheduler fallback so development type-checking can continue when the package is unavailable.
-- Added unit test coverage for CSV import, audio import, duplicate handling, study mode queries, due queries, and review scheduling.
+- Added unit test coverage for CSV import, audio import, duplicate handling, study mode queries, due queries, review scheduling, and backup export.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -47,6 +48,13 @@ Last updated: 2026-05-31
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
 
+## Backup Export
+
+- Settings now offers `Create JSON Backup`.
+- The backup schema is versioned with `schemaVersion: 1`.
+- JSON backups include notebooks, cards, audio file references, scheduling fields, and review logs.
+- Restore/import of a JSON backup is not implemented yet.
+
 ## Blocked
 
 - The upstream `swift-fsrs` 5.0.0 package builds, but its scheduler initializer and `next` method are not public, so the app currently uses the local scheduler fallback.
@@ -54,5 +62,5 @@ Last updated: 2026-05-31
 ## Next
 
 - Decide whether to fork/patch `swift-fsrs` or replace it with an FSRS implementation whose scheduler API is public.
+- Add JSON backup restore with clear duplicate and merge behavior.
 - Replace the default app icon and add a basic visual identity.
-- Add export/backup support.
