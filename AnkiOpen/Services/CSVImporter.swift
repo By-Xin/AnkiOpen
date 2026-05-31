@@ -14,6 +14,31 @@ struct ImportSummary: Equatable {
     }
 }
 
+struct ImportPreview: Equatable {
+    let fileName: String
+    let totalRows: Int
+    let importableRows: Int
+    let skippedRows: Int
+    let duplicateRows: Int
+    let units: [String]
+    let missingAudioFiles: [String]
+    let unsupportedAudioFiles: [String]
+    let errors: [String]
+    let audioWarnings: [String]
+
+    var canImport: Bool {
+        importableRows > 0
+    }
+
+    var errorsSummary: String? {
+        errors.isEmpty ? nil : errors.joined(separator: "\n")
+    }
+
+    var audioWarningsSummary: String? {
+        audioWarnings.isEmpty ? nil : audioWarnings.joined(separator: "\n")
+    }
+}
+
 enum CSVImporterError: LocalizedError {
     case unreadableFile
     case invalidEncoding
@@ -29,12 +54,92 @@ enum CSVImporterError: LocalizedError {
 }
 
 final class CSVImporter {
+    func preview(
+        url: URL,
+        into notebook: NotebookMO?,
+        context: NSManagedObjectContext,
+        mediaURLs: [URL] = []
+    ) throws -> ImportPreview {
+        let existingPairs = try notebook.map { try existingCardPairs(in: $0, context: context) } ?? []
+        let plan = try analyze(url: url, existingPairs: existingPairs, mediaURLs: mediaURLs)
+        return plan.preview
+    }
+
     func `import`(
         url: URL,
         into notebook: NotebookMO,
         context: NSManagedObjectContext,
         mediaURLs: [URL] = []
     ) throws -> ImportSummary {
+        let existingPairs = try existingCardPairs(in: notebook, context: context)
+        let plan = try analyze(url: url, existingPairs: existingPairs, mediaURLs: mediaURLs)
+        let mediaByFileName = mediaURLs.reduce(into: [String: URL]()) { result, url in
+            result[url.lastPathComponent] = url
+        }
+
+        var imported = 0
+        var audioImported = 0
+        var errors = plan.errors + plan.audioWarnings
+
+        for row in plan.rows {
+            let unit = NotebookUnitMO.findOrCreate(
+                named: row.unitName,
+                in: notebook,
+                context: context
+            )
+            let frontAudioFileName = copyAudioIfNeeded(
+                row.frontAudioFileName,
+                sourceLine: row.sourceLine,
+                mediaByFileName: mediaByFileName,
+                errors: &errors
+            )
+            let backAudioFileName = copyAudioIfNeeded(
+                row.backAudioFileName,
+                sourceLine: row.sourceLine,
+                mediaByFileName: mediaByFileName,
+                errors: &errors
+            )
+            audioImported += [frontAudioFileName, backAudioFileName].compactMap { $0 }.count
+
+            _ = FlashcardMO.insert(
+                front: row.front,
+                back: row.back,
+                unit: unit,
+                context: context,
+                frontAudioFileName: frontAudioFileName,
+                backAudioFileName: backAudioFileName
+            )
+            imported += 1
+        }
+
+        let summary = ImportSummary(
+            fileName: plan.fileName,
+            totalRows: plan.totalRows,
+            importedRows: imported,
+            skippedRows: plan.skippedRows,
+            audioFilesImported: audioImported,
+            errors: errors
+        )
+
+        let batch = ImportBatchMO(context: context)
+        batch.id = UUID()
+        batch.fileName = summary.fileName
+        batch.importedAt = Date()
+        batch.totalRows = Int32(summary.totalRows)
+        batch.importedRows = Int32(summary.importedRows)
+        batch.skippedRows = Int32(summary.skippedRows)
+        batch.errorsSummary = summary.errorsSummary
+        batch.notebook = notebook
+
+        notebook.updatedAt = Date()
+        return summary
+    }
+
+    private func analyze(
+        url: URL,
+        existingPairs: Set<CardPair>,
+        mediaURLs: [URL]
+    ) throws -> CSVImportPlan {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
             if didAccess {
@@ -52,22 +157,24 @@ final class CSVImporter {
         let rows = CSVParser.parse(contents)
         let mapping = CSVColumnMapping(rows: rows)
         let bodyRows = mapping.bodyRows
-        let existingPairs = try existingCardPairs(in: notebook, context: context)
         let mediaByFileName = mediaURLs.reduce(into: [String: URL]()) { result, url in
             result[url.lastPathComponent] = url
         }
 
         var seenPairs = existingPairs
-        var imported = 0
-        var skipped = 0
-        var audioImported = 0
+        var importRows: [CSVImportRow] = []
+        var duplicateRows = 0
+        var invalidRows = 0
         var errors: [String] = []
+        var audioWarnings: [String] = []
+        var missingAudioFiles = Set<String>()
+        var unsupportedAudioFiles = Set<String>()
 
         for (index, row) in bodyRows.enumerated() {
             let sourceLine = index + 1 + (mapping.hasHeader ? 1 : 0)
             guard row.count >= 2 else {
                 errors.append("Line \(sourceLine): expected at least two columns.")
-                skipped += 1
+                invalidRows += 1
                 continue
             }
 
@@ -75,69 +182,55 @@ final class CSVImporter {
             let back = mapping.back(from: row) ?? ""
             guard !front.isEmpty, !back.isEmpty else {
                 errors.append("Line \(sourceLine): front and back must both be non-empty.")
-                skipped += 1
+                invalidRows += 1
                 continue
             }
 
             let pair = CardPair(front: front, back: back)
             guard !seenPairs.contains(pair) else {
-                skipped += 1
+                duplicateRows += 1
                 continue
             }
 
-            let unit = NotebookUnitMO.findOrCreate(
-                named: mapping.unitName(from: row),
-                in: notebook,
-                context: context
-            )
             let audioNames = mapping.audioFileNames(from: row)
-            let frontAudioFileName = copyAudioIfNeeded(
+            let frontAudioFileName = usableAudioFileName(
                 audioNames.front,
                 sourceLine: sourceLine,
                 mediaByFileName: mediaByFileName,
-                errors: &errors
+                warnings: &audioWarnings,
+                missingAudioFiles: &missingAudioFiles,
+                unsupportedAudioFiles: &unsupportedAudioFiles
             )
-            let backAudioFileName = copyAudioIfNeeded(
+            let backAudioFileName = usableAudioFileName(
                 audioNames.back,
                 sourceLine: sourceLine,
                 mediaByFileName: mediaByFileName,
-                errors: &errors
+                warnings: &audioWarnings,
+                missingAudioFiles: &missingAudioFiles,
+                unsupportedAudioFiles: &unsupportedAudioFiles
             )
-            audioImported += [frontAudioFileName, backAudioFileName].compactMap { $0 }.count
-
-            _ = FlashcardMO.insert(
+            importRows.append(CSVImportRow(
+                sourceLine: sourceLine,
                 front: front,
                 back: back,
-                unit: unit,
-                context: context,
+                unitName: mapping.unitName(from: row),
                 frontAudioFileName: frontAudioFileName,
                 backAudioFileName: backAudioFileName
-            )
+            ))
             seenPairs.insert(pair)
-            imported += 1
         }
 
-        let summary = ImportSummary(
+        return CSVImportPlan(
             fileName: url.lastPathComponent,
             totalRows: bodyRows.count,
-            importedRows: imported,
-            skippedRows: skipped,
-            audioFilesImported: audioImported,
-            errors: errors
+            rows: importRows,
+            invalidRows: invalidRows,
+            duplicateRows: duplicateRows,
+            errors: errors,
+            audioWarnings: audioWarnings,
+            missingAudioFiles: missingAudioFiles.sorted(),
+            unsupportedAudioFiles: unsupportedAudioFiles.sorted()
         )
-
-        let batch = ImportBatchMO(context: context)
-        batch.id = UUID()
-        batch.fileName = summary.fileName
-        batch.importedAt = Date()
-        batch.totalRows = Int32(summary.totalRows)
-        batch.importedRows = Int32(summary.importedRows)
-        batch.skippedRows = Int32(summary.skippedRows)
-        batch.errorsSummary = summary.errorsSummary
-        batch.notebook = notebook
-
-        notebook.updatedAt = Date()
-        return summary
     }
 
     private func copyAudioIfNeeded(
@@ -159,12 +252,85 @@ final class CSVImporter {
         }
     }
 
+    private func usableAudioFileName(
+        _ fileName: String?,
+        sourceLine: Int,
+        mediaByFileName: [String: URL],
+        warnings: inout [String],
+        missingAudioFiles: inout Set<String>,
+        unsupportedAudioFiles: inout Set<String>
+    ) -> String? {
+        guard let fileName else {
+            return nil
+        }
+
+        let cleanName = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanName.isEmpty else {
+            return nil
+        }
+
+        let lookupName = URL(fileURLWithPath: cleanName).lastPathComponent
+        guard AudioFileStore.supportedExtensions.contains(URL(fileURLWithPath: lookupName).pathExtension.lowercased()) else {
+            unsupportedAudioFiles.insert(lookupName)
+            warnings.append("Line \(sourceLine): \(AudioFileStoreError.unsupportedFormat(lookupName).localizedDescription)")
+            return nil
+        }
+
+        guard mediaByFileName[lookupName] != nil else {
+            missingAudioFiles.insert(lookupName)
+            warnings.append("Line \(sourceLine): \(AudioFileStoreError.missingFile(lookupName).localizedDescription)")
+            return nil
+        }
+
+        return lookupName
+    }
+
     private func existingCardPairs(in notebook: NotebookMO, context: NSManagedObjectContext) throws -> Set<CardPair> {
         let request = FlashcardMO.fetchRequest()
         request.predicate = NSPredicate(format: "notebook == %@", notebook)
         request.propertiesToFetch = ["front", "back"]
         return Set(try context.fetch(request).map { CardPair(front: $0.front, back: $0.back) })
     }
+}
+
+private struct CSVImportPlan {
+    let fileName: String
+    let totalRows: Int
+    let rows: [CSVImportRow]
+    let invalidRows: Int
+    let duplicateRows: Int
+    let errors: [String]
+    let audioWarnings: [String]
+    let missingAudioFiles: [String]
+    let unsupportedAudioFiles: [String]
+
+    var skippedRows: Int {
+        invalidRows + duplicateRows
+    }
+
+    var preview: ImportPreview {
+        ImportPreview(
+            fileName: fileName,
+            totalRows: totalRows,
+            importableRows: rows.count,
+            skippedRows: skippedRows,
+            duplicateRows: duplicateRows,
+            units: Array(Set(rows.map { NotebookUnitMO.normalizedUnitName($0.unitName) })).sorted(),
+            missingAudioFiles: missingAudioFiles,
+            unsupportedAudioFiles: unsupportedAudioFiles,
+            errors: errors,
+            audioWarnings: audioWarnings
+        )
+    }
+}
+
+private struct CSVImportRow {
+    let sourceLine: Int
+    let front: String
+    let back: String
+    let unitName: String?
+    let frontAudioFileName: String?
+    let backAudioFileName: String?
 }
 
 private struct CSVColumnMapping {
