@@ -27,6 +27,8 @@
 		A00000000000000000000118 /* ImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000018 /* ImportView.swift */; };
 		A00000000000000000000119 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000019 /* SettingsView.swift */; };
 		A00000000000000000000124 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000023 /* EmptyStateView.swift */; };
+		A00000000000000000000125 /* AudioFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* AudioFileStore.swift */; };
+		A00000000000000000000126 /* AudioPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* AudioPlaybackController.swift */; };
 		A00000000000000000000120 /* CSVImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* CSVImporterTests.swift */; };
 		A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* ReviewSchedulerTests.swift */; };
 		A00000000000000000000122 /* AnkiOpenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* AnkiOpenUITests.swift */; };
@@ -74,6 +76,8 @@
 		A00000000000000000000021 /* ReviewSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSchedulerTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000022 /* AnkiOpenUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiOpenUITests.swift; sourceTree = "<group>"; };
 		A00000000000000000000023 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A00000000000000000000024 /* AudioFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileStore.swift; sourceTree = "<group>"; };
+		A00000000000000000000025 /* AudioPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackController.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000503 /* AnkiOpenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -143,6 +147,8 @@
 				A00000000000000000000010 /* DueCardQuery.swift */,
 				A00000000000000000000011 /* ReviewScheduler.swift */,
 				A00000000000000000000012 /* CSVImporter.swift */,
+				A00000000000000000000024 /* AudioFileStore.swift */,
+				A00000000000000000000025 /* AudioPlaybackController.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -317,6 +323,8 @@
 				A00000000000000000000118 /* ImportView.swift in Sources */,
 				A00000000000000000000119 /* SettingsView.swift in Sources */,
 				A00000000000000000000124 /* EmptyStateView.swift in Sources */,
+				A00000000000000000000125 /* AudioFileStore.swift in Sources */,
+				A00000000000000000000126 /* AudioPlaybackController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

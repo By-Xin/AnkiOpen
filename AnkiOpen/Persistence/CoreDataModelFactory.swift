@@ -21,6 +21,8 @@ enum CoreDataModelFactory {
             attribute("id", .UUIDAttributeType, optional: false),
             attribute("front", .stringAttributeType, optional: false),
             attribute("back", .stringAttributeType, optional: false),
+            attribute("frontAudioFileName", .stringAttributeType, optional: true),
+            attribute("backAudioFileName", .stringAttributeType, optional: true),
             attribute("createdAt", .dateAttributeType, optional: false),
             attribute("updatedAt", .dateAttributeType, optional: false),
             attribute("isArchived", .booleanAttributeType, optional: false, defaultValue: false),

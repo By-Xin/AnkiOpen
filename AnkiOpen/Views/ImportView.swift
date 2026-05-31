@@ -53,6 +53,7 @@ struct ImportView: View {
                         LabeledContent("Rows", value: "\(summary.totalRows)")
                         LabeledContent("Imported", value: "\(summary.importedRows)")
                         LabeledContent("Skipped", value: "\(summary.skippedRows)")
+                        LabeledContent("Audio", value: "\(summary.audioFilesImported)")
                         if let errors = summary.errorsSummary {
                             Text(errors)
                                 .font(.footnote)
@@ -69,8 +70,8 @@ struct ImportView: View {
             }
             .fileImporter(
                 isPresented: $isShowingImporter,
-                allowedContentTypes: [.commaSeparatedText, .text],
-                allowsMultipleSelection: false
+                allowedContentTypes: [.commaSeparatedText, .text, .audio],
+                allowsMultipleSelection: true
             ) { result in
                 handleImport(result)
             }
@@ -105,10 +106,12 @@ struct ImportView: View {
     private func handleImport(_ result: Result<[URL], Error>) {
         do {
             let urls = try result.get()
-            guard let url = urls.first, let notebook = destinationNotebook() else {
+            guard let csvURL = csvURL(from: urls), let notebook = destinationNotebook() else {
+                errorMessage = "Select one CSV file and any referenced audio files."
                 return
             }
-            summary = try importer.import(url: url, into: notebook, context: viewContext)
+            let mediaURLs = urls.filter { AudioFileStore.isSupportedAudioFile($0) }
+            summary = try importer.import(url: csvURL, into: notebook, context: viewContext, mediaURLs: mediaURLs)
             try viewContext.save()
             selectedNotebookID = notebook.id
             isCreatingNotebook = false
@@ -116,6 +119,12 @@ struct ImportView: View {
         } catch {
             viewContext.rollback()
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func csvURL(from urls: [URL]) -> URL? {
+        urls.first {
+            ["csv", "txt"].contains($0.pathExtension.lowercased())
         }
     }
 }

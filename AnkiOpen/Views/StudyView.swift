@@ -9,6 +9,7 @@ struct StudyView: View {
     @State private var currentIndex = 0
     @State private var isShowingBack = false
     @State private var errorMessage: String?
+    @StateObject private var audioPlayer = AudioPlaybackController()
 
     private let scheduler = ReviewScheduler()
 
@@ -50,9 +51,16 @@ struct StudyView: View {
                             }
                         } label: {
                             VStack(spacing: 18) {
-                                Text(isShowingBack ? "Back" : "Front")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                HStack(spacing: 8) {
+                                    Text(isShowingBack ? "Back" : "Front")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    if audioFileName(for: card) != nil {
+                                        Image(systemName: "speaker.wave.2.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(.blue)
+                                    }
+                                }
                                 Text(isShowingBack ? card.back : card.front)
                                     .font(.title2)
                                     .multilineTextAlignment(.center)
@@ -65,6 +73,15 @@ struct StudyView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal)
+
+                        if let audioFileName = audioFileName(for: card) {
+                            Button {
+                                audioPlayer.play(storedFileName: audioFileName)
+                            } label: {
+                                Label("Play Audio", systemImage: "speaker.wave.2")
+                            }
+                            .buttonStyle(.bordered)
+                        }
 
                         if isShowingBack {
                             HStack(spacing: 10) {
@@ -148,5 +165,9 @@ struct StudyView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func audioFileName(for card: FlashcardMO) -> String? {
+        isShowingBack ? card.backAudioFileName : card.frontAudioFileName
     }
 }

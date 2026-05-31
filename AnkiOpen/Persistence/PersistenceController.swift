@@ -16,6 +16,8 @@ final class PersistenceController {
         card.id = UUID()
         card.front = "What is spaced repetition?"
         card.back = "A learning technique that schedules reviews over increasing intervals."
+        card.frontAudioFileName = nil
+        card.backAudioFileName = nil
         card.createdAt = Date()
         card.updatedAt = Date()
         card.dueAt = Date()
@@ -31,6 +33,11 @@ final class PersistenceController {
 
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
+        }
+
+        container.persistentStoreDescriptions.forEach { description in
+            description.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+            description.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
         }
 
         container.loadPersistentStores { _, error in

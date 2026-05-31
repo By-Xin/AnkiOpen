@@ -6,6 +6,7 @@ struct ImportSummary: Equatable {
     let totalRows: Int
     let importedRows: Int
     let skippedRows: Int
+    let audioFilesImported: Int
     let errors: [String]
 
     var errorsSummary: String? {
@@ -28,7 +29,12 @@ enum CSVImporterError: LocalizedError {
 }
 
 final class CSVImporter {
-    func `import`(url: URL, into notebook: NotebookMO, context: NSManagedObjectContext) throws -> ImportSummary {
+    func `import`(
+        url: URL,
+        into notebook: NotebookMO,
+        context: NSManagedObjectContext,
+        mediaURLs: [URL] = []
+    ) throws -> ImportSummary {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
             if didAccess {
@@ -44,16 +50,21 @@ final class CSVImporter {
         }
 
         let rows = CSVParser.parse(contents)
-        let bodyRows = dropHeaderIfPresent(rows)
+        let mapping = CSVColumnMapping(rows: rows)
+        let bodyRows = mapping.bodyRows
         let existingPairs = try existingCardPairs(in: notebook, context: context)
+        let mediaByFileName = mediaURLs.reduce(into: [String: URL]()) { result, url in
+            result[url.lastPathComponent] = url
+        }
 
         var seenPairs = existingPairs
         var imported = 0
         var skipped = 0
+        var audioImported = 0
         var errors: [String] = []
 
         for (index, row) in bodyRows.enumerated() {
-            let sourceLine = index + 1 + (bodyRows.count == rows.count ? 0 : 1)
+            let sourceLine = index + 1 + (mapping.hasHeader ? 1 : 0)
             guard row.count >= 2 else {
                 errors.append("Line \(sourceLine): expected at least two columns.")
                 skipped += 1
@@ -74,7 +85,29 @@ final class CSVImporter {
                 continue
             }
 
-            _ = FlashcardMO.insert(front: front, back: back, notebook: notebook, context: context)
+            let audioNames = mapping.audioFileNames(from: row)
+            let frontAudioFileName = copyAudioIfNeeded(
+                audioNames.front,
+                sourceLine: sourceLine,
+                mediaByFileName: mediaByFileName,
+                errors: &errors
+            )
+            let backAudioFileName = copyAudioIfNeeded(
+                audioNames.back,
+                sourceLine: sourceLine,
+                mediaByFileName: mediaByFileName,
+                errors: &errors
+            )
+            audioImported += [frontAudioFileName, backAudioFileName].compactMap { $0 }.count
+
+            _ = FlashcardMO.insert(
+                front: front,
+                back: back,
+                notebook: notebook,
+                context: context,
+                frontAudioFileName: frontAudioFileName,
+                backAudioFileName: backAudioFileName
+            )
             seenPairs.insert(pair)
             imported += 1
         }
@@ -84,6 +117,7 @@ final class CSVImporter {
             totalRows: bodyRows.count,
             importedRows: imported,
             skippedRows: skipped,
+            audioFilesImported: audioImported,
             errors: errors
         )
 
@@ -101,17 +135,23 @@ final class CSVImporter {
         return summary
     }
 
-    private func dropHeaderIfPresent(_ rows: [[String]]) -> [[String]] {
-        guard let first = rows.first, first.count >= 2 else {
-            return rows
+    private func copyAudioIfNeeded(
+        _ fileName: String?,
+        sourceLine: Int,
+        mediaByFileName: [String: URL],
+        errors: inout [String]
+    ) -> String? {
+        guard let fileName, !fileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
         }
 
-        let front = first[0].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let back = first[1].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if front == "front", back == "back" {
-            return Array(rows.dropFirst())
+        do {
+            let copied = try AudioFileStore.copyAudio(named: fileName, from: mediaByFileName)
+            return copied.isEmpty ? nil : copied
+        } catch {
+            errors.append("Line \(sourceLine): \(error.localizedDescription)")
+            return nil
         }
-        return rows
     }
 
     private func existingCardPairs(in notebook: NotebookMO, context: NSManagedObjectContext) throws -> Set<CardPair> {
@@ -119,6 +159,51 @@ final class CSVImporter {
         request.predicate = NSPredicate(format: "notebook == %@", notebook)
         request.propertiesToFetch = ["front", "back"]
         return Set(try context.fetch(request).map { CardPair(front: $0.front, back: $0.back) })
+    }
+}
+
+private struct CSVColumnMapping {
+    let bodyRows: [[String]]
+    let hasHeader: Bool
+    private let frontAudioIndex: Int?
+    private let backAudioIndex: Int?
+    private let sharedAudioIndex: Int?
+
+    init(rows: [[String]]) {
+        guard let first = rows.first, first.count >= 2 else {
+            bodyRows = rows
+            hasHeader = false
+            frontAudioIndex = rows.first?.indices.contains(2) == true ? 2 : nil
+            backAudioIndex = rows.first?.indices.contains(3) == true ? 3 : nil
+            sharedAudioIndex = nil
+            return
+        }
+
+        let normalized = first.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        if normalized[0] == "front", normalized[1] == "back" {
+            bodyRows = Array(rows.dropFirst())
+            hasHeader = true
+            frontAudioIndex = normalized.firstIndex { ["frontaudio", "front_audio", "front audio"].contains($0) }
+            backAudioIndex = normalized.firstIndex { ["backaudio", "back_audio", "back audio"].contains($0) }
+            sharedAudioIndex = normalized.firstIndex { ["audio", "audiofilename", "audio_file", "audio file"].contains($0) }
+        } else {
+            bodyRows = rows
+            hasHeader = false
+            frontAudioIndex = first.indices.contains(2) ? 2 : nil
+            backAudioIndex = first.indices.contains(3) ? 3 : nil
+            sharedAudioIndex = first.indices.contains(2) && !first.indices.contains(3) ? 2 : nil
+        }
+    }
+
+    func audioFileNames(from row: [String]) -> (front: String?, back: String?) {
+        if let sharedAudioIndex, row.indices.contains(sharedAudioIndex) {
+            let shared = row[sharedAudioIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+            return (shared, shared)
+        }
+
+        let front = frontAudioIndex.flatMap { row.indices.contains($0) ? row[$0].trimmingCharacters(in: .whitespacesAndNewlines) : nil }
+        let back = backAudioIndex.flatMap { row.indices.contains($0) ? row[$0].trimmingCharacters(in: .whitespacesAndNewlines) : nil }
+        return (front, back)
     }
 }
 

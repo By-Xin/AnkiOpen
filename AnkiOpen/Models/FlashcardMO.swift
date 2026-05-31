@@ -6,6 +6,8 @@ final class FlashcardMO: NSManagedObject, Identifiable {
     @NSManaged var id: UUID
     @NSManaged var front: String
     @NSManaged var back: String
+    @NSManaged var frontAudioFileName: String?
+    @NSManaged var backAudioFileName: String?
     @NSManaged var createdAt: Date
     @NSManaged var updatedAt: Date
     @NSManaged var isArchived: Bool
@@ -28,12 +30,21 @@ extension FlashcardMO {
         NSFetchRequest<FlashcardMO>(entityName: "Flashcard")
     }
 
-    static func insert(front: String, back: String, notebook: NotebookMO, context: NSManagedObjectContext) -> FlashcardMO {
+    static func insert(
+        front: String,
+        back: String,
+        notebook: NotebookMO,
+        context: NSManagedObjectContext,
+        frontAudioFileName: String? = nil,
+        backAudioFileName: String? = nil
+    ) -> FlashcardMO {
         let now = Date()
         let card = FlashcardMO(context: context)
         card.id = UUID()
         card.front = front
         card.back = back
+        card.frontAudioFileName = frontAudioFileName
+        card.backAudioFileName = backAudioFileName
         card.createdAt = now
         card.updatedAt = now
         card.isArchived = false
