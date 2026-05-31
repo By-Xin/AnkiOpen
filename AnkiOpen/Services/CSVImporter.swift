@@ -356,17 +356,17 @@ private struct CSVColumnMapping {
             return
         }
 
-        let normalized = first.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-        if let headerFrontIndex = normalized.firstIndex(of: "front"),
-           let headerBackIndex = normalized.firstIndex(of: "back") {
+        let normalized = first.map(Self.normalizedHeader)
+        if let headerFrontIndex = normalized.firstIndex(where: Self.frontHeaderNames.contains),
+           let headerBackIndex = normalized.firstIndex(where: Self.backHeaderNames.contains) {
             bodyRows = Array(rows.dropFirst())
             hasHeader = true
             frontIndex = headerFrontIndex
             backIndex = headerBackIndex
-            frontAudioIndex = normalized.firstIndex { ["frontaudio", "front_audio", "front audio"].contains($0) }
-            backAudioIndex = normalized.firstIndex { ["backaudio", "back_audio", "back audio"].contains($0) }
-            sharedAudioIndex = normalized.firstIndex { ["audio", "audiofilename", "audio_file", "audio file"].contains($0) }
-            unitIndex = normalized.firstIndex { ["unit", "unitname", "unit_name", "unit name", "unitnumber", "unit_number", "unit number"].contains($0) }
+            frontAudioIndex = normalized.firstIndex { Self.frontAudioHeaderNames.contains($0) }
+            backAudioIndex = normalized.firstIndex { Self.backAudioHeaderNames.contains($0) }
+            sharedAudioIndex = normalized.firstIndex { Self.sharedAudioHeaderNames.contains($0) }
+            unitIndex = normalized.firstIndex { Self.unitHeaderNames.contains($0) }
         } else {
             bodyRows = rows
             hasHeader = false
@@ -400,6 +400,43 @@ private struct CSVColumnMapping {
         let front = frontAudioIndex.flatMap { row.indices.contains($0) ? row[$0].trimmingCharacters(in: .whitespacesAndNewlines) : nil }
         let back = backAudioIndex.flatMap { row.indices.contains($0) ? row[$0].trimmingCharacters(in: .whitespacesAndNewlines) : nil }
         return (front, back)
+    }
+
+    private static let frontHeaderNames: Set<String> = [
+        "front", "question", "prompt", "term", "word", "hanzi", "chinese",
+        "正面", "问题", "题目", "词", "单词", "汉字", "中文"
+    ]
+
+    private static let backHeaderNames: Set<String> = [
+        "back", "answer", "definition", "meaning", "reading", "pronunciation",
+        "背面", "答案", "解释", "释义", "意思", "读音", "发音"
+    ]
+
+    private static let frontAudioHeaderNames: Set<String> = [
+        "frontaudio", "front_audio", "front audio", "frontsound", "front_sound",
+        "正面音频", "正面声音"
+    ]
+
+    private static let backAudioHeaderNames: Set<String> = [
+        "backaudio", "back_audio", "back audio", "backsound", "back_sound",
+        "背面音频", "背面声音"
+    ]
+
+    private static let sharedAudioHeaderNames: Set<String> = [
+        "audio", "audiofilename", "audio_file", "audio file", "sound",
+        "音频", "声音"
+    ]
+
+    private static let unitHeaderNames: Set<String> = [
+        "unit", "unitname", "unit_name", "unit name", "unitnumber", "unit_number", "unit number",
+        "单元", "章节", "课", "课次"
+    ]
+
+    private static func normalizedHeader(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\u{FEFF}", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
     }
 }
 
