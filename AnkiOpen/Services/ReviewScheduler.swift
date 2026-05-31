@@ -1,10 +1,6 @@
 import CoreData
 import Foundation
 
-#if canImport(FSRS)
-import FSRS
-#endif
-
 struct ReviewResult {
     let card: FlashcardMO
     let reviewLog: ReviewLogMO
@@ -31,12 +27,7 @@ final class ReviewScheduler {
         context: NSManagedObjectContext
     ) throws -> ReviewResult {
         let previousDueAt = card.dueAt
-
-        #if canImport(FSRS)
-        try applyFSRS(card: card, rating: rating, reviewedAt: reviewedAt)
-        #else
         applyFallbackSchedule(card: card, rating: rating, reviewedAt: reviewedAt)
-        #endif
 
         card.updatedAt = reviewedAt
 
@@ -50,49 +41,6 @@ final class ReviewScheduler {
 
         return ReviewResult(card: card, reviewLog: log, previousDueAt: previousDueAt, nextDueAt: card.dueAt)
     }
-
-    #if canImport(FSRS)
-    private func applyFSRS(card: FlashcardMO, rating: ReviewRating, reviewedAt: Date) throws {
-        let fsrsCard = Card(
-            due: card.dueAt,
-            stability: card.stability,
-            difficulty: card.difficulty,
-            elapsedDays: card.elapsedDays,
-            scheduledDays: card.scheduledDays,
-            learningSteps: Int(card.learningSteps),
-            reps: Int(card.reps),
-            lapses: Int(card.lapses),
-            state: CardState(rawValue: Int(card.state)) ?? .new,
-            lastReview: card.lastReviewAt
-        )
-        let parameters = FSRSParameters(w: FSRSDefaults.defaultWv6)
-        let scheduler = FSRS(parameters: parameters)
-        let item = try scheduler.next(card: fsrsCard, now: reviewedAt, grade: fsrsRating(for: rating))
-        update(card: card, from: item.card)
-    }
-
-    private func fsrsRating(for rating: ReviewRating) throws -> Rating {
-        switch rating {
-        case .again: return .again
-        case .hard: return .hard
-        case .good: return .good
-        case .easy: return .easy
-        }
-    }
-
-    private func update(card: FlashcardMO, from fsrsCard: Card) {
-        card.dueAt = fsrsCard.due
-        card.stability = fsrsCard.stability
-        card.difficulty = fsrsCard.difficulty
-        card.elapsedDays = fsrsCard.elapsedDays
-        card.scheduledDays = fsrsCard.scheduledDays
-        card.learningSteps = Int16(fsrsCard.learningSteps)
-        card.reps = Int32(fsrsCard.reps)
-        card.lapses = Int32(fsrsCard.lapses)
-        card.state = Int16(fsrsCard.state.rawValue)
-        card.lastReviewAt = fsrsCard.lastReview
-    }
-    #endif
 
     private func applyFallbackSchedule(card: FlashcardMO, rating: ReviewRating, reviewedAt: Date) {
         let previousState = ReviewState(rawValue: card.state) ?? .new
