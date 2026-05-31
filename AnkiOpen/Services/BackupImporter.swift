@@ -7,6 +7,7 @@ struct BackupImportSummary: Equatable {
     let importedUnits: Int
     let importedCards: Int
     let importedReviewLogs: Int
+    let importedMediaFiles: Int
     let skippedDuplicates: Int
 }
 
@@ -44,7 +45,7 @@ final class BackupImporter {
         }
 
         let envelope = try decoder.decode(BackupEnvelope.self, from: data)
-        guard envelope.schemaVersion == 2 else {
+        guard [2, 3].contains(envelope.schemaVersion) else {
             throw BackupImporterError.unsupportedSchema(envelope.schemaVersion)
         }
 
@@ -56,7 +57,7 @@ final class BackupImporter {
         fileName: String = "Backup.json",
         context: NSManagedObjectContext
     ) throws -> BackupImportSummary {
-        guard envelope.schemaVersion == 2 else {
+        guard [2, 3].contains(envelope.schemaVersion) else {
             throw BackupImporterError.unsupportedSchema(envelope.schemaVersion)
         }
 
@@ -64,7 +65,13 @@ final class BackupImporter {
         var importedUnits = 0
         var importedCards = 0
         var importedReviewLogs = 0
+        var importedMediaFiles = 0
         var skippedDuplicates = 0
+
+        for mediaFile in envelope.mediaFiles {
+            try AudioFileStore.restoreAudio(storedFileName: mediaFile.storedFileName, data: mediaFile.data)
+            importedMediaFiles += 1
+        }
 
         for backupNotebook in envelope.notebooks {
             let notebookResult = try findOrCreateNotebook(backupNotebook, context: context)
@@ -101,6 +108,7 @@ final class BackupImporter {
             importedUnits: importedUnits,
             importedCards: importedCards,
             importedReviewLogs: importedReviewLogs,
+            importedMediaFiles: importedMediaFiles,
             skippedDuplicates: skippedDuplicates
         )
     }

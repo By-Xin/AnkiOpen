@@ -60,9 +60,7 @@ The app copies selected audio into its local sandbox, so the original files are 
 
 ## Backup Export And Restore
 
-Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio file references, FSRS state fields, and review logs. Restore deduplicates existing notebooks, units, cards, and review logs.
-
-Current JSON backups restore audio file names, but they do not yet bundle the audio files themselves.
+Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio files, FSRS state fields, and review logs. Restore deduplicates existing notebooks, units, cards, and review logs.
 
 ## Study Modes
 
@@ -84,8 +82,8 @@ All modes still write review logs and update the card's next due date when a rat
 - [x] Unit and UI test scaffolding
 - [x] JSON backup export
 - [x] JSON backup restore
+- [x] Audio-bundled JSON backup
 - [ ] App icon and polished visual identity
-- [ ] Audio-bundled backup archive
 - [ ] TestFlight/App Store setup
 
 ## License

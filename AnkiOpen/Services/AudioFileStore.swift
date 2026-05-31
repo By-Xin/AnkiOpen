@@ -4,6 +4,7 @@ enum AudioFileStoreError: LocalizedError {
     case unsupportedFormat(String)
     case missingFile(String)
     case copyFailed(String)
+    case restoreFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -13,6 +14,8 @@ enum AudioFileStoreError: LocalizedError {
             return "Audio file \(name) was referenced by the CSV but not selected."
         case .copyFailed(let name):
             return "Could not copy audio file \(name) into local storage."
+        case .restoreFailed(let name):
+            return "Could not restore audio file \(name) into local storage."
         }
     }
 }
@@ -63,6 +66,28 @@ enum AudioFileStore {
             return storedName
         } catch {
             throw AudioFileStoreError.copyFailed(lookupName)
+        }
+    }
+
+    static func restoreAudio(storedFileName: String, data: Data) throws {
+        let cleanName = URL(fileURLWithPath: storedFileName.trimmingCharacters(in: .whitespacesAndNewlines)).lastPathComponent
+        guard !cleanName.isEmpty else {
+            return
+        }
+
+        guard supportedExtensions.contains(URL(fileURLWithPath: cleanName).pathExtension.lowercased()) else {
+            throw AudioFileStoreError.unsupportedFormat(cleanName)
+        }
+
+        let destinationURL = localURL(for: cleanName)
+        do {
+            try FileManager.default.createDirectory(
+                at: audioDirectory(),
+                withIntermediateDirectories: true
+            )
+            try data.write(to: destinationURL, options: [.atomic])
+        } catch {
+            throw AudioFileStoreError.restoreFailed(cleanName)
         }
     }
 

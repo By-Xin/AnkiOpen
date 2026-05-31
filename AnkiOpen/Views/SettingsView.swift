@@ -54,6 +54,8 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                             Text("\(importSummary.importedNotebooks) notebooks, \(importSummary.importedUnits) units, \(importSummary.importedCards) cards, \(importSummary.importedReviewLogs) logs")
                                 .font(.footnote)
+                            Text("\(importSummary.importedMediaFiles) media files restored")
+                                .font(.footnote)
                             Text("\(importSummary.skippedDuplicates) duplicates skipped")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)

@@ -5,6 +5,32 @@ struct BackupEnvelope: Codable, Equatable {
     let schemaVersion: Int
     let exportedAt: Date
     let notebooks: [BackupNotebook]
+    let mediaFiles: [BackupMediaFile]
+
+    init(
+        schemaVersion: Int,
+        exportedAt: Date,
+        notebooks: [BackupNotebook],
+        mediaFiles: [BackupMediaFile] = []
+    ) {
+        self.schemaVersion = schemaVersion
+        self.exportedAt = exportedAt
+        self.notebooks = notebooks
+        self.mediaFiles = mediaFiles
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        exportedAt = try container.decode(Date.self, forKey: .exportedAt)
+        notebooks = try container.decode([BackupNotebook].self, forKey: .notebooks)
+        mediaFiles = try container.decodeIfPresent([BackupMediaFile].self, forKey: .mediaFiles) ?? []
+    }
+}
+
+struct BackupMediaFile: Codable, Equatable {
+    let storedFileName: String
+    let data: Data
 }
 
 struct BackupNotebook: Codable, Equatable {
@@ -90,7 +116,12 @@ final class BackupExporter {
             )
         }
 
-        return BackupEnvelope(schemaVersion: 2, exportedAt: exportedAt, notebooks: notebooks)
+        return BackupEnvelope(
+            schemaVersion: 3,
+            exportedAt: exportedAt,
+            notebooks: notebooks,
+            mediaFiles: backupMediaFiles(from: notebooks)
+        )
     }
 
     func writeBackup(context: NSManagedObjectContext, exportedAt: Date = Date()) throws -> URL {
@@ -202,5 +233,25 @@ final class BackupExporter {
                     nextDueAt: log.nextDueAt
                 )
             }
+    }
+
+    private func backupMediaFiles(from notebooks: [BackupNotebook]) -> [BackupMediaFile] {
+        let referencedNames = Set(
+            notebooks.flatMap { notebook in
+                notebook.units.flatMap { unit in
+                    unit.flashcards.flatMap { card in
+                        [card.frontAudioFileName, card.backAudioFileName].compactMap { $0 }
+                    }
+                }
+            }
+        )
+
+        return referencedNames.sorted().compactMap { storedFileName in
+            let url = AudioFileStore.localURL(for: storedFileName)
+            guard let data = try? Data(contentsOf: url) else {
+                return nil
+            }
+            return BackupMediaFile(storedFileName: storedFileName, data: data)
+        }
     }
 }
