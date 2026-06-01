@@ -18,6 +18,11 @@ struct RootView: View {
                     Label("Import", systemImage: "square.and.arrow.down")
                 }
 
+            DictionaryView()
+                .tabItem {
+                    Label("Dictionary", systemImage: "character.book.closed")
+                }
+
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")

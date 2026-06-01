@@ -1,0 +1,188 @@
+import Foundation
+
+struct CZYZDDictionaryEntry: Identifiable, Equatable {
+    let id = UUID()
+    let term: String
+    let pronunciation: String
+    let definition: String
+    let audioURL: URL?
+}
+
+enum CZYZDDictionaryLookupError: LocalizedError {
+    case invalidSearchURL
+    case invalidResponse
+    case invalidHTML
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidSearchURL:
+            return "Could not build the CZYZD search URL."
+        case .invalidResponse:
+            return "CZYZD search returned an invalid response."
+        case .invalidHTML:
+            return "CZYZD search returned unreadable HTML."
+        }
+    }
+}
+
+final class CZYZDDictionaryLookup {
+    private let session: URLSession
+
+    init(session: URLSession = .shared) {
+        self.session = session
+    }
+
+    func lookup(term: String) async throws -> [CZYZDDictionaryEntry] {
+        guard let url = CZYZDAudioResolver.searchURL(for: term) else {
+            throw CZYZDDictionaryLookupError.invalidSearchURL
+        }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 20
+        request.setValue("http://www.czyzd.com/", forHTTPHeaderField: "Referer")
+        request.setValue("AnkiOpen/0.1 CZYZD Dictionary Lookup", forHTTPHeaderField: "User-Agent")
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode) else {
+            throw CZYZDDictionaryLookupError.invalidResponse
+        }
+        guard let html = String(data: data, encoding: .utf8) else {
+            throw CZYZDDictionaryLookupError.invalidHTML
+        }
+
+        return Self.entries(in: html, matching: term)
+    }
+
+    static func entries(in html: String, matching term: String) -> [CZYZDDictionaryEntry] {
+        let normalizedTerm = normalizedLookupText(term)
+        let entries = dictionaryEntries(in: html).map(parseEntry)
+        guard !normalizedTerm.isEmpty else {
+            return entries
+        }
+
+        let exact = entries.filter { normalizedLookupText($0.term) == normalizedTerm }
+        if !exact.isEmpty {
+            return exact
+        }
+
+        if normalizedTerm.count == 1 {
+            return entries
+        }
+
+        return entries.filter { normalizedLookupText($0.term).contains(normalizedTerm) }
+    }
+
+    private static func parseEntry(_ raw: RawEntry) -> CZYZDDictionaryEntry {
+        let plainText = strippedHTML(raw.html)
+        let pronunciation = pronunciation(in: raw.html, plainText: plainText, term: raw.term)
+        return CZYZDDictionaryEntry(
+            term: raw.term,
+            pronunciation: pronunciation,
+            definition: definition(in: plainText, term: raw.term, pronunciation: pronunciation),
+            audioURL: CZYZDAudioResolver.firstAudioURL(in: raw.html)
+        )
+    }
+
+    private static func pronunciation(in html: String, plainText: String, term: String) -> String {
+        let htmlPatterns = [
+            #"(?is)<[^>]*(?:class|id)=["'][^"']*(?:pinyin|pron|jyut|peng|sound)[^"']*["'][^>]*>(.*?)</[^>]+>"#
+        ]
+        for pattern in htmlPatterns {
+            if let value = firstCapture(pattern: pattern, in: html) {
+                let cleanValue = strippedHTML(value)
+                if !cleanValue.isEmpty {
+                    return cleanValue
+                }
+            }
+        }
+
+        let textPatterns = [
+            #"(?i)(?:拼音|读音|發音|发音|音标|聲調|声调)\s*[:：]\s*([A-Za-z0-9\sˊˋ˙¯\-]+)"#,
+            #"\[\s*([^\[\]]{1,40})\s*\]"#,
+            #"\(\s*([^()]{1,40})\s*\)"#
+        ]
+        for pattern in textPatterns {
+            if let value = firstCapture(pattern: pattern, in: plainText), value != term {
+                return value
+            }
+        }
+
+        return ""
+    }
+
+    private static func definition(in plainText: String, term: String, pronunciation: String) -> String {
+        var value = plainText
+            .replacingOccurrences(of: term, with: "")
+            .replacingOccurrences(of: pronunciation, with: "")
+            .replacingOccurrences(of: "拼音", with: "")
+            .replacingOccurrences(of: "读音", with: "")
+            .replacingOccurrences(of: "發音", with: "")
+            .replacingOccurrences(of: "发音", with: "")
+        value = value.replacingOccurrences(of: #"[:：\[\]()]+"#, with: " ", options: .regularExpression)
+        return collapsedWhitespace(value)
+    }
+
+    private static func dictionaryEntries(in html: String) -> [RawEntry] {
+        let pattern = #"(?s)<dl>\s*<dt>.*?<p>(.*?)</p>.*?</dl>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return []
+        }
+
+        let range = NSRange(html.startIndex..<html.endIndex, in: html)
+        return regex.matches(in: html, range: range).compactMap { match in
+            guard let blockRange = Range(match.range(at: 0), in: html),
+                  let titleRange = Range(match.range(at: 1), in: html) else {
+                return nil
+            }
+            return RawEntry(term: decodedHTMLText(String(html[titleRange])), html: String(html[blockRange]))
+        }
+    }
+
+    private static func strippedHTML(_ value: String) -> String {
+        let withoutTags = decodedHTMLText(value)
+            .replacingOccurrences(of: #"<[^>]+>"#, with: " ", options: .regularExpression)
+        return collapsedWhitespace(withoutTags)
+    }
+
+    private static func firstCapture(pattern: String, in value: String) -> String? {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return nil
+        }
+        let range = NSRange(value.startIndex..<value.endIndex, in: value)
+        guard let match = regex.firstMatch(in: value, range: range),
+              match.numberOfRanges > 1,
+              let captureRange = Range(match.range(at: 1), in: value) else {
+            return nil
+        }
+        let captured = collapsedWhitespace(String(value[captureRange]))
+        return captured.isEmpty ? nil : captured
+    }
+
+    private static func collapsedWhitespace(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func normalizedLookupText(_ value: String) -> String {
+        decodedHTMLText(value)
+            .replacingOccurrences(of: "\u{FEFF}", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func decodedHTMLText(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+    }
+}
+
+private struct RawEntry {
+    let term: String
+    let html: String
+}

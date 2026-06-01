@@ -15,6 +15,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - JSON backup export and restore from Settings
 - FSRS-6 spaced repetition scheduling with default retention `0.90`
 - DeepSeek-powered rare glyph replacement suggestions from Settings and Rare Glyphs
+- CZYZD dictionary lookup for Chaoshan words, pronunciation, meanings, and available audio
 
 ## Development
 
@@ -73,6 +74,10 @@ Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The gen
 
 All modes still write review logs and update the card's next due date when a rating is selected.
 
+## Dictionary
+
+The Dictionary tab searches CZYZD directly. It returns exact phrase matches when possible, shows pronunciation and meanings parsed from the dictionary page, and plays remote dictionary audio when CZYZD provides a clip. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+
 ## Progress
 
 - [x] Xcode iOS project scaffold
@@ -88,6 +93,7 @@ All modes still write review logs and update the card's next due date when a rat
 - [x] Audio-bundled JSON backup
 - [x] FSRS-6 scheduling defaults
 - [x] DeepSeek rare glyph replacement workflow
+- [x] CZYZD dictionary lookup tab
 - [ ] App icon and polished visual identity
 - [ ] TestFlight/App Store setup
 

@@ -44,6 +44,8 @@
 		A00000000000000000000144 /* FSRS6Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* FSRS6Scheduler.swift */; };
 		A00000000000000000000145 /* DeepSeekSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000045 /* DeepSeekSettingsStore.swift */; };
 		A00000000000000000000146 /* DeepSeekGlyphSuggestionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000046 /* DeepSeekGlyphSuggestionClient.swift */; };
+		A00000000000000000000148 /* CZYZDDictionaryLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000048 /* CZYZDDictionaryLookup.swift */; };
+		A00000000000000000000149 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000049 /* DictionaryView.swift */; };
 		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
 		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
 		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
@@ -52,6 +54,7 @@
 		A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* ReviewSchedulerTests.swift */; };
 		A00000000000000000000128 /* BackupExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* BackupExporterTests.swift */; };
 		A00000000000000000000147 /* DeepSeekGlyphSuggestionClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */; };
+		A00000000000000000000150 /* CZYZDDictionaryLookupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */; };
 		A00000000000000000000122 /* AnkiOpenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* AnkiOpenUITests.swift */; };
 		A00000000000000000000123 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000301 /* FSRS */; };
 /* End PBXBuildFile section */
@@ -115,12 +118,15 @@
 		A00000000000000000000044 /* FSRS6Scheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSRS6Scheduler.swift; sourceTree = "<group>"; };
 		A00000000000000000000045 /* DeepSeekSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekSettingsStore.swift; sourceTree = "<group>"; };
 		A00000000000000000000046 /* DeepSeekGlyphSuggestionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekGlyphSuggestionClient.swift; sourceTree = "<group>"; };
+		A00000000000000000000048 /* CZYZDDictionaryLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryLookup.swift; sourceTree = "<group>"; };
+		A00000000000000000000049 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
 		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
 		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
 		A00000000000000000000042 /* LICENSE-Hanazono.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-Hanazono.txt"; sourceTree = "<group>"; };
 		A00000000000000000000027 /* BackupExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporterTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekGlyphSuggestionClientTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryLookupTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000503 /* AnkiOpenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -203,6 +209,7 @@
 				A00000000000000000000044 /* FSRS6Scheduler.swift */,
 				A00000000000000000000045 /* DeepSeekSettingsStore.swift */,
 				A00000000000000000000046 /* DeepSeekGlyphSuggestionClient.swift */,
+				A00000000000000000000048 /* CZYZDDictionaryLookup.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -214,6 +221,7 @@
 				A00000000000000000000021 /* ReviewSchedulerTests.swift */,
 				A00000000000000000000027 /* BackupExporterTests.swift */,
 				A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */,
+				A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */,
 			);
 			path = AnkiOpenTests;
 			sourceTree = "<group>";
@@ -253,6 +261,7 @@
 				A00000000000000000000043 /* ReportsView.swift */,
 				A00000000000000000000037 /* FlashcardText.swift */,
 				A00000000000000000000038 /* RareGlyphsView.swift */,
+				A00000000000000000000049 /* DictionaryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -429,8 +438,10 @@
 				A00000000000000000000144 /* FSRS6Scheduler.swift in Sources */,
 				A00000000000000000000145 /* DeepSeekSettingsStore.swift in Sources */,
 				A00000000000000000000146 /* DeepSeekGlyphSuggestionClient.swift in Sources */,
+				A00000000000000000000148 /* CZYZDDictionaryLookup.swift in Sources */,
 				A00000000000000000000137 /* FlashcardText.swift in Sources */,
 				A00000000000000000000138 /* RareGlyphsView.swift in Sources */,
+				A00000000000000000000149 /* DictionaryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,6 +453,7 @@
 				A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */,
 				A00000000000000000000128 /* BackupExporterTests.swift in Sources */,
 				A00000000000000000000147 /* DeepSeekGlyphSuggestionClientTests.swift in Sources */,
+				A00000000000000000000150 /* CZYZDDictionaryLookupTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

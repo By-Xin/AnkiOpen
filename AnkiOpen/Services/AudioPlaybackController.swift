@@ -3,6 +3,7 @@ import Foundation
 
 final class AudioPlaybackController: ObservableObject {
     private var player: AVAudioPlayer?
+    private var remotePlayer: AVPlayer?
 
     func play(storedFileName: String?) {
         guard let storedFileName, !storedFileName.isEmpty else {
@@ -17,5 +18,10 @@ final class AudioPlaybackController: ObservableObject {
         } catch {
             print("Audio playback failed: \(error.localizedDescription)")
         }
+    }
+
+    func play(remoteURL: URL) {
+        remotePlayer = AVPlayer(url: remoteURL)
+        remotePlayer?.play()
     }
 }
