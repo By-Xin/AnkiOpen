@@ -125,3 +125,25 @@ enum DueCardQuery {
         }
     }
 }
+
+enum StudyQueueOrder {
+    static func apply<T, R: RandomNumberGenerator>(
+        to cards: [T],
+        shuffle: Bool,
+        using generator: inout R
+    ) -> [T] {
+        guard shuffle else {
+            return cards
+        }
+
+        return cards.shuffled(using: &generator)
+    }
+
+    static func apply<T>(to cards: [T], shuffle: Bool) -> [T] {
+        guard shuffle else {
+            return cards
+        }
+
+        return cards.shuffled()
+    }
+}

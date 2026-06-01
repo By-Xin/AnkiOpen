@@ -7,6 +7,7 @@ struct StudyView: View {
     @State private var selectedNotebook: NotebookMO?
     @State private var selectedUnit: NotebookUnitMO?
     @State private var studyMode: StudyMode = .due
+    @State private var isShuffleEnabled = false
     @State private var dueCards: [FlashcardMO] = []
     @State private var currentIndex = 0
     @State private var isShowingBack = false
@@ -53,6 +54,13 @@ struct StudyView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .padding(.horizontal)
+
+                Toggle(isOn: $isShuffleEnabled) {
+                    Label("Shuffle", systemImage: "shuffle")
+                }
+                .toggleStyle(.button)
+                .buttonStyle(.bordered)
                 .padding(.horizontal)
 
                 if let card = currentCard {
@@ -148,6 +156,9 @@ struct StudyView: View {
             .onChange(of: studyMode) { _ in
                 reloadDueCards()
             }
+            .onChange(of: isShuffleEnabled) { _ in
+                reloadDueCards()
+            }
             .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
                 Button("OK") { errorMessage = nil }
             }, message: {
@@ -167,7 +178,8 @@ struct StudyView: View {
 
     private func reloadDueCards() {
         do {
-            dueCards = try DueCardQuery.forNotebook(selectedNotebook, unit: selectedUnit, mode: studyMode, at: Date(), context: viewContext)
+            let cards = try DueCardQuery.forNotebook(selectedNotebook, unit: selectedUnit, mode: studyMode, at: Date(), context: viewContext)
+            dueCards = StudyQueueOrder.apply(to: cards, shuffle: isShuffleEnabled)
             currentIndex = 0
             isShowingBack = false
         } catch {
