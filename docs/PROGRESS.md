@@ -17,7 +17,9 @@ Last updated: 2026-06-01
 - Upgraded backups to `schemaVersion: 3` so referenced audio files are embedded in JSON and restored into local audio storage.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
 - Added an app-local FSRS-6 scheduler with default parameters and retention `0.90`, replacing the earlier simplified fallback in the production review path.
-- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, backup export, backup restore, media restore, and v2 backup compatibility.
+- Added DeepSeek settings with Keychain API key storage, V4 Flash/V4 Pro model selection, and rare glyph replacement suggestions.
+- Replaced the static rare glyph image fallback flow with a DeepSeek suggestion flow that caches replacement suggestions and can apply them to affected cards.
+- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -57,6 +59,12 @@ Last updated: 2026-06-01
 - During import, select the CSV file and any referenced audio files together.
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
+
+## Rare Glyph Replacement
+
+- Settings stores the DeepSeek API key in Keychain and keeps the selected model locally.
+- Rare Glyphs can ask DeepSeek for a practical replacement character or phrase.
+- Suggestions are cached locally and can be applied to all affected cards after review.
 
 ## Backup Export And Restore
 

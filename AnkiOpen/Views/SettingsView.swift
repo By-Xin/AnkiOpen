@@ -8,6 +8,9 @@ struct SettingsView: View {
     @State private var importSummary: BackupImportSummary?
     @State private var isShowingBackupImporter = false
     @State private var errorMessage: String?
+    @State private var deepSeekAPIKey = ""
+    @State private var deepSeekModel = DeepSeekSettingsStore.selectedModel
+    @State private var deepSeekStatusMessage: String?
 
     private let backupExporter = BackupExporter()
     private let backupImporter = BackupImporter()
@@ -25,6 +28,36 @@ struct SettingsView: View {
                     LabeledContent("Algorithm", value: "FSRS")
                     LabeledContent("Retention", value: "0.90")
                     LabeledContent("Version", value: "FSRS-6 defaults")
+                }
+
+                Section("DeepSeek") {
+                    SecureField("API Key", text: $deepSeekAPIKey)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+
+                    Picker("Model", selection: $deepSeekModel) {
+                        ForEach(DeepSeekModel.allCases) { model in
+                            Text(model.title).tag(model)
+                        }
+                    }
+
+                    LabeledContent("Endpoint", value: "api.deepseek.com")
+
+                    Button {
+                        saveDeepSeekSettings()
+                    } label: {
+                        Label("Save DeepSeek Settings", systemImage: "key")
+                    }
+
+                    if let deepSeekStatusMessage {
+                        Text(deepSeekStatusMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text("Used by Rare Glyphs to ask DeepSeek for practical replacement characters. V4 Flash is the default for speed.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("Data") {
@@ -113,6 +146,13 @@ struct SettingsView: View {
             }, message: {
                 Text(errorMessage ?? "")
             })
+            .onAppear {
+                deepSeekAPIKey = DeepSeekSettingsStore.loadAPIKey()
+                deepSeekModel = DeepSeekSettingsStore.selectedModel
+            }
+            .onChange(of: deepSeekModel) { model in
+                DeepSeekSettingsStore.selectedModel = model
+            }
         }
     }
 
@@ -137,6 +177,18 @@ struct SettingsView: View {
             try viewContext.save()
         } catch {
             viewContext.rollback()
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func saveDeepSeekSettings() {
+        do {
+            try DeepSeekSettingsStore.saveAPIKey(deepSeekAPIKey)
+            DeepSeekSettingsStore.selectedModel = deepSeekModel
+            deepSeekStatusMessage = deepSeekAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "API key cleared."
+                : "DeepSeek settings saved."
+        } catch {
             errorMessage = error.localizedDescription
         }
     }

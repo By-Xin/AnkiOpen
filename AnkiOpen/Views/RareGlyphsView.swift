@@ -46,7 +46,7 @@ struct RareGlyphsView: View {
                                     Text("\(item.occurrences) occurrences in \(item.cards.count) cards")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)
-                                    GlyphFallbackStatusLabel(finding: item.finding)
+                                    GlyphSuggestionStatusLabel(finding: item.finding)
                                 }
                             }
                         }
@@ -59,7 +59,11 @@ struct RareGlyphsView: View {
 }
 
 private struct RareGlyphDetailView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     let item: GlyphInventoryItem
+    @State private var suggestion: GlyphReplacementSuggestion?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         List {
@@ -71,9 +75,41 @@ private struct RareGlyphDetailView: View {
                         LabeledContent("Code point", value: item.finding.codePoint)
                         LabeledContent("Range", value: item.finding.category.rawValue)
                         LabeledContent("Occurrences", value: "\(item.occurrences)")
-                        LabeledContent("Fallback", value: item.finding.fallbackStatusTitle)
+                        LabeledContent("DeepSeek", value: suggestion?.replacement ?? "No suggestion")
                     }
                 }
+            }
+
+            Section("DeepSeek Replacement") {
+                if let suggestion {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent("Replace with", value: suggestion.replacement)
+                        Text(suggestion.explanation)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        applySuggestion(suggestion)
+                    } label: {
+                        Label("Apply to \(item.cards.count) Cards", systemImage: "wand.and.stars")
+                    }
+                }
+
+                Button {
+                    requestSuggestion()
+                } label: {
+                    if isLoading {
+                        ProgressView()
+                    } else {
+                        Label("Ask DeepSeek", systemImage: "sparkles")
+                    }
+                }
+                .disabled(isLoading)
+
+                Text("DeepSeek suggests a practical display replacement. Review the suggestion before applying it to cards.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Cards") {
@@ -105,16 +141,74 @@ private struct RareGlyphDetailView: View {
             }
         }
         .navigationTitle(item.finding.codePoint)
+        .onAppear {
+            suggestion = GlyphReplacementSuggestionStore.suggestion(for: item.finding.scalar)
+        }
+        .alert("DeepSeek Error", isPresented: .constant(errorMessage != nil), actions: {
+            Button("OK") { errorMessage = nil }
+        }, message: {
+            Text(errorMessage ?? "")
+        })
+    }
+
+    private func requestSuggestion() {
+        isLoading = true
+        errorMessage = nil
+        let scalar = item.finding.scalar
+        let examples = item.cards.map { "\($0.front) / \($0.back)" }
+
+        Task {
+            do {
+                let value = try await DeepSeekGlyphSuggestionClient().suggestReplacement(for: scalar, examples: examples)
+                await MainActor.run {
+                    GlyphReplacementSuggestionStore.save(value)
+                    suggestion = value
+                    isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    private func applySuggestion(_ suggestion: GlyphReplacementSuggestion) {
+        for card in item.cards {
+            card.front = replacing(item.finding.scalar, in: card.front, with: suggestion.replacement)
+            card.back = replacing(item.finding.scalar, in: card.back, with: suggestion.replacement)
+            card.updatedAt = Date()
+        }
+
+        do {
+            try viewContext.save()
+        } catch {
+            viewContext.rollback()
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func replacing(_ target: UnicodeScalar, in text: String, with replacement: String) -> String {
+        var result = ""
+        for scalar in text.unicodeScalars {
+            if scalar.value == target.value {
+                result.append(replacement)
+            } else {
+                result.unicodeScalars.append(scalar)
+            }
+        }
+        return result
     }
 }
 
-private struct GlyphFallbackStatusLabel: View {
+private struct GlyphSuggestionStatusLabel: View {
     let finding: GlyphDiagnostics.Finding
 
     var body: some View {
-        Label(finding.fallbackStatusTitle, systemImage: finding.hasFallback ? "checkmark.circle" : "exclamationmark.triangle")
+        Label(finding.suggestionStatusTitle, systemImage: finding.hasSuggestion ? "checkmark.circle" : "sparkles")
             .font(.caption)
-            .foregroundStyle(finding.hasFallback ? .green : .orange)
+            .foregroundStyle(finding.hasSuggestion ? .green : .orange)
     }
 }
 
@@ -126,17 +220,8 @@ private struct GlyphPreview: View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(.thinMaterial)
-            if let imageName = GlyphFallbackAsset.imageName(for: scalar) {
-                Image(imageName)
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(.primary)
-                    .padding(size * 0.14)
-            } else {
-                Text(String(scalar))
-                    .flashcardCJKFont(size: size * 0.7, relativeTo: .title2)
-            }
+            Text(String(scalar))
+                .flashcardCJKFont(size: size * 0.7, relativeTo: .title2)
         }
         .frame(width: size, height: size)
         .accessibilityLabel(Text(String(scalar)))

@@ -9,12 +9,12 @@ struct GlyphDiagnostics {
             "U+\(String(scalar.value, radix: 16).uppercased())"
         }
 
-        var hasFallback: Bool {
-            GlyphFallbackAsset.imageName(for: scalar) != nil
+        var hasSuggestion: Bool {
+            GlyphReplacementSuggestionStore.suggestion(for: scalar) != nil
         }
 
-        var fallbackStatusTitle: String {
-            hasFallback ? "Fallback available" : "Missing fallback"
+        var suggestionStatusTitle: String {
+            hasSuggestion ? "DeepSeek suggestion saved" : "Needs DeepSeek suggestion"
         }
     }
 
@@ -48,7 +48,7 @@ struct GlyphDiagnostics {
         }
 
         let visible = findings.prefix(limit).map { finding in
-            "\(finding.codePoint) (\(finding.category.rawValue), \(finding.fallbackStatusTitle.lowercased()))"
+            "\(finding.codePoint) (\(finding.category.rawValue), \(finding.suggestionStatusTitle.lowercased()))"
         }
         let suffix = findings.count > limit ? " +\(findings.count - limit) more" : ""
         return visible.joined(separator: ", ") + suffix
@@ -135,32 +135,4 @@ enum GlyphInventory {
             )
         }
     }
-}
-
-enum GlyphFallbackAsset {
-    static func imageName(for scalar: UnicodeScalar) -> String? {
-        imageNamesByScalar[scalar.value]
-    }
-
-    static func imageName(for character: Character) -> String? {
-        guard character.unicodeScalars.count == 1,
-              let scalar = character.unicodeScalars.first else {
-            return nil
-        }
-        return imageName(for: scalar)
-    }
-
-    static func containsFallbacks(_ text: String) -> Bool {
-        text.unicodeScalars.contains { imageNamesByScalar[$0.value] != nil }
-    }
-
-    static func hasFallback(for finding: GlyphDiagnostics.Finding) -> Bool {
-        imageName(for: finding.scalar) != nil
-    }
-
-    private static let imageNamesByScalar: [UInt32: String] = [
-        0x2003E: "glyph_u2003e",
-        0x28468: "glyph_u28468",
-        0x2B897: "glyph_u2b897"
-    ]
 }
