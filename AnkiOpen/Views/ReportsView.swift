@@ -98,6 +98,7 @@ private struct ReportDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var report: CardReportMO
     @State private var errorMessage: String?
+    @State private var isShowingCardEditor = false
 
     var body: some View {
         Form {
@@ -130,6 +131,12 @@ private struct ReportDetailView: View {
                         .foregroundStyle(.secondary)
                     FlashcardText(text: report.card.back, size: 17, relativeTo: .body, weight: .regular)
                 }
+
+                Button {
+                    isShowingCardEditor = true
+                } label: {
+                    Label("Edit Card", systemImage: "pencil")
+                }
             }
 
             if !report.note.isEmpty {
@@ -147,6 +154,9 @@ private struct ReportDetailView: View {
             }
         }
         .navigationTitle("Report")
+        .sheet(isPresented: $isShowingCardEditor) {
+            CardEditorView(mode: .edit(report.card))
+        }
         .alert("Report Error", isPresented: .constant(errorMessage != nil), actions: {
             Button("OK") { errorMessage = nil }
         }, message: {
