@@ -14,6 +14,7 @@ struct ImportView: View {
     @State private var preview: ImportPreview?
     @State private var summary: ImportSummary?
     @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
+    @State private var importedNotebook: NotebookMO?
     @State private var errorMessage: String?
     @State private var autoMatchCZYZDAudio = true
     @State private var isImporting = false
@@ -45,11 +46,16 @@ struct ImportView: View {
                     }
                 }
 
-                Section {
-                    Text("CSV columns: 汉字/读音/unit or front/back/unit, optional audio/frontAudio/backAudio. Select referenced audio files or an audio folder.")
+                Section("CSV Format") {
+                    LabeledContent("Required", value: "front, back")
+                    LabeledContent("Units", value: "unit")
+                    LabeledContent("Audio", value: "audio or frontAudio/backAudio")
+                    Text("Chinese headers are supported: 汉字, 读音, 单元, 音频. Empty unit values import into Default. Select referenced audio files or the folder that contains them.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                }
 
+                Section {
                     Toggle("Auto-match CZYZD audio after import", isOn: $autoMatchCZYZDAudio)
                         .disabled(isImporting)
 
@@ -64,10 +70,12 @@ struct ImportView: View {
                 if let preview {
                     Section("Preview") {
                         LabeledContent("File", value: preview.fileName)
+                        LabeledContent("Destination", value: destinationName)
                         LabeledContent("Rows", value: "\(preview.totalRows)")
                         LabeledContent("Will import", value: "\(preview.importableRows)")
                         LabeledContent("Will skip", value: "\(preview.skippedRows)")
                         LabeledContent("Duplicates", value: "\(preview.duplicateRows)")
+                        LabeledContent("Warnings", value: "\(preview.audioWarnings.count + preview.glyphWarnings.count)")
 
                         if !preview.units.isEmpty {
                             LabeledContent("Units", value: listed(preview.units))
@@ -82,6 +90,8 @@ struct ImportView: View {
                         }
 
                         if let errors = preview.errorsSummary {
+                            Label("Rows needing fixes", systemImage: "exclamationmark.triangle")
+                                .font(.subheadline)
                             Text(errors)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -121,10 +131,20 @@ struct ImportView: View {
                 if let summary {
                     Section("Last Import") {
                         LabeledContent("File", value: summary.fileName)
+                        if let importedNotebook {
+                            NavigationLink {
+                                NotebookDetailView(notebook: importedNotebook)
+                            } label: {
+                                Label("Open \(importedNotebook.name)", systemImage: "books.vertical")
+                            }
+                        }
                         LabeledContent("Rows", value: "\(summary.totalRows)")
                         LabeledContent("Imported", value: "\(summary.importedRows)")
                         LabeledContent("Skipped", value: "\(summary.skippedRows)")
                         LabeledContent("Audio", value: "\(summary.audioFilesImported)")
+                        if !summary.unitNames.isEmpty {
+                            LabeledContent("Units", value: listed(summary.unitNames))
+                        }
                         if let errors = summary.errorsSummary {
                             Text(errors)
                                 .font(.footnote)
@@ -190,6 +210,13 @@ struct ImportView: View {
         return existingDestinationNotebook() != nil
     }
 
+    private var destinationName: String {
+        if isCreatingNotebook {
+            return newNotebookName.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return existingDestinationNotebook()?.name ?? "Select"
+    }
+
     private func existingDestinationNotebook() -> NotebookMO? {
         notebooks.first { $0.id == selectedNotebookID }
     }
@@ -247,6 +274,7 @@ struct ImportView: View {
             let importSummary = try importer.import(url: csvURL, into: notebook, context: viewContext, mediaURLs: pendingMediaURLs)
             summary = importSummary
             try viewContext.save()
+            importedNotebook = notebook
             selectedNotebookID = notebook.id
             isCreatingNotebook = false
             newNotebookName = ""

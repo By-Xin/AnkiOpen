@@ -7,6 +7,7 @@ struct ImportSummary: Equatable {
     let importedRows: Int
     let skippedRows: Int
     let audioFilesImported: Int
+    let unitNames: [String]
     let errors: [String]
     let glyphWarnings: [String]
     let importedCardIDs: [UUID]
@@ -17,6 +18,7 @@ struct ImportSummary: Equatable {
         importedRows: Int,
         skippedRows: Int,
         audioFilesImported: Int,
+        unitNames: [String] = [],
         errors: [String],
         glyphWarnings: [String] = [],
         importedCardIDs: [UUID] = []
@@ -26,6 +28,7 @@ struct ImportSummary: Equatable {
         self.importedRows = importedRows
         self.skippedRows = skippedRows
         self.audioFilesImported = audioFilesImported
+        self.unitNames = unitNames
         self.errors = errors
         self.glyphWarnings = glyphWarnings
         self.importedCardIDs = importedCardIDs
@@ -155,6 +158,7 @@ final class CSVImporter {
             importedRows: imported,
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
+            unitNames: plan.unitNames,
             errors: errors,
             glyphWarnings: plan.glyphWarnings,
             importedCardIDs: importedCardIDs
@@ -393,13 +397,17 @@ private struct CSVImportPlan {
             importableRows: rows.count,
             skippedRows: skippedRows,
             duplicateRows: duplicateRows,
-            units: Array(Set(rows.map { NotebookUnitMO.normalizedUnitName($0.unitName) })).sorted(),
+            units: unitNames,
             missingAudioFiles: missingAudioFiles,
             unsupportedAudioFiles: unsupportedAudioFiles,
             errors: errors,
             audioWarnings: audioWarnings,
             glyphWarnings: glyphWarnings
         )
+    }
+
+    var unitNames: [String] {
+        Array(Set(rows.map { NotebookUnitMO.normalizedUnitName($0.unitName) })).sorted()
     }
 }
 
