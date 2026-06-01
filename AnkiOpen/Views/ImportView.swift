@@ -14,13 +14,16 @@ struct ImportView: View {
     @State private var preview: ImportPreview?
     @State private var summary: ImportSummary?
     @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
+    @State private var czyzdDictionarySummary: CZYZDDictionaryEnrichmentSummary?
     @State private var importedNotebook: NotebookMO?
     @State private var errorMessage: String?
     @State private var autoMatchCZYZDAudio = true
+    @State private var autoFillCZYZDDictionary = true
     @State private var isImporting = false
 
     private let importer = CSVImporter()
     private let czyzdAttachmentService = CZYZDAudioAttachmentService()
+    private let czyzdDictionaryService = CZYZDDictionaryEnrichmentService()
 
     init() {
         let request = NotebookMO.fetchRequest()
@@ -50,12 +53,16 @@ struct ImportView: View {
                     LabeledContent("Required", value: "front, back")
                     LabeledContent("Units", value: "unit")
                     LabeledContent("Audio", value: "audio or frontAudio/backAudio")
-                    Text("Chinese headers are supported: 汉字, 读音, 单元, 音频. Empty unit values import into Default. Select referenced audio files or the folder that contains them.")
+                    LabeledContent("Dictionary", value: "czyzd or 查词")
+                    Text("Chinese headers are supported: 汉字, 读音, 单元, 音频, 查词. Empty unit values import into Default. Select referenced audio files or the folder that contains them.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
                 Section {
+                    Toggle("Auto-fill CZYZD dictionary after import", isOn: $autoFillCZYZDDictionary)
+                        .disabled(isImporting)
+
                     Toggle("Auto-match CZYZD audio after import", isOn: $autoMatchCZYZDAudio)
                         .disabled(isImporting)
 
@@ -75,6 +82,7 @@ struct ImportView: View {
                         LabeledContent("Will import", value: "\(preview.importableRows)")
                         LabeledContent("Will skip", value: "\(preview.skippedRows)")
                         LabeledContent("Duplicates", value: "\(preview.duplicateRows)")
+                        LabeledContent("Dictionary lookups", value: "\(preview.dictionaryLookupRows)")
                         LabeledContent("Issues", value: "\(preview.issueCount)")
 
                         if !preview.units.isEmpty {
@@ -131,6 +139,7 @@ struct ImportView: View {
                         LabeledContent("Imported", value: "\(summary.importedRows)")
                         LabeledContent("Skipped", value: "\(summary.skippedRows)")
                         LabeledContent("Audio", value: "\(summary.audioFilesImported)")
+                        LabeledContent("Dictionary lookups", value: "\(summary.dictionaryLookupRows)")
                         LabeledContent("Issues", value: "\(summary.issueCount)")
                         if !summary.unitNames.isEmpty {
                             LabeledContent("Units", value: listed(summary.unitNames))
@@ -154,6 +163,19 @@ struct ImportView: View {
                         LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
                         LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
                         if let messages = czyzdSummary.messageSummary {
+                            Text(messages)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if let czyzdDictionarySummary {
+                    Section("CZYZD Dictionary") {
+                        LabeledContent("Checked", value: "\(czyzdDictionarySummary.checkedCards)")
+                        LabeledContent("Updated", value: "\(czyzdDictionarySummary.updatedCards)")
+                        LabeledContent("Failed", value: "\(czyzdDictionarySummary.failedCards)")
+                        if let messages = czyzdDictionarySummary.messageSummary {
                             Text(messages)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -225,6 +247,7 @@ struct ImportView: View {
     private func handleFileSelection(_ result: Result<[URL], Error>) {
         do {
             czyzdSummary = nil
+            czyzdDictionarySummary = nil
             let urls = try result.get()
             guard hasDestination, let csvURL = csvURL(from: urls) else {
                 errorMessage = "Select one CSV file and any referenced audio files."
@@ -268,11 +291,20 @@ struct ImportView: View {
             newNotebookName = ""
             clearPendingPreview()
 
+            if autoFillCZYZDDictionary {
+                czyzdDictionarySummary = await czyzdDictionaryService.enrichImportedCards(
+                    lookupTermsByCardID: importSummary.dictionaryLookupTermsByCardID,
+                    context: viewContext
+                )
+                try viewContext.save()
+            }
+
             if autoMatchCZYZDAudio {
                 czyzdSummary = await czyzdAttachmentService.attachMissingAudio(
                     toImportedCardIDs: importSummary.importedCardIDs,
                     context: viewContext
                 )
+                try viewContext.save()
             }
         } catch {
             viewContext.rollback()

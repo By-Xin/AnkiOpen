@@ -12,6 +12,8 @@ struct ImportSummary: Equatable {
     let errors: [String]
     let glyphWarnings: [String]
     let importedCardIDs: [UUID]
+    let dictionaryLookupRows: Int
+    let dictionaryLookupTermsByCardID: [UUID: String]
 
     init(
         fileName: String,
@@ -23,7 +25,9 @@ struct ImportSummary: Equatable {
         skippedRowDetails: [String] = [],
         errors: [String],
         glyphWarnings: [String] = [],
-        importedCardIDs: [UUID] = []
+        importedCardIDs: [UUID] = [],
+        dictionaryLookupRows: Int = 0,
+        dictionaryLookupTermsByCardID: [UUID: String] = [:]
     ) {
         self.fileName = fileName
         self.totalRows = totalRows
@@ -35,6 +39,8 @@ struct ImportSummary: Equatable {
         self.errors = errors
         self.glyphWarnings = glyphWarnings
         self.importedCardIDs = importedCardIDs
+        self.dictionaryLookupRows = dictionaryLookupRows
+        self.dictionaryLookupTermsByCardID = dictionaryLookupTermsByCardID
     }
 
     var errorsSummary: String? {
@@ -63,6 +69,7 @@ struct ImportPreview: Equatable {
     let errors: [String]
     let audioWarnings: [String]
     let glyphWarnings: [String]
+    let dictionaryLookupRows: Int
 
     var canImport: Bool {
         importableRows > 0
@@ -131,6 +138,7 @@ final class CSVImporter {
         var audioImported = 0
         var errors = plan.errors + plan.audioWarnings
         var importedCardIDs: [UUID] = []
+        var dictionaryLookupTermsByCardID: [UUID: String] = [:]
 
         for row in plan.rows {
             let unit = NotebookUnitMO.findOrCreate(
@@ -161,6 +169,9 @@ final class CSVImporter {
                 backAudioFileName: backAudioFileName
             )
             importedCardIDs.append(card.id)
+            if let dictionaryLookupTerm = row.dictionaryLookupTerm {
+                dictionaryLookupTermsByCardID[card.id] = dictionaryLookupTerm
+            }
             imported += 1
         }
 
@@ -174,7 +185,9 @@ final class CSVImporter {
             skippedRowDetails: plan.skippedRowDetails,
             errors: errors,
             glyphWarnings: plan.glyphWarnings,
-            importedCardIDs: importedCardIDs
+            importedCardIDs: importedCardIDs,
+            dictionaryLookupRows: plan.dictionaryLookupRows,
+            dictionaryLookupTermsByCardID: dictionaryLookupTermsByCardID
         )
 
         let batch = ImportBatchMO(context: context)
@@ -236,8 +249,9 @@ final class CSVImporter {
 
             let front = mapping.front(from: row) ?? ""
             let back = mapping.back(from: row) ?? ""
-            guard !front.isEmpty, !back.isEmpty else {
-                errors.append("Line \(sourceLine): front and back must both be non-empty.")
+            let dictionaryLookupTerm = mapping.dictionaryLookupTerm(from: row)
+            guard !front.isEmpty, !back.isEmpty || dictionaryLookupTerm != nil else {
+                errors.append("Line \(sourceLine): front and back must both be non-empty unless a CZYZD lookup column is provided.")
                 invalidRows += 1
                 continue
             }
@@ -274,7 +288,8 @@ final class CSVImporter {
                 back: back,
                 unitName: mapping.unitName(from: row),
                 frontAudioFileName: frontAudioFileName,
-                backAudioFileName: backAudioFileName
+                backAudioFileName: backAudioFileName,
+                dictionaryLookupTerm: dictionaryLookupTerm
             ))
             seenPairs.insert(pair)
         }
@@ -289,6 +304,7 @@ final class CSVImporter {
             skippedRowDetails: skippedRowDetails,
             audioWarnings: audioWarnings,
             glyphWarnings: glyphWarnings,
+            dictionaryLookupRows: importRows.filter { $0.dictionaryLookupTerm != nil }.count,
             missingAudioFiles: missingAudioFiles.sorted(),
             unsupportedAudioFiles: unsupportedAudioFiles.sorted()
         )
@@ -413,6 +429,7 @@ private struct CSVImportPlan {
     let skippedRowDetails: [String]
     let audioWarnings: [String]
     let glyphWarnings: [String]
+    let dictionaryLookupRows: Int
     let missingAudioFiles: [String]
     let unsupportedAudioFiles: [String]
 
@@ -433,7 +450,8 @@ private struct CSVImportPlan {
             skippedRowDetails: skippedRowDetails,
             errors: errors,
             audioWarnings: audioWarnings,
-            glyphWarnings: glyphWarnings
+            glyphWarnings: glyphWarnings,
+            dictionaryLookupRows: dictionaryLookupRows
         )
     }
 
@@ -449,6 +467,7 @@ private struct CSVImportRow {
     let unitName: String?
     let frontAudioFileName: String?
     let backAudioFileName: String?
+    let dictionaryLookupTerm: String?
 }
 
 private struct CSVColumnMapping {
@@ -458,6 +477,7 @@ private struct CSVColumnMapping {
     private let backAudioIndex: Int?
     private let sharedAudioIndex: Int?
     private let unitIndex: Int?
+    private let dictionaryLookupIndex: Int?
     private let frontIndex: Int
     private let backIndex: Int
 
@@ -471,6 +491,7 @@ private struct CSVColumnMapping {
             backAudioIndex = rows.first?.indices.contains(3) == true ? 3 : nil
             sharedAudioIndex = nil
             unitIndex = nil
+            dictionaryLookupIndex = nil
             return
         }
 
@@ -485,6 +506,7 @@ private struct CSVColumnMapping {
             backAudioIndex = normalized.firstIndex { Self.backAudioHeaderNames.contains($0) }
             sharedAudioIndex = normalized.firstIndex { Self.sharedAudioHeaderNames.contains($0) }
             unitIndex = normalized.firstIndex { Self.unitHeaderNames.contains($0) }
+            dictionaryLookupIndex = normalized.firstIndex { Self.dictionaryLookupHeaderNames.contains($0) }
         } else {
             bodyRows = rows
             hasHeader = false
@@ -494,6 +516,7 @@ private struct CSVColumnMapping {
             backAudioIndex = first.indices.contains(3) ? 3 : nil
             sharedAudioIndex = first.indices.contains(2) && !first.indices.contains(3) ? 2 : nil
             unitIndex = nil
+            dictionaryLookupIndex = nil
         }
     }
 
@@ -507,6 +530,16 @@ private struct CSVColumnMapping {
 
     func unitName(from row: [String]) -> String? {
         unitIndex.flatMap { row.indices.contains($0) ? row[$0] : nil }
+    }
+
+    func dictionaryLookupTerm(from row: [String]) -> String? {
+        guard let dictionaryLookupIndex,
+              row.indices.contains(dictionaryLookupIndex) else {
+            return nil
+        }
+
+        let term = row[dictionaryLookupIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+        return term.isEmpty ? nil : term
     }
 
     func audioFileNames(from row: [String]) -> (front: String?, back: String?) {
@@ -548,6 +581,11 @@ private struct CSVColumnMapping {
     private static let unitHeaderNames: Set<String> = [
         "unit", "unitname", "unit_name", "unit name", "unitnumber", "unit_number", "unit number",
         "单元", "章节", "课", "课次"
+    ]
+
+    private static let dictionaryLookupHeaderNames: Set<String> = [
+        "czyzd", "dictionary", "dictionarylookup", "dictionary_lookup", "lookup", "lookupterm", "lookup_term",
+        "查词", "词典", "字典", "潮汕词典", "潮语词典"
     ]
 
     private static func normalizedHeader(_ value: String) -> String {

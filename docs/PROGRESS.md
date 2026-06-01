@@ -20,7 +20,8 @@ Last updated: 2026-06-01
 - Added DeepSeek settings with Keychain API key storage, V4 Flash/V4 Pro model selection, and rare glyph replacement suggestions.
 - Replaced the static rare glyph image fallback flow with a DeepSeek suggestion flow that caches replacement suggestions and can apply them to affected cards.
 - Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, pronunciation, definitions, and remote audio playback.
-- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
+- Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
+- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -38,6 +39,7 @@ Last updated: 2026-06-01
 - Passed Xcode tests on 2026-06-01:
   `xcodebuild test -project AnkiOpen.xcodeproj -scheme AnkiOpen -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath DerivedData`
 - Passed Xcode tests after CZYZD dictionary lookup on 2026-06-01: 52 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after CSV CZYZD auto-fill on 2026-06-01: 54 unit/app tests and 1 UI launch smoke test.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Current Study Behavior
@@ -54,6 +56,7 @@ Last updated: 2026-06-01
 - Supported CSV shapes:
   - `front,back`
   - `unit,front,back`
+  - `unit,front,back,czyzd` or `unit,front,back,查词` for post-import CZYZD dictionary auto-fill
   - `front,back,audio` where one audio file is used on both sides
   - `front,back,frontAudio,backAudio` where each side can use a different file
 - If the `unit` column is absent or blank, cards import into `Default`.
@@ -61,6 +64,7 @@ Last updated: 2026-06-01
 - During import, select the CSV file and any referenced audio files together.
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
+- CZYZD lookup headers include `czyzd`, `dictionary`, `lookup`, `查词`, `词典`, and `潮语词典`. Existing non-empty back text is preserved.
 
 ## Rare Glyph Replacement
 
@@ -86,4 +90,4 @@ Last updated: 2026-06-01
 ## Next
 
 - Replace the default app icon and add a basic visual identity.
-- Wire dictionary lookup into CSV import and card editing so pinyin/definition can be auto-filled from CZYZD.
+- Wire dictionary lookup into card editing so pinyin/definition can be auto-filled from CZYZD.

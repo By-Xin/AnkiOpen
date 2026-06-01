@@ -9,6 +9,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Notebook and unit CRUD
 - Flashcard CRUD and archive
 - CSV import with `front,back`, optional `unit`, optional `audio`, or optional `frontAudio,backAudio` columns
+- Optional CSV `czyzd` / `查词` column for CZYZD dictionary auto-fill
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Audio playback on the front and back side of a card
 - Review logs and due-card querying
@@ -43,6 +44,15 @@ unit,front,back
 1,Question,Answer
 2,Another question,Another answer
 ```
+
+Use a CZYZD lookup column to auto-fill a blank back side from the Chaoshan dictionary after import:
+
+```csv
+unit,front,back,czyzd
+1,你好,,你好
+```
+
+Supported lookup headers include `czyzd`, `dictionary`, `lookup`, `查词`, `词典`, and `潮语词典`. Existing non-empty back text is preserved.
 
 Audio can be attached by selecting the CSV and referenced audio files in the same import picker. Supported audio extensions are `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, and `aif`.
 
@@ -94,6 +104,7 @@ The Dictionary tab searches CZYZD directly. It returns exact phrase matches when
 - [x] FSRS-6 scheduling defaults
 - [x] DeepSeek rare glyph replacement workflow
 - [x] CZYZD dictionary lookup tab
+- [x] CSV CZYZD dictionary auto-fill column
 - [ ] App icon and polished visual identity
 - [ ] TestFlight/App Store setup
 
