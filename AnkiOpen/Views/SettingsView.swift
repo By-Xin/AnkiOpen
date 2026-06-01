@@ -77,6 +77,14 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Section("Text") {
+                    NavigationLink {
+                        RareGlyphsView()
+                    } label: {
+                        Label("Rare Glyphs", systemImage: "textformat.alt")
+                    }
+                }
+
                 Section("Open Source") {
                     LabeledContent("License", value: "MIT")
                 }

@@ -77,3 +77,54 @@ struct GlyphDiagnostics {
         }
     }
 }
+
+struct GlyphInventoryItem: Identifiable, Equatable {
+    let finding: GlyphDiagnostics.Finding
+    let occurrences: Int
+    let cards: [FlashcardMO]
+
+    var id: UInt32 {
+        finding.scalar.value
+    }
+}
+
+enum GlyphInventory {
+    static func items(for cards: [FlashcardMO]) -> [GlyphInventoryItem] {
+        var occurrencesByScalar: [UInt32: Int] = [:]
+        var findingByScalar: [UInt32: GlyphDiagnostics.Finding] = [:]
+        var cardsByScalar: [UInt32: [FlashcardMO]] = [:]
+        var cardIDsByScalar: [UInt32: Set<UUID>] = [:]
+
+        for card in cards {
+            let text = card.front + card.back
+            let findings = GlyphDiagnostics.findings(in: text)
+            guard !findings.isEmpty else {
+                continue
+            }
+
+            for scalar in text.unicodeScalars {
+                guard let finding = findings.first(where: { $0.scalar.value == scalar.value }) else {
+                    continue
+                }
+
+                occurrencesByScalar[scalar.value, default: 0] += 1
+                findingByScalar[scalar.value] = finding
+
+                if cardIDsByScalar[scalar.value, default: []].insert(card.id).inserted {
+                    cardsByScalar[scalar.value, default: []].append(card)
+                }
+            }
+        }
+
+        return findingByScalar.keys.sorted().compactMap { value in
+            guard let finding = findingByScalar[value] else {
+                return nil
+            }
+            return GlyphInventoryItem(
+                finding: finding,
+                occurrences: occurrencesByScalar[value, default: 0],
+                cards: cardsByScalar[value, default: []]
+            )
+        }
+    }
+}
