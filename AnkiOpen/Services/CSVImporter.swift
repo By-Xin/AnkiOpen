@@ -475,13 +475,16 @@ enum CSVParser {
                 case ",":
                     row.append(field)
                     field = ""
-                case "\n":
+                case "\n", "\r\n":
                     row.append(field)
                     append(row: row, to: &rows)
                     row = []
                     field = ""
                 case "\r":
-                    break
+                    row.append(field)
+                    append(row: row, to: &rows)
+                    row = []
+                    field = ""
                 default:
                     field.append(character)
                 }
