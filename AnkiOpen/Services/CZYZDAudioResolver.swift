@@ -90,7 +90,7 @@ final class CZYZDAudioResolver: CZYZDAudioResolving {
             throw CZYZDAudioResolverError.invalidHTML
         }
 
-        return Self.firstAudioURL(in: html)
+        return Self.bestAudioURL(in: html, matching: term)
     }
 
     static func searchURL(for term: String) -> URL? {
@@ -108,6 +108,58 @@ final class CZYZDAudioResolver: CZYZDAudioResolving {
     }
 
     static func firstAudioURL(in html: String) -> URL? {
+        firstCZYZDAudioURL(in: html)
+    }
+
+    static func bestAudioURL(in html: String, matching term: String) -> URL? {
+        let normalizedTerm = normalizedLookupText(term)
+        guard !normalizedTerm.isEmpty else {
+            return nil
+        }
+
+        let entries = dictionaryEntries(in: html)
+        if let exactEntry = entries.first(where: { normalizedLookupText($0.title) == normalizedTerm }) {
+            return firstCZYZDAudioURL(in: exactEntry.html)
+        }
+
+        if normalizedTerm.count == 1 {
+            return entries.lazy.compactMap { firstCZYZDAudioURL(in: $0.html) }.first ?? firstCZYZDAudioURL(in: html)
+        }
+
+        return nil
+    }
+
+    private static func safeFileStem(for term: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        let clean = term
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .unicodeScalars
+            .map { allowed.contains($0) ? Character($0) : "-" }
+        let stem = String(clean).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
+        return stem.isEmpty ? "czyzd-audio" : stem
+    }
+
+    private static func dictionaryEntries(in html: String) -> [(title: String, html: String)] {
+        let pattern = #"(?s)<dl>\s*<dt>.*?<p>(.*?)</p>.*?</dl>"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+            return []
+        }
+
+        let range = NSRange(html.startIndex..<html.endIndex, in: html)
+        return regex.matches(in: html, range: range).compactMap { match in
+            guard let blockRange = Range(match.range(at: 0), in: html),
+                  let titleRange = Range(match.range(at: 1), in: html) else {
+                return nil
+            }
+
+            return (
+                title: decodedHTMLText(String(html[titleRange])),
+                html: String(html[blockRange])
+            )
+        }
+    }
+
+    private static func firstCZYZDAudioURL(in html: String) -> URL? {
         let pattern = #"https://api\.czyzd\.com/sound/czh/[^"'<>\s]+?\.mp3"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
             return nil
@@ -124,14 +176,20 @@ final class CZYZDAudioResolver: CZYZDAudioResolving {
         return URL(string: value)
     }
 
-    private static func safeFileStem(for term: String) -> String {
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
-        let clean = term
+    private static func normalizedLookupText(_ value: String) -> String {
+        decodedHTMLText(value)
+            .replacingOccurrences(of: "\u{FEFF}", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .unicodeScalars
-            .map { allowed.contains($0) ? Character($0) : "-" }
-        let stem = String(clean).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
-        return stem.isEmpty ? "czyzd-audio" : stem
+    }
+
+    private static func decodedHTMLText(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&nbsp;", with: " ")
     }
 
     private static let userAgent = "AnkiOpen/0.1 CZYZD Audio Import"
