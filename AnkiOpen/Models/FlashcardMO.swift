@@ -24,6 +24,7 @@ final class FlashcardMO: NSManagedObject, Identifiable {
     @NSManaged var notebook: NotebookMO
     @NSManaged var unit: NotebookUnitMO?
     @NSManaged var reviewLogs: Set<ReviewLogMO>
+    @NSManaged var reports: Set<CardReportMO>
 }
 
 extension FlashcardMO {

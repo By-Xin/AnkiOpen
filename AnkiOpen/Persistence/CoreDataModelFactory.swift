@@ -56,6 +56,15 @@ enum CoreDataModelFactory {
             attribute("nextDueAt", .dateAttributeType, optional: false)
         ]
 
+        let cardReport = entity(name: "CardReport", className: CardReportMO.self)
+        cardReport.properties = [
+            attribute("id", .UUIDAttributeType, optional: false),
+            attribute("category", .stringAttributeType, optional: false),
+            attribute("note", .stringAttributeType, optional: false),
+            attribute("createdAt", .dateAttributeType, optional: false),
+            attribute("resolvedAt", .dateAttributeType, optional: true)
+        ]
+
         let importBatch = entity(name: "ImportBatch", className: ImportBatchMO.self)
         importBatch.properties = [
             attribute("id", .UUIDAttributeType, optional: false),
@@ -87,6 +96,11 @@ enum CoreDataModelFactory {
         flashcardReviewLogs.inverseRelationship = reviewLogCard
         reviewLogCard.inverseRelationship = flashcardReviewLogs
 
+        let flashcardReports = relationship("reports", destination: cardReport, toMany: true, deleteRule: .cascadeDeleteRule)
+        let reportCard = relationship("card", destination: flashcard, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
+        flashcardReports.inverseRelationship = reportCard
+        reportCard.inverseRelationship = flashcardReports
+
         let notebookImportBatches = relationship("importBatches", destination: importBatch, toMany: true, deleteRule: .cascadeDeleteRule)
         let importBatchNotebook = relationship("notebook", destination: notebook, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
         notebookImportBatches.inverseRelationship = importBatchNotebook
@@ -94,11 +108,12 @@ enum CoreDataModelFactory {
 
         notebook.properties.append(contentsOf: [notebookFlashcards, notebookUnits, notebookImportBatches])
         unit.properties.append(contentsOf: [unitNotebook, unitFlashcards])
-        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardUnit, flashcardReviewLogs])
+        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardUnit, flashcardReviewLogs, flashcardReports])
         reviewLog.properties.append(reviewLogCard)
+        cardReport.properties.append(reportCard)
         importBatch.properties.append(importBatchNotebook)
 
-        model.entities = [notebook, unit, flashcard, reviewLog, importBatch]
+        model.entities = [notebook, unit, flashcard, reviewLog, cardReport, importBatch]
         return model
     }()
 

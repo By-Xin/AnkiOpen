@@ -13,6 +13,7 @@ struct CardEditorView: View {
     @State private var front: String
     @State private var back: String
     @State private var errorMessage: String?
+    @State private var isShowingReport = false
 
     init(mode: Mode) {
         self.mode = mode
@@ -37,6 +38,16 @@ struct CardEditorView: View {
                     TextEditor(text: $back)
                         .frame(minHeight: 110)
                 }
+
+                if editableCard != nil {
+                    Section("Report") {
+                        Button {
+                            isShowingReport = true
+                        } label: {
+                            Label("Report Card Issue", systemImage: "exclamationmark.bubble")
+                        }
+                    }
+                }
             }
             .navigationTitle(title)
             .toolbar {
@@ -53,6 +64,11 @@ struct CardEditorView: View {
             }, message: {
                 Text(errorMessage ?? "")
             })
+            .sheet(isPresented: $isShowingReport) {
+                if let card = editableCard {
+                    ReportIssueView(card: card)
+                }
+            }
         }
     }
 
@@ -61,6 +77,13 @@ struct CardEditorView: View {
         case .create, .createInNotebook: return "New Card"
         case .edit: return "Edit Card"
         }
+    }
+
+    private var editableCard: FlashcardMO? {
+        if case .edit(let card) = mode {
+            return card
+        }
+        return nil
     }
 
     private func save() {

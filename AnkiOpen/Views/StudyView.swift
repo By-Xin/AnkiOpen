@@ -12,6 +12,7 @@ struct StudyView: View {
     @State private var currentIndex = 0
     @State private var isShowingBack = false
     @State private var errorMessage: String?
+    @State private var cardToReport: FlashcardMO?
     @StateObject private var audioPlayer = AudioPlaybackController()
 
     private let scheduler = ReviewScheduler()
@@ -141,7 +142,14 @@ struct StudyView: View {
             }
             .navigationTitle("Study")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        cardToReport = currentCard
+                    } label: {
+                        Label("Report", systemImage: "exclamationmark.bubble")
+                    }
+                    .disabled(currentCard == nil)
+
                     Button {
                         reloadDueCards()
                     } label: {
@@ -164,6 +172,9 @@ struct StudyView: View {
             }, message: {
                 Text(errorMessage ?? "")
             })
+            .sheet(item: $cardToReport) { card in
+                ReportIssueView(card: card)
+            }
         }
     }
 

@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest private var reports: FetchedResults<CardReportMO>
     @State private var backupURL: URL?
     @State private var importSummary: BackupImportSummary?
     @State private var isShowingBackupImporter = false
@@ -10,6 +11,12 @@ struct SettingsView: View {
 
     private let backupExporter = BackupExporter()
     private let backupImporter = BackupImporter()
+
+    init() {
+        let request = CardReportMO.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \CardReportMO.createdAt, ascending: false)]
+        _reports = FetchRequest(fetchRequest: request, animation: .default)
+    }
 
     var body: some View {
         NavigationStack {
@@ -61,6 +68,13 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                }
+
+                Section("Reports") {
+                    LabeledContent("Local reports", value: "\(reports.count)")
+                    Text("Reports are saved locally for now. Cloud submission/export can be added after the correction workflow is stable.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("Open Source") {
