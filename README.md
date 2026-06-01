@@ -86,7 +86,7 @@ All modes still write review logs and update the card's next due date when a rat
 
 ## Dictionary
 
-The Dictionary tab searches CZYZD directly. It returns exact phrase matches when possible, shows pronunciation and meanings parsed from the dictionary page, and plays remote dictionary audio when CZYZD provides a clip. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+The Dictionary tab searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
 
 ## Progress
 

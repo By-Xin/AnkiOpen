@@ -19,7 +19,7 @@ Last updated: 2026-06-01
 - Added an app-local FSRS-6 scheduler with default parameters and retention `0.90`, replacing the earlier simplified fallback in the production review path.
 - Added DeepSeek settings with Keychain API key storage, V4 Flash/V4 Pro model selection, and rare glyph replacement suggestions.
 - Replaced the static rare glyph image fallback flow with a DeepSeek suggestion flow that caches replacement suggestions and can apply them to affected cards.
-- Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, pronunciation, definitions, and remote audio playback.
+- Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, Chaoshan pronunciation, cleaned definitions, and remote audio playback.
 - Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
@@ -40,6 +40,7 @@ Last updated: 2026-06-01
   `xcodebuild test -project AnkiOpen.xcodeproj -scheme AnkiOpen -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath DerivedData`
 - Passed Xcode tests after CZYZD dictionary lookup on 2026-06-01: 52 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CSV CZYZD auto-fill on 2026-06-01: 54 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after CZYZD dictionary parsing cleanup on 2026-06-01: 55 unit/app tests and 1 UI launch smoke test.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Current Study Behavior
@@ -75,7 +76,8 @@ Last updated: 2026-06-01
 ## CZYZD Dictionary
 
 - The Dictionary tab searches CZYZD by word or phrase.
-- Results display the matched term, parsed pronunciation, parsed definition text, and a speaker button when CZYZD exposes an audio clip.
+- Results display the matched term, CZYZD Chaoshan pronunciation image under `潮拼`, cleaned definition text under `解释`, and a speaker button when CZYZD exposes an audio clip.
+- Mandarin pinyin and source labels such as `字义` are filtered out of the main dictionary result.
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
 
 ## Backup Export And Restore

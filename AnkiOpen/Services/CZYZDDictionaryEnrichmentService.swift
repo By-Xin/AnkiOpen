@@ -84,8 +84,9 @@ final class CZYZDDictionaryEnrichmentService {
     }
 
     static func cardBackText(from entry: CZYZDDictionaryEntry) -> String {
-        [
-            entry.pronunciation.trimmingCharacters(in: .whitespacesAndNewlines),
+        let chaoshanPronunciation = entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin
+        return [
+            chaoshanPronunciation.trimmingCharacters(in: .whitespacesAndNewlines),
             entry.definition.trimmingCharacters(in: .whitespacesAndNewlines)
         ]
         .filter { !$0.isEmpty }

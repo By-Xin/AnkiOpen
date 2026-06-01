@@ -3,9 +3,27 @@ import Foundation
 struct CZYZDDictionaryEntry: Identifiable, Equatable {
     let id = UUID()
     let term: String
+    let chaopin: String
+    let chaopinImageURL: URL?
     let pronunciation: String
     let definition: String
     let audioURL: URL?
+
+    init(
+        term: String,
+        chaopin: String = "",
+        chaopinImageURL: URL? = nil,
+        pronunciation: String = "",
+        definition: String,
+        audioURL: URL?
+    ) {
+        self.term = term
+        self.chaopin = chaopin
+        self.chaopinImageURL = chaopinImageURL
+        self.pronunciation = pronunciation
+        self.definition = definition
+        self.audioURL = audioURL
+    }
 }
 
 enum CZYZDDictionaryLookupError: LocalizedError {
@@ -75,13 +93,30 @@ final class CZYZDDictionaryLookup {
 
     private static func parseEntry(_ raw: RawEntry) -> CZYZDDictionaryEntry {
         let plainText = strippedHTML(raw.html)
-        let pronunciation = pronunciation(in: raw.html, plainText: plainText, term: raw.term)
+        let chaopin = chaopin(in: raw.html)
+        let pronunciation = chaopin.text.isEmpty ? pronunciation(in: raw.html, plainText: plainText, term: raw.term) : chaopin.text
         return CZYZDDictionaryEntry(
             term: raw.term,
+            chaopin: chaopin.text,
+            chaopinImageURL: chaopin.imageURL,
             pronunciation: pronunciation,
-            definition: definition(in: plainText, term: raw.term, pronunciation: pronunciation),
+            definition: definition(in: raw.html, plainText: plainText, term: raw.term, pronunciation: pronunciation),
             audioURL: CZYZDAudioResolver.firstAudioURL(in: raw.html)
         )
+    }
+
+    private static func chaopin(in html: String) -> (text: String, imageURL: URL?) {
+        guard let row = firstCapture(pattern: #"(?is)<li>\s*<b>\s*潮州音\s*[:：]?\s*</b>(.*?)</li>"#, in: html) ??
+                firstCapture(pattern: #"(?is)<li>\s*<b>\s*潮州音.*?</b>(.*?)</li>"#, in: html) else {
+            return ("", nil)
+        }
+
+        let imageHTML = firstCapture(pattern: #"(?is)(<img\b[^>]*>)"#, in: row)
+        let title = imageHTML.flatMap { attribute("title", in: $0) }
+        let alt = imageHTML.flatMap { attribute("alt", in: $0) }
+        let src = imageHTML.flatMap { attribute("src", in: $0) }
+        let text = cleanedBracketText(title ?? alt ?? "")
+        return (text, absoluteURL(from: src))
     }
 
     private static func pronunciation(in html: String, plainText: String, term: String) -> String {
@@ -111,14 +146,43 @@ final class CZYZDDictionaryLookup {
         return ""
     }
 
-    private static func definition(in plainText: String, term: String, pronunciation: String) -> String {
+    private static func definition(in html: String, plainText: String, term: String, pronunciation: String) -> String {
+        let definitionPatterns = [
+            #"(?is)<li>\s*<b>\s*(?:字|词|詞)(?:&nbsp;|\s|　)*义\s*[:：]?\s*</b>\s*(.*?)</li>"#,
+            #"(?is)<li>\s*<b>\s*(?:释义|解释|意思)\s*[:：]?\s*</b>\s*(.*?)</li>"#
+        ]
+
+        for pattern in definitionPatterns {
+            if let value = firstCapture(pattern: pattern, in: html) {
+                let cleanValue = cleanupDefinition(strippedHTML(value), term: term, pronunciation: pronunciation)
+                if !cleanValue.isEmpty {
+                    return cleanValue
+                }
+            }
+        }
+
+        return cleanupDefinition(plainText, term: term, pronunciation: pronunciation)
+    }
+
+    private static func cleanupDefinition(_ plainText: String, term: String, pronunciation: String) -> String {
         var value = plainText
             .replacingOccurrences(of: term, with: "")
             .replacingOccurrences(of: pronunciation, with: "")
+            .replacingOccurrences(of: #"潮州音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"潮阳音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"普宁音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"惠来音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"陆丰音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"海丰音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"拼\s*音\s*[:：]?\s*[A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿ\s]+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: "拼音", with: "")
             .replacingOccurrences(of: "读音", with: "")
             .replacingOccurrences(of: "發音", with: "")
             .replacingOccurrences(of: "发音", with: "")
+            .replacingOccurrences(of: "字义", with: "")
+            .replacingOccurrences(of: "字 义", with: "")
+            .replacingOccurrences(of: "词义", with: "")
+            .replacingOccurrences(of: "詞義", with: "")
         value = value.replacingOccurrences(of: #"[:：\[\]()]+"#, with: " ", options: .regularExpression)
         return collapsedWhitespace(value)
     }
@@ -146,7 +210,7 @@ final class CZYZDDictionaryLookup {
     }
 
     private static func firstCapture(pattern: String, in value: String) -> String? {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) else {
             return nil
         }
         let range = NSRange(value.startIndex..<value.endIndex, in: value)
@@ -157,6 +221,28 @@ final class CZYZDDictionaryLookup {
         }
         let captured = collapsedWhitespace(String(value[captureRange]))
         return captured.isEmpty ? nil : captured
+    }
+
+    private static func attribute(_ name: String, in html: String) -> String? {
+        firstCapture(pattern: #"\b\#(name)\s*=\s*["']([^"']+)["']"#, in: html).map(decodedHTMLText)
+    }
+
+    private static func cleanedBracketText(_ value: String) -> String {
+        decodedHTMLText(value)
+            .replacingOccurrences(of: #"^[\[\(（【]\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\s*[\]\)）】]$"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"(\d)"#, with: "$1", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static func absoluteURL(from value: String?) -> URL? {
+        guard let value, !value.isEmpty else {
+            return nil
+        }
+        if let url = URL(string: value), url.scheme != nil {
+            return url
+        }
+        return URL(string: value, relativeTo: URL(string: "https://api.czyzd.com"))?.absoluteURL
     }
 
     private static func collapsedWhitespace(_ value: String) -> String {

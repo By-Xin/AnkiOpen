@@ -59,14 +59,40 @@ struct DictionaryView: View {
                                     }
                                 }
 
-                                if !entry.pronunciation.isEmpty {
-                                    LabeledContent("Pronunciation", value: entry.pronunciation)
+                                if entry.chaopinImageURL != nil || !entry.chaopin.isEmpty || !entry.pronunciation.isEmpty {
+                                    LabeledContent {
+                                        HStack(spacing: 8) {
+                                            if let imageURL = entry.chaopinImageURL {
+                                                AsyncImage(url: imageURL) { phase in
+                                                    switch phase {
+                                                    case .success(let image):
+                                                        image
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                    default:
+                                                        Text(entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin)
+                                                            .font(.body)
+                                                    }
+                                                }
+                                                .frame(width: 92, height: 28, alignment: .leading)
+                                            } else {
+                                                Text(entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin)
+                                            }
+                                        }
+                                    } label: {
+                                        Text("潮拼")
+                                    }
                                 }
 
                                 if !entry.definition.isEmpty {
-                                    Text(entry.definition)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
+                                    LabeledContent {
+                                        Text(entry.definition)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                            .multilineTextAlignment(.leading)
+                                    } label: {
+                                        Text("解释")
+                                    }
                                 }
                             }
                             .padding(.vertical, 4)
