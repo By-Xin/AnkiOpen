@@ -75,7 +75,7 @@ struct ImportView: View {
                         LabeledContent("Will import", value: "\(preview.importableRows)")
                         LabeledContent("Will skip", value: "\(preview.skippedRows)")
                         LabeledContent("Duplicates", value: "\(preview.duplicateRows)")
-                        LabeledContent("Warnings", value: "\(preview.audioWarnings.count + preview.glyphWarnings.count)")
+                        LabeledContent("Issues", value: "\(preview.issueCount)")
 
                         if !preview.units.isEmpty {
                             LabeledContent("Units", value: listed(preview.units))
@@ -89,26 +89,15 @@ struct ImportView: View {
                             LabeledContent("Unsupported audio", value: listed(preview.unsupportedAudioFiles))
                         }
 
-                        if let errors = preview.errorsSummary {
-                            Label("Rows needing fixes", systemImage: "exclamationmark.triangle")
-                                .font(.subheadline)
-                            Text(errors)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        if let warnings = preview.audioWarningsSummary {
-                            Text(warnings)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        if let warnings = preview.glyphWarningsSummary {
-                            Label("Glyph warnings", systemImage: "textformat.alt")
-                                .font(.subheadline)
-                            Text(warnings)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                        if preview.issueCount > 0 {
+                            NavigationLink {
+                                ImportIssueListView(
+                                    title: "Preview Issues",
+                                    sections: previewIssueSections(preview)
+                                )
+                            } label: {
+                                Label("Review Issues", systemImage: "exclamationmark.triangle")
+                            }
                         }
 
                         Button {
@@ -142,20 +131,19 @@ struct ImportView: View {
                         LabeledContent("Imported", value: "\(summary.importedRows)")
                         LabeledContent("Skipped", value: "\(summary.skippedRows)")
                         LabeledContent("Audio", value: "\(summary.audioFilesImported)")
+                        LabeledContent("Issues", value: "\(summary.issueCount)")
                         if !summary.unitNames.isEmpty {
                             LabeledContent("Units", value: listed(summary.unitNames))
                         }
-                        if let errors = summary.errorsSummary {
-                            Text(errors)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                        if let warnings = summary.glyphWarningsSummary {
-                            Label("Glyph warnings", systemImage: "textformat.alt")
-                                .font(.subheadline)
-                            Text(warnings)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                        if summary.issueCount > 0 {
+                            NavigationLink {
+                                ImportIssueListView(
+                                    title: "Import Issues",
+                                    sections: summaryIssueSections(summary)
+                                )
+                            } label: {
+                                Label("Review Issues", systemImage: "exclamationmark.triangle")
+                            }
                         }
                     }
                 }
@@ -308,5 +296,50 @@ struct ImportView: View {
         let visibleValues = values.prefix(limit)
         let suffix = values.count > limit ? " +\(values.count - limit) more" : ""
         return visibleValues.joined(separator: ", ") + suffix
+    }
+
+    private func previewIssueSections(_ preview: ImportPreview) -> [ImportIssueSection] {
+        [
+            ImportIssueSection(title: "Skipped Rows", systemImage: "forward.end", items: preview.skippedRowDetails),
+            ImportIssueSection(title: "Row Errors", systemImage: "exclamationmark.triangle", items: preview.errors),
+            ImportIssueSection(title: "Audio", systemImage: "speaker.wave.2", items: preview.audioWarnings),
+            ImportIssueSection(title: "Glyphs", systemImage: "textformat.alt", items: preview.glyphWarnings)
+        ].filter { !$0.items.isEmpty }
+    }
+
+    private func summaryIssueSections(_ summary: ImportSummary) -> [ImportIssueSection] {
+        [
+            ImportIssueSection(title: "Skipped Rows", systemImage: "forward.end", items: summary.skippedRowDetails),
+            ImportIssueSection(title: "Import Errors", systemImage: "exclamationmark.triangle", items: summary.errors),
+            ImportIssueSection(title: "Glyphs", systemImage: "textformat.alt", items: summary.glyphWarnings)
+        ].filter { !$0.items.isEmpty }
+    }
+}
+
+private struct ImportIssueSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let systemImage: String
+    let items: [String]
+}
+
+private struct ImportIssueListView: View {
+    let title: String
+    let sections: [ImportIssueSection]
+
+    var body: some View {
+        List {
+            ForEach(sections) { section in
+                Section {
+                    ForEach(Array(section.items.enumerated()), id: \.offset) { _, item in
+                        Text(item)
+                            .font(.footnote)
+                    }
+                } header: {
+                    Label(section.title, systemImage: section.systemImage)
+                }
+            }
+        }
+        .navigationTitle(title)
     }
 }

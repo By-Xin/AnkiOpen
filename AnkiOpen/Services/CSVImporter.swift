@@ -8,6 +8,7 @@ struct ImportSummary: Equatable {
     let skippedRows: Int
     let audioFilesImported: Int
     let unitNames: [String]
+    let skippedRowDetails: [String]
     let errors: [String]
     let glyphWarnings: [String]
     let importedCardIDs: [UUID]
@@ -19,6 +20,7 @@ struct ImportSummary: Equatable {
         skippedRows: Int,
         audioFilesImported: Int,
         unitNames: [String] = [],
+        skippedRowDetails: [String] = [],
         errors: [String],
         glyphWarnings: [String] = [],
         importedCardIDs: [UUID] = []
@@ -29,6 +31,7 @@ struct ImportSummary: Equatable {
         self.skippedRows = skippedRows
         self.audioFilesImported = audioFilesImported
         self.unitNames = unitNames
+        self.skippedRowDetails = skippedRowDetails
         self.errors = errors
         self.glyphWarnings = glyphWarnings
         self.importedCardIDs = importedCardIDs
@@ -41,6 +44,10 @@ struct ImportSummary: Equatable {
     var glyphWarningsSummary: String? {
         glyphWarnings.isEmpty ? nil : glyphWarnings.joined(separator: "\n")
     }
+
+    var issueCount: Int {
+        skippedRowDetails.count + errors.count + glyphWarnings.count
+    }
 }
 
 struct ImportPreview: Equatable {
@@ -52,6 +59,7 @@ struct ImportPreview: Equatable {
     let units: [String]
     let missingAudioFiles: [String]
     let unsupportedAudioFiles: [String]
+    let skippedRowDetails: [String]
     let errors: [String]
     let audioWarnings: [String]
     let glyphWarnings: [String]
@@ -70,6 +78,10 @@ struct ImportPreview: Equatable {
 
     var glyphWarningsSummary: String? {
         glyphWarnings.isEmpty ? nil : glyphWarnings.joined(separator: "\n")
+    }
+
+    var issueCount: Int {
+        skippedRowDetails.count + errors.count + audioWarnings.count + glyphWarnings.count
     }
 }
 
@@ -159,6 +171,7 @@ final class CSVImporter {
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
             unitNames: plan.unitNames,
+            skippedRowDetails: plan.skippedRowDetails,
             errors: errors,
             glyphWarnings: plan.glyphWarnings,
             importedCardIDs: importedCardIDs
@@ -207,6 +220,7 @@ final class CSVImporter {
         var duplicateRows = 0
         var invalidRows = 0
         var errors: [String] = []
+        var skippedRowDetails: [String] = []
         var audioWarnings: [String] = []
         var glyphWarnings: [String] = []
         var missingAudioFiles = Set<String>()
@@ -233,6 +247,7 @@ final class CSVImporter {
             let pair = CardPair(front: front, back: back)
             guard !seenPairs.contains(pair) else {
                 duplicateRows += 1
+                skippedRowDetails.append("Line \(sourceLine): duplicate front/back pair skipped.")
                 continue
             }
 
@@ -271,6 +286,7 @@ final class CSVImporter {
             invalidRows: invalidRows,
             duplicateRows: duplicateRows,
             errors: errors,
+            skippedRowDetails: skippedRowDetails,
             audioWarnings: audioWarnings,
             glyphWarnings: glyphWarnings,
             missingAudioFiles: missingAudioFiles.sorted(),
@@ -317,17 +333,30 @@ final class CSVImporter {
         let lookupName = URL(fileURLWithPath: cleanName).lastPathComponent
         guard AudioFileStore.supportedExtensions.contains(URL(fileURLWithPath: lookupName).pathExtension.lowercased()) else {
             unsupportedAudioFiles.insert(lookupName)
-            warnings.append("Line \(sourceLine): \(AudioFileStoreError.unsupportedFormat(lookupName).localizedDescription)")
+            appendUnique(
+                "Line \(sourceLine): \(AudioFileStoreError.unsupportedFormat(lookupName).localizedDescription)",
+                to: &warnings
+            )
             return nil
         }
 
         guard mediaByFileName[lookupName] != nil else {
             missingAudioFiles.insert(lookupName)
-            warnings.append("Line \(sourceLine): \(AudioFileStoreError.missingFile(lookupName).localizedDescription)")
+            appendUnique(
+                "Line \(sourceLine): \(AudioFileStoreError.missingFile(lookupName).localizedDescription)",
+                to: &warnings
+            )
             return nil
         }
 
         return lookupName
+    }
+
+    private func appendUnique(_ message: String, to messages: inout [String]) {
+        guard !messages.contains(message) else {
+            return
+        }
+        messages.append(message)
     }
 
     private func existingCardPairs(in notebook: NotebookMO, context: NSManagedObjectContext) throws -> Set<CardPair> {
@@ -381,6 +410,7 @@ private struct CSVImportPlan {
     let invalidRows: Int
     let duplicateRows: Int
     let errors: [String]
+    let skippedRowDetails: [String]
     let audioWarnings: [String]
     let glyphWarnings: [String]
     let missingAudioFiles: [String]
@@ -400,6 +430,7 @@ private struct CSVImportPlan {
             units: unitNames,
             missingAudioFiles: missingAudioFiles,
             unsupportedAudioFiles: unsupportedAudioFiles,
+            skippedRowDetails: skippedRowDetails,
             errors: errors,
             audioWarnings: audioWarnings,
             glyphWarnings: glyphWarnings
