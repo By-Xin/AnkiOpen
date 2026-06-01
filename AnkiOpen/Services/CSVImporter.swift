@@ -8,6 +8,7 @@ struct ImportSummary: Equatable {
     let skippedRows: Int
     let audioFilesImported: Int
     let errors: [String]
+    let glyphWarnings: [String]
     let importedCardIDs: [UUID]
 
     init(
@@ -17,6 +18,7 @@ struct ImportSummary: Equatable {
         skippedRows: Int,
         audioFilesImported: Int,
         errors: [String],
+        glyphWarnings: [String] = [],
         importedCardIDs: [UUID] = []
     ) {
         self.fileName = fileName
@@ -25,11 +27,16 @@ struct ImportSummary: Equatable {
         self.skippedRows = skippedRows
         self.audioFilesImported = audioFilesImported
         self.errors = errors
+        self.glyphWarnings = glyphWarnings
         self.importedCardIDs = importedCardIDs
     }
 
     var errorsSummary: String? {
         errors.isEmpty ? nil : errors.joined(separator: "\n")
+    }
+
+    var glyphWarningsSummary: String? {
+        glyphWarnings.isEmpty ? nil : glyphWarnings.joined(separator: "\n")
     }
 }
 
@@ -44,6 +51,7 @@ struct ImportPreview: Equatable {
     let unsupportedAudioFiles: [String]
     let errors: [String]
     let audioWarnings: [String]
+    let glyphWarnings: [String]
 
     var canImport: Bool {
         importableRows > 0
@@ -55,6 +63,10 @@ struct ImportPreview: Equatable {
 
     var audioWarningsSummary: String? {
         audioWarnings.isEmpty ? nil : audioWarnings.joined(separator: "\n")
+    }
+
+    var glyphWarningsSummary: String? {
+        glyphWarnings.isEmpty ? nil : glyphWarnings.joined(separator: "\n")
     }
 }
 
@@ -144,6 +156,7 @@ final class CSVImporter {
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
             errors: errors,
+            glyphWarnings: plan.glyphWarnings,
             importedCardIDs: importedCardIDs
         )
 
@@ -154,7 +167,7 @@ final class CSVImporter {
         batch.totalRows = Int32(summary.totalRows)
         batch.importedRows = Int32(summary.importedRows)
         batch.skippedRows = Int32(summary.skippedRows)
-        batch.errorsSummary = summary.errorsSummary
+        batch.errorsSummary = (summary.errors + summary.glyphWarnings).isEmpty ? nil : (summary.errors + summary.glyphWarnings).joined(separator: "\n")
         batch.notebook = notebook
 
         notebook.updatedAt = Date()
@@ -191,6 +204,7 @@ final class CSVImporter {
         var invalidRows = 0
         var errors: [String] = []
         var audioWarnings: [String] = []
+        var glyphWarnings: [String] = []
         var missingAudioFiles = Set<String>()
         var unsupportedAudioFiles = Set<String>()
 
@@ -209,6 +223,8 @@ final class CSVImporter {
                 invalidRows += 1
                 continue
             }
+
+            glyphWarnings.append(contentsOf: GlyphDiagnostics.importWarnings(front: front, back: back, sourceLine: sourceLine))
 
             let pair = CardPair(front: front, back: back)
             guard !seenPairs.contains(pair) else {
@@ -252,6 +268,7 @@ final class CSVImporter {
             duplicateRows: duplicateRows,
             errors: errors,
             audioWarnings: audioWarnings,
+            glyphWarnings: glyphWarnings,
             missingAudioFiles: missingAudioFiles.sorted(),
             unsupportedAudioFiles: unsupportedAudioFiles.sorted()
         )
@@ -361,6 +378,7 @@ private struct CSVImportPlan {
     let duplicateRows: Int
     let errors: [String]
     let audioWarnings: [String]
+    let glyphWarnings: [String]
     let missingAudioFiles: [String]
     let unsupportedAudioFiles: [String]
 
@@ -379,7 +397,8 @@ private struct CSVImportPlan {
             missingAudioFiles: missingAudioFiles,
             unsupportedAudioFiles: unsupportedAudioFiles,
             errors: errors,
-            audioWarnings: audioWarnings
+            audioWarnings: audioWarnings,
+            glyphWarnings: glyphWarnings
         )
     }
 }

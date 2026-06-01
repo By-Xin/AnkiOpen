@@ -76,13 +76,27 @@ struct UnitDetailView: View {
                         cardToEdit = card
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(card.front)
-                                .font(.headline)
+                            FlashcardText(
+                                text: card.front,
+                                size: 17,
+                                relativeTo: .headline,
+                                weight: .semibold,
+                                lineLimit: 2
+                            )
                                 .foregroundStyle(.primary)
-                            Text(card.back)
-                                .font(.subheadline)
+                            FlashcardText(
+                                text: card.back,
+                                size: 15,
+                                relativeTo: .subheadline,
+                                weight: .regular,
+                                lineLimit: 2
+                            )
                                 .foregroundStyle(.secondary)
-                                .lineLimit(2)
+                            if GlyphDiagnostics.containsRiskyGlyphs(card.front + card.back) {
+                                Label("Rare glyphs", systemImage: "textformat.alt")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
                             Text("Due \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
                                 .font(.caption)
                                 .foregroundStyle(.tertiary)

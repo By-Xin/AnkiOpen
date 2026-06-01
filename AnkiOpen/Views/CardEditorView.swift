@@ -32,11 +32,29 @@ struct CardEditorView: View {
             Form {
                 Section("Front") {
                     TextEditor(text: $front)
+                        .flashcardCJKFont(size: 17, relativeTo: .body)
                         .frame(minHeight: 110)
+                    if let warning = GlyphDiagnostics.warningSummary(for: front) {
+                        Label("Rare glyphs", systemImage: "textformat.alt")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Text(warning)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Section("Back") {
                     TextEditor(text: $back)
+                        .flashcardCJKFont(size: 17, relativeTo: .body)
                         .frame(minHeight: 110)
+                    if let warning = GlyphDiagnostics.warningSummary(for: back) {
+                        Label("Rare glyphs", systemImage: "textformat.alt")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Text(warning)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if editableCard != nil {

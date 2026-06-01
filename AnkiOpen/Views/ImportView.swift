@@ -93,6 +93,14 @@ struct ImportView: View {
                                 .foregroundStyle(.secondary)
                         }
 
+                        if let warnings = preview.glyphWarningsSummary {
+                            Label("Glyph warnings", systemImage: "textformat.alt")
+                                .font(.subheadline)
+                            Text(warnings)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+
                         Button {
                             Task {
                                 await confirmImport()
@@ -119,6 +127,13 @@ struct ImportView: View {
                         LabeledContent("Audio", value: "\(summary.audioFilesImported)")
                         if let errors = summary.errorsSummary {
                             Text(errors)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                        if let warnings = summary.glyphWarningsSummary {
+                            Label("Glyph warnings", systemImage: "textformat.alt")
+                                .font(.subheadline)
+                            Text(warnings)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }

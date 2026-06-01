@@ -86,11 +86,22 @@ struct StudyView: View {
                                             .foregroundStyle(.blue)
                                     }
                                 }
-                                Text(isShowingBack ? card.back : card.front)
-                                    .font(.title2)
-                                    .multilineTextAlignment(.center)
+                                let displayText = isShowingBack ? card.back : card.front
+                                FlashcardText(
+                                    text: displayText,
+                                    size: 26,
+                                    relativeTo: .title2,
+                                    weight: .regular,
+                                    alignment: .center
+                                )
                                     .foregroundStyle(.primary)
                                     .frame(maxWidth: .infinity, minHeight: 220)
+
+                                if GlyphDiagnostics.containsRiskyGlyphs(displayText) {
+                                    Label("Rare glyphs", systemImage: "textformat.alt")
+                                        .font(.caption)
+                                        .foregroundStyle(.orange)
+                                }
                             }
                             .padding(24)
                             .background(.thinMaterial)
