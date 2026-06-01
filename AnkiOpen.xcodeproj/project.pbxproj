@@ -34,6 +34,7 @@
 		A00000000000000000000126 /* AudioPlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000025 /* AudioPlaybackController.swift */; };
 		A00000000000000000000127 /* BackupExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* BackupExporter.swift */; };
 		A00000000000000000000132 /* BackupImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000031 /* BackupImporter.swift */; };
+		A00000000000000000000133 /* CZYZDAudioResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000032 /* CZYZDAudioResolver.swift */; };
 		A00000000000000000000120 /* CSVImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* CSVImporterTests.swift */; };
 		A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* ReviewSchedulerTests.swift */; };
 		A00000000000000000000128 /* BackupExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* BackupExporterTests.swift */; };
@@ -89,6 +90,8 @@
 		A00000000000000000000025 /* AudioPlaybackController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackController.swift; sourceTree = "<group>"; };
 		A00000000000000000000026 /* BackupExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporter.swift; sourceTree = "<group>"; };
 		A00000000000000000000031 /* BackupImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupImporter.swift; sourceTree = "<group>"; };
+		A00000000000000000000032 /* CZYZDAudioResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDAudioResolver.swift; sourceTree = "<group>"; };
+		A00000000000000000000033 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A00000000000000000000027 /* BackupExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporterTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -124,6 +127,7 @@
 			children = (
 				A00000000000000000000001 /* AnkiOpenApp.swift */,
 				A00000000000000000000002 /* RootView.swift */,
+				A00000000000000000000033 /* Info.plist */,
 				A00000000000000000000702 /* Models */,
 				A00000000000000000000703 /* Persistence */,
 				A00000000000000000000704 /* Services */,
@@ -164,6 +168,7 @@
 				A00000000000000000000025 /* AudioPlaybackController.swift */,
 				A00000000000000000000026 /* BackupExporter.swift */,
 				A00000000000000000000031 /* BackupImporter.swift */,
+				A00000000000000000000032 /* CZYZDAudioResolver.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -348,6 +353,7 @@
 				A00000000000000000000126 /* AudioPlaybackController.swift in Sources */,
 				A00000000000000000000127 /* BackupExporter.swift in Sources */,
 				A00000000000000000000132 /* BackupImporter.swift in Sources */,
+				A00000000000000000000133 /* CZYZDAudioResolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,12 +501,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_CFBundleDisplayName = AnkiOpen;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = AnkiOpen/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 0.1.0;
@@ -520,12 +527,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_KEY_CFBundleDisplayName = AnkiOpen;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = AnkiOpen/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 0.1.0;

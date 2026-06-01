@@ -13,9 +13,13 @@ struct ImportView: View {
     @State private var pendingMediaURLs: [URL] = []
     @State private var preview: ImportPreview?
     @State private var summary: ImportSummary?
+    @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
     @State private var errorMessage: String?
+    @State private var autoMatchCZYZDAudio = true
+    @State private var isImporting = false
 
     private let importer = CSVImporter()
+    private let czyzdAttachmentService = CZYZDAudioAttachmentService()
 
     init() {
         let request = NotebookMO.fetchRequest()
@@ -46,12 +50,15 @@ struct ImportView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
+                    Toggle("Auto-match CZYZD audio after import", isOn: $autoMatchCZYZDAudio)
+                        .disabled(isImporting)
+
                     Button {
                         isShowingImporter = true
                     } label: {
                         Label("Choose CSV and Audio", systemImage: "doc.badge.plus")
                     }
-                    .disabled(!hasDestination)
+                    .disabled(!hasDestination || isImporting)
                 }
 
                 if let preview {
@@ -87,11 +94,13 @@ struct ImportView: View {
                         }
 
                         Button {
-                            confirmImport()
+                            Task {
+                                await confirmImport()
+                            }
                         } label: {
-                            Label("Import Previewed Rows", systemImage: "checkmark.circle")
+                            Label(isImporting ? "Importing..." : "Import Previewed Rows", systemImage: "checkmark.circle")
                         }
-                        .disabled(!preview.canImport)
+                        .disabled(!preview.canImport || isImporting)
 
                         Button(role: .cancel) {
                             clearPendingPreview()
@@ -110,6 +119,19 @@ struct ImportView: View {
                         LabeledContent("Audio", value: "\(summary.audioFilesImported)")
                         if let errors = summary.errorsSummary {
                             Text(errors)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                if let czyzdSummary {
+                    Section("CZYZD Audio") {
+                        LabeledContent("Checked", value: "\(czyzdSummary.checkedCards)")
+                        LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
+                        LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
+                        if let messages = czyzdSummary.messageSummary {
+                            Text(messages)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -172,6 +194,7 @@ struct ImportView: View {
 
     private func handleFileSelection(_ result: Result<[URL], Error>) {
         do {
+            czyzdSummary = nil
             let urls = try result.get()
             guard hasDestination, let csvURL = csvURL(from: urls) else {
                 errorMessage = "Select one CSV file and any referenced audio files."
@@ -193,19 +216,33 @@ struct ImportView: View {
         }
     }
 
-    private func confirmImport() {
+    @MainActor
+    private func confirmImport() async {
+        isImporting = true
+        defer {
+            isImporting = false
+        }
+
         do {
             guard let csvURL = pendingCSVURL, let notebook = destinationNotebook() else {
                 errorMessage = "Choose a CSV file and destination before importing."
                 return
             }
 
-            summary = try importer.import(url: csvURL, into: notebook, context: viewContext, mediaURLs: pendingMediaURLs)
+            let importSummary = try importer.import(url: csvURL, into: notebook, context: viewContext, mediaURLs: pendingMediaURLs)
+            summary = importSummary
             try viewContext.save()
             selectedNotebookID = notebook.id
             isCreatingNotebook = false
             newNotebookName = ""
             clearPendingPreview()
+
+            if autoMatchCZYZDAudio {
+                czyzdSummary = await czyzdAttachmentService.attachMissingAudio(
+                    toImportedCardIDs: importSummary.importedCardIDs,
+                    context: viewContext
+                )
+            }
         } catch {
             viewContext.rollback()
             errorMessage = error.localizedDescription

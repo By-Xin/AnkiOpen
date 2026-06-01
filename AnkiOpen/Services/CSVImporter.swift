@@ -8,6 +8,25 @@ struct ImportSummary: Equatable {
     let skippedRows: Int
     let audioFilesImported: Int
     let errors: [String]
+    let importedCardIDs: [UUID]
+
+    init(
+        fileName: String,
+        totalRows: Int,
+        importedRows: Int,
+        skippedRows: Int,
+        audioFilesImported: Int,
+        errors: [String],
+        importedCardIDs: [UUID] = []
+    ) {
+        self.fileName = fileName
+        self.totalRows = totalRows
+        self.importedRows = importedRows
+        self.skippedRows = skippedRows
+        self.audioFilesImported = audioFilesImported
+        self.errors = errors
+        self.importedCardIDs = importedCardIDs
+    }
 
     var errorsSummary: String? {
         errors.isEmpty ? nil : errors.joined(separator: "\n")
@@ -84,6 +103,7 @@ final class CSVImporter {
         var imported = 0
         var audioImported = 0
         var errors = plan.errors + plan.audioWarnings
+        var importedCardIDs: [UUID] = []
 
         for row in plan.rows {
             let unit = NotebookUnitMO.findOrCreate(
@@ -105,7 +125,7 @@ final class CSVImporter {
             )
             audioImported += [frontAudioFileName, backAudioFileName].compactMap { $0 }.count
 
-            _ = FlashcardMO.insert(
+            let card = FlashcardMO.insert(
                 front: row.front,
                 back: row.back,
                 unit: unit,
@@ -113,6 +133,7 @@ final class CSVImporter {
                 frontAudioFileName: frontAudioFileName,
                 backAudioFileName: backAudioFileName
             )
+            importedCardIDs.append(card.id)
             imported += 1
         }
 
@@ -122,7 +143,8 @@ final class CSVImporter {
             importedRows: imported,
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
-            errors: errors
+            errors: errors,
+            importedCardIDs: importedCardIDs
         )
 
         let batch = ImportBatchMO(context: context)

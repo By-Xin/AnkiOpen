@@ -5,6 +5,7 @@ enum AudioFileStoreError: LocalizedError {
     case missingFile(String)
     case copyFailed(String)
     case restoreFailed(String)
+    case storeDownloadedFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -16,6 +17,8 @@ enum AudioFileStoreError: LocalizedError {
             return "Could not copy audio file \(name) into local storage."
         case .restoreFailed(let name):
             return "Could not restore audio file \(name) into local storage."
+        case .storeDownloadedFailed(let name):
+            return "Could not store downloaded audio file \(name)."
         }
     }
 }
@@ -88,6 +91,30 @@ enum AudioFileStore {
             try data.write(to: destinationURL, options: [.atomic])
         } catch {
             throw AudioFileStoreError.restoreFailed(cleanName)
+        }
+    }
+
+    static func storeDownloadedAudio(data: Data, suggestedFileName: String) throws -> String {
+        let cleanName = URL(fileURLWithPath: suggestedFileName.trimmingCharacters(in: .whitespacesAndNewlines)).lastPathComponent
+        guard !cleanName.isEmpty else {
+            return ""
+        }
+
+        guard supportedExtensions.contains(URL(fileURLWithPath: cleanName).pathExtension.lowercased()) else {
+            throw AudioFileStoreError.unsupportedFormat(cleanName)
+        }
+
+        let storedName = "\(UUID().uuidString)-\(cleanName)"
+        let destinationURL = localURL(for: storedName)
+        do {
+            try FileManager.default.createDirectory(
+                at: audioDirectory(),
+                withIntermediateDirectories: true
+            )
+            try data.write(to: destinationURL, options: [.atomic])
+            return storedName
+        } catch {
+            throw AudioFileStoreError.storeDownloadedFailed(cleanName)
         }
     }
 
