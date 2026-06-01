@@ -17,6 +17,10 @@ struct CZYZDAudioDownload {
     let suggestedFileName: String
 }
 
+protocol CZYZDAudioResolving {
+    func downloadAudio(for term: String) async throws -> CZYZDAudioDownload?
+}
+
 enum CZYZDAudioResolverError: LocalizedError {
     case invalidSearchURL
     case invalidResponse
@@ -37,7 +41,7 @@ enum CZYZDAudioResolverError: LocalizedError {
     }
 }
 
-final class CZYZDAudioResolver {
+final class CZYZDAudioResolver: CZYZDAudioResolving {
     private let session: URLSession
 
     init(session: URLSession = .shared) {
@@ -135,9 +139,9 @@ final class CZYZDAudioResolver {
 
 @MainActor
 final class CZYZDAudioAttachmentService {
-    private let resolver: CZYZDAudioResolver
+    private let resolver: CZYZDAudioResolving
 
-    init(resolver: CZYZDAudioResolver = CZYZDAudioResolver()) {
+    init(resolver: CZYZDAudioResolving = CZYZDAudioResolver()) {
         self.resolver = resolver
     }
 
@@ -155,7 +159,38 @@ final class CZYZDAudioAttachmentService {
             format: "id IN %@ AND frontAudioFileName == nil AND isArchived == NO",
             cardIDs
         )
+        return await attachMissingAudio(matching: request, failedFetchCount: cardIDs.count, context: context)
+    }
 
+    func attachMissingAudio(
+        in notebook: NotebookMO,
+        unit: NotebookUnitMO? = nil,
+        context: NSManagedObjectContext
+    ) async -> CZYZDAudioAttachmentSummary {
+        let request = FlashcardMO.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \FlashcardMO.createdAt, ascending: true)]
+
+        if let unit {
+            request.predicate = NSPredicate(
+                format: "notebook == %@ AND unit == %@ AND frontAudioFileName == nil AND isArchived == NO",
+                notebook,
+                unit
+            )
+        } else {
+            request.predicate = NSPredicate(
+                format: "notebook == %@ AND frontAudioFileName == nil AND isArchived == NO",
+                notebook
+            )
+        }
+
+        return await attachMissingAudio(matching: request, failedFetchCount: 0, context: context)
+    }
+
+    private func attachMissingAudio(
+        matching request: NSFetchRequest<FlashcardMO>,
+        failedFetchCount: Int,
+        context: NSManagedObjectContext
+    ) async -> CZYZDAudioAttachmentSummary {
         let cards: [FlashcardMO]
         do {
             cards = try context.fetch(request)
@@ -163,7 +198,7 @@ final class CZYZDAudioAttachmentService {
             return CZYZDAudioAttachmentSummary(
                 checkedCards: 0,
                 matchedCards: 0,
-                failedCards: cardIDs.count,
+                failedCards: failedFetchCount,
                 messages: ["Could not load imported cards for CZYZD matching."]
             )
         }

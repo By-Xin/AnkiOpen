@@ -9,6 +9,10 @@ struct UnitDetailView: View {
     @State private var isShowingAddCard = false
     @State private var cardToEdit: FlashcardMO?
     @State private var errorMessage: String?
+    @State private var isFillingAudio = false
+    @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
+
+    private let czyzdAttachmentService = CZYZDAudioAttachmentService()
 
     init(unit: NotebookUnitMO) {
         self.unit = unit
@@ -38,6 +42,31 @@ struct UnitDetailView: View {
                     StudyView(initialNotebook: unit.notebook, initialUnit: unit)
                 } label: {
                     Label("Study This Unit", systemImage: "rectangle.stack.badge.play")
+                }
+
+                Button {
+                    Task {
+                        await fillMissingAudio()
+                    }
+                } label: {
+                    Label(
+                        isFillingAudio ? "Filling CZYZD Audio..." : "Fill Missing CZYZD Audio",
+                        systemImage: "speaker.wave.2.badge.plus"
+                    )
+                }
+                .disabled(isFillingAudio || cards.isEmpty)
+            }
+
+            if let czyzdSummary {
+                Section("CZYZD Audio") {
+                    LabeledContent("Checked", value: "\(czyzdSummary.checkedCards)")
+                    LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
+                    LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
+                    if let messages = czyzdSummary.messageSummary {
+                        Text(messages)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
@@ -110,5 +139,19 @@ struct UnitDetailView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func fillMissingAudio() async {
+        isFillingAudio = true
+        defer {
+            isFillingAudio = false
+        }
+
+        czyzdSummary = await czyzdAttachmentService.attachMissingAudio(
+            in: unit.notebook,
+            unit: unit,
+            context: viewContext
+        )
     }
 }
