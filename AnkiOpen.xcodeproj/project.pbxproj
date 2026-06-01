@@ -40,6 +40,10 @@
 		A00000000000000000000136 /* GlyphDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000036 /* GlyphDiagnostics.swift */; };
 		A00000000000000000000137 /* FlashcardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000037 /* FlashcardText.swift */; };
 		A00000000000000000000138 /* RareGlyphsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000038 /* RareGlyphsView.swift */; };
+		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
+		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
+		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
+		A00000000000000000000142 /* LICENSE-Hanazono.txt in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* LICENSE-Hanazono.txt */; };
 		A00000000000000000000120 /* CSVImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* CSVImporterTests.swift */; };
 		A00000000000000000000121 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* ReviewSchedulerTests.swift */; };
 		A00000000000000000000128 /* BackupExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* BackupExporterTests.swift */; };
@@ -102,6 +106,10 @@
 		A00000000000000000000036 /* GlyphDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlyphDiagnostics.swift; sourceTree = "<group>"; };
 		A00000000000000000000037 /* FlashcardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardText.swift; sourceTree = "<group>"; };
 		A00000000000000000000038 /* RareGlyphsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RareGlyphsView.swift; sourceTree = "<group>"; };
+		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
+		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
+		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
+		A00000000000000000000042 /* LICENSE-Hanazono.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-Hanazono.txt"; sourceTree = "<group>"; };
 		A00000000000000000000027 /* BackupExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporterTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +150,7 @@
 				A00000000000000000000703 /* Persistence */,
 				A00000000000000000000704 /* Services */,
 				A00000000000000000000708 /* Views */,
+				A00000000000000000000709 /* Resources */,
 			);
 			path = AnkiOpen;
 			sourceTree = "<group>";
@@ -231,6 +240,25 @@
 				A00000000000000000000038 /* RareGlyphsView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000709 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000710 /* GlyphFallbacks */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000710 /* GlyphFallbacks */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000039 /* glyph_u2003e.png */,
+				A00000000000000000000040 /* glyph_u28468.png */,
+				A00000000000000000000041 /* glyph_u2b897.png */,
+				A00000000000000000000042 /* LICENSE-Hanazono.txt */,
+			);
+			path = GlyphFallbacks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -331,7 +359,17 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A00000000000000000000904 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000904 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000139 /* glyph_u2003e.png in Resources */,
+				A00000000000000000000140 /* glyph_u28468.png in Resources */,
+				A00000000000000000000141 /* glyph_u2b897.png in Resources */,
+				A00000000000000000000142 /* LICENSE-Hanazono.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A00000000000000000000905 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		A00000000000000000000906 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */

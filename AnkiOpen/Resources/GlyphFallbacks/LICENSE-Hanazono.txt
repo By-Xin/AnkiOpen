@@ -1,0 +1,12 @@
+Glyph fallback PNGs in this folder were generated from Hanazono Mincho
+Version 8.030 (HanaMinB.otf and HanaMinC.otf), maintained by the cjkvi
+project and created from GlyphWiki data.
+
+Source:
+https://github.com/cjkvi/HanaMinAFDKO
+
+The upstream project states that its license follows the GlyphWiki license:
+https://glyphwiki.org/wiki/GlyphWiki:License
+
+Only the small PNG fallback glyphs needed by this app's current corpus are
+bundled here; the full Hanazono font files are not included.

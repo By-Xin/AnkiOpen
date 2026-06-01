@@ -128,3 +128,27 @@ enum GlyphInventory {
         }
     }
 }
+
+enum GlyphFallbackAsset {
+    static func imageName(for scalar: UnicodeScalar) -> String? {
+        imageNamesByScalar[scalar.value]
+    }
+
+    static func imageName(for character: Character) -> String? {
+        guard character.unicodeScalars.count == 1,
+              let scalar = character.unicodeScalars.first else {
+            return nil
+        }
+        return imageName(for: scalar)
+    }
+
+    static func containsFallbacks(_ text: String) -> Bool {
+        text.unicodeScalars.contains { imageNamesByScalar[$0.value] != nil }
+    }
+
+    private static let imageNamesByScalar: [UInt32: String] = [
+        0x2003E: "glyph_u2003e",
+        0x28468: "glyph_u28468",
+        0x2B897: "glyph_u2b897"
+    ]
+}

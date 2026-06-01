@@ -35,11 +35,7 @@ struct RareGlyphsView: View {
                             RareGlyphDetailView(item: item)
                         } label: {
                             HStack(spacing: 14) {
-                                Text(String(item.finding.scalar))
-                                    .flashcardCJKFont(size: 32, relativeTo: .title2)
-                                    .frame(width: 44, height: 44)
-                                    .background(.thinMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                GlyphPreview(scalar: item.finding.scalar, size: 44)
 
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(item.finding.codePoint)
@@ -68,11 +64,7 @@ private struct RareGlyphDetailView: View {
         List {
             Section("Glyph") {
                 HStack(spacing: 16) {
-                    Text(String(item.finding.scalar))
-                        .flashcardCJKFont(size: 56, relativeTo: .largeTitle)
-                        .frame(width: 76, height: 76)
-                        .background(.thinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    GlyphPreview(scalar: item.finding.scalar, size: 76)
 
                     VStack(alignment: .leading, spacing: 6) {
                         LabeledContent("Code point", value: item.finding.codePoint)
@@ -111,5 +103,30 @@ private struct RareGlyphDetailView: View {
             }
         }
         .navigationTitle(item.finding.codePoint)
+    }
+}
+
+private struct GlyphPreview: View {
+    let scalar: UnicodeScalar
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.thinMaterial)
+            if let imageName = GlyphFallbackAsset.imageName(for: scalar) {
+                Image(imageName)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.primary)
+                    .padding(size * 0.14)
+            } else {
+                Text(String(scalar))
+                    .flashcardCJKFont(size: size * 0.7, relativeTo: .title2)
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityLabel(Text(String(scalar)))
     }
 }
