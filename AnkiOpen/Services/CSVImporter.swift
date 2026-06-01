@@ -60,6 +60,9 @@ final class CSVImporter {
         context: NSManagedObjectContext,
         mediaURLs: [URL] = []
     ) throws -> ImportPreview {
+        let scopedMediaURLs = startAccessing(urls: mediaURLs)
+        defer { stopAccessing(scopedMediaURLs) }
+
         let existingPairs = try notebook.map { try existingCardPairs(in: $0, context: context) } ?? []
         let plan = try analyze(url: url, existingPairs: existingPairs, mediaURLs: mediaURLs)
         return plan.preview
@@ -71,11 +74,12 @@ final class CSVImporter {
         context: NSManagedObjectContext,
         mediaURLs: [URL] = []
     ) throws -> ImportSummary {
+        let scopedMediaURLs = startAccessing(urls: mediaURLs)
+        defer { stopAccessing(scopedMediaURLs) }
+
         let existingPairs = try existingCardPairs(in: notebook, context: context)
         let plan = try analyze(url: url, existingPairs: existingPairs, mediaURLs: mediaURLs)
-        let mediaByFileName = mediaURLs.reduce(into: [String: URL]()) { result, url in
-            result[url.lastPathComponent] = url
-        }
+        let mediaByFileName = mediaFilesByFileName(from: mediaURLs)
 
         var imported = 0
         var audioImported = 0
@@ -157,9 +161,7 @@ final class CSVImporter {
         let rows = CSVParser.parse(contents)
         let mapping = CSVColumnMapping(rows: rows)
         let bodyRows = mapping.bodyRows
-        let mediaByFileName = mediaURLs.reduce(into: [String: URL]()) { result, url in
-            result[url.lastPathComponent] = url
-        }
+        let mediaByFileName = mediaFilesByFileName(from: mediaURLs)
 
         var seenPairs = existingPairs
         var importRows: [CSVImportRow] = []
@@ -290,6 +292,42 @@ final class CSVImporter {
         request.predicate = NSPredicate(format: "notebook == %@", notebook)
         request.propertiesToFetch = ["front", "back"]
         return Set(try context.fetch(request).map { CardPair(front: $0.front, back: $0.back) })
+    }
+
+    private func mediaFilesByFileName(from urls: [URL]) -> [String: URL] {
+        urls.reduce(into: [String: URL]()) { result, url in
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else {
+                return
+            }
+
+            if isDirectory.boolValue {
+                guard let enumerator = FileManager.default.enumerator(
+                    at: url,
+                    includingPropertiesForKeys: [.isRegularFileKey],
+                    options: [.skipsHiddenFiles]
+                ) else {
+                    return
+                }
+
+                for case let fileURL as URL in enumerator {
+                    guard AudioFileStore.isSupportedAudioFile(fileURL) else {
+                        continue
+                    }
+                    result[fileURL.lastPathComponent] = fileURL
+                }
+            } else if AudioFileStore.isSupportedAudioFile(url) {
+                result[url.lastPathComponent] = url
+            }
+        }
+    }
+
+    private func startAccessing(urls: [URL]) -> [URL] {
+        urls.filter { $0.startAccessingSecurityScopedResource() }
+    }
+
+    private func stopAccessing(_ urls: [URL]) {
+        urls.forEach { $0.stopAccessingSecurityScopedResource() }
     }
 }
 

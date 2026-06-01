@@ -42,14 +42,14 @@ struct ImportView: View {
                 }
 
                 Section {
-                    Text("CSV columns: front, back, optional unit, optional audio/frontAudio/backAudio. Blank unit values import into Default.")
+                    Text("CSV columns: 汉字/读音/unit or front/back/unit, optional audio/frontAudio/backAudio. Select referenced audio files or an audio folder.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
                     Button {
                         isShowingImporter = true
                     } label: {
-                        Label("Choose CSV and Audio Files", systemImage: "doc.badge.plus")
+                        Label("Choose CSV and Audio", systemImage: "doc.badge.plus")
                     }
                     .disabled(!hasDestination)
                 }
@@ -133,7 +133,7 @@ struct ImportView: View {
             }
             .fileImporter(
                 isPresented: $isShowingImporter,
-                allowedContentTypes: [.commaSeparatedText, .text, .audio],
+                allowedContentTypes: [.commaSeparatedText, .text, .audio, .folder],
                 allowsMultipleSelection: true
             ) { result in
                 handleFileSelection(result)
