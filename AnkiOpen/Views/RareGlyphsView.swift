@@ -46,6 +46,7 @@ struct RareGlyphsView: View {
                                     Text("\(item.occurrences) occurrences in \(item.cards.count) cards")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)
+                                    GlyphFallbackStatusLabel(finding: item.finding)
                                 }
                             }
                         }
@@ -70,6 +71,7 @@ private struct RareGlyphDetailView: View {
                         LabeledContent("Code point", value: item.finding.codePoint)
                         LabeledContent("Range", value: item.finding.category.rawValue)
                         LabeledContent("Occurrences", value: "\(item.occurrences)")
+                        LabeledContent("Fallback", value: item.finding.fallbackStatusTitle)
                     }
                 }
             }
@@ -103,6 +105,16 @@ private struct RareGlyphDetailView: View {
             }
         }
         .navigationTitle(item.finding.codePoint)
+    }
+}
+
+private struct GlyphFallbackStatusLabel: View {
+    let finding: GlyphDiagnostics.Finding
+
+    var body: some View {
+        Label(finding.fallbackStatusTitle, systemImage: finding.hasFallback ? "checkmark.circle" : "exclamationmark.triangle")
+            .font(.caption)
+            .foregroundStyle(finding.hasFallback ? .green : .orange)
     }
 }
 

@@ -8,6 +8,14 @@ struct GlyphDiagnostics {
         var codePoint: String {
             "U+\(String(scalar.value, radix: 16).uppercased())"
         }
+
+        var hasFallback: Bool {
+            GlyphFallbackAsset.imageName(for: scalar) != nil
+        }
+
+        var fallbackStatusTitle: String {
+            hasFallback ? "Fallback available" : "Missing fallback"
+        }
     }
 
     enum Category: String {
@@ -40,7 +48,7 @@ struct GlyphDiagnostics {
         }
 
         let visible = findings.prefix(limit).map { finding in
-            "\(finding.codePoint) (\(finding.category.rawValue))"
+            "\(finding.codePoint) (\(finding.category.rawValue), \(finding.fallbackStatusTitle.lowercased()))"
         }
         let suffix = findings.count > limit ? " +\(findings.count - limit) more" : ""
         return visible.joined(separator: ", ") + suffix
@@ -57,7 +65,7 @@ struct GlyphDiagnostics {
         guard let summary = warningSummary(for: text) else {
             return nil
         }
-        return "Line \(sourceLine): \(side) contains glyphs that may need a bundled font or custom glyph fallback: \(summary)"
+        return "Line \(sourceLine): \(side) contains rare glyphs: \(summary)"
     }
 
     private static func category(for value: UInt32) -> Category? {
@@ -144,6 +152,10 @@ enum GlyphFallbackAsset {
 
     static func containsFallbacks(_ text: String) -> Bool {
         text.unicodeScalars.contains { imageNamesByScalar[$0.value] != nil }
+    }
+
+    static func hasFallback(for finding: GlyphDiagnostics.Finding) -> Bool {
+        imageName(for: finding.scalar) != nil
     }
 
     private static let imageNamesByScalar: [UInt32: String] = [
