@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## Done
 
@@ -16,8 +16,8 @@ Last updated: 2026-05-31
 - Added JSON backup restore from Settings with duplicate handling for notebooks, units, cards, and review logs.
 - Upgraded backups to `schemaVersion: 3` so referenced audio files are embedded in JSON and restored into local audio storage.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
-- Added a local scheduler fallback so development type-checking can continue when the package is unavailable.
-- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, review scheduling, backup export, backup restore, media restore, and v2 backup compatibility.
+- Added an app-local FSRS-6 scheduler with default parameters and retention `0.90`, replacing the earlier simplified fallback in the production review path.
+- Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
@@ -32,6 +32,8 @@ Last updated: 2026-05-31
   `xcodebuild -project AnkiOpen.xcodeproj -scheme AnkiOpen -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -derivedDataPath DerivedData build CODE_SIGNING_ALLOWED=NO`
 - Passed Xcode tests:
   `xcodebuild test -project AnkiOpen.xcodeproj -scheme AnkiOpen -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO`
+- Passed Xcode tests on 2026-06-01:
+  `xcodebuild test -project AnkiOpen.xcodeproj -scheme AnkiOpen -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath DerivedData`
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Current Study Behavior
@@ -40,7 +42,8 @@ Last updated: 2026-05-31
 - `All` loads all unarchived cards in the selected notebook scope.
 - `Forced` loads unarchived cards with `dueAt > now`, ordered by due date.
 - It supports reviewing all notebooks, one selected notebook, or one selected unit.
-- All modes still write review logs and update the card's next due date when a rating is selected.
+- All modes write review logs and update the card's FSRS-6 state fields when a rating is selected.
+- New cards enter same-day learning steps for `Again`, `Hard`, and `Good`; `Easy` graduates directly to review.
 
 ## CSV Import
 
@@ -64,11 +67,7 @@ Last updated: 2026-05-31
 - Restore deduplicates notebooks, units, cards, and review logs.
 - Restore still accepts legacy `schemaVersion: 2` backups without embedded media files.
 
-## Blocked
-
-- The upstream `swift-fsrs` 5.0.0 package builds, but its scheduler initializer and `next` method are not public, so the app currently uses the local scheduler fallback.
-
 ## Next
 
-- Decide whether to fork/patch `swift-fsrs` or replace it with an FSRS implementation whose scheduler API is public.
 - Replace the default app icon and add a basic visual identity.
+- Add GitHub Actions CI for simulator build and tests.

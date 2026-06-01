@@ -13,13 +13,13 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Audio playback on the front and back side of a card
 - Review logs and due-card querying
 - JSON backup export and restore from Settings
-- FSRS Swift package integration, with a local scheduler fallback for development builds
+- FSRS-6 spaced repetition scheduling with default retention `0.90`
 
 ## Development
 
 Open `AnkiOpen.xcodeproj` in Xcode, select the `AnkiOpen` scheme, and run on an iOS simulator.
 
-The project references [`open-spaced-repetition/swift-fsrs`](https://github.com/open-spaced-repetition/swift-fsrs). Xcode will resolve the package automatically when network access is available.
+The project references [`open-spaced-repetition/swift-fsrs`](https://github.com/open-spaced-repetition/swift-fsrs). Xcode will resolve the package automatically when network access is available. The production review path currently uses the app-local FSRS-6 scheduler because `swift-fsrs` 5.0.0 does not expose the needed scheduling API publicly.
 
 ## CSV Import
 
@@ -83,6 +83,7 @@ All modes still write review logs and update the card's next due date when a rat
 - [x] JSON backup export
 - [x] JSON backup restore
 - [x] Audio-bundled JSON backup
+- [x] FSRS-6 scheduling defaults
 - [ ] App icon and polished visual identity
 - [ ] TestFlight/App Store setup
 

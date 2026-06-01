@@ -41,6 +41,7 @@
 		A00000000000000000000137 /* FlashcardText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000037 /* FlashcardText.swift */; };
 		A00000000000000000000138 /* RareGlyphsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000038 /* RareGlyphsView.swift */; };
 		A00000000000000000000143 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000043 /* ReportsView.swift */; };
+		A00000000000000000000144 /* FSRS6Scheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* FSRS6Scheduler.swift */; };
 		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
 		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
 		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
@@ -108,6 +109,7 @@
 		A00000000000000000000037 /* FlashcardText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardText.swift; sourceTree = "<group>"; };
 		A00000000000000000000038 /* RareGlyphsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RareGlyphsView.swift; sourceTree = "<group>"; };
 		A00000000000000000000043 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
+		A00000000000000000000044 /* FSRS6Scheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSRS6Scheduler.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
 		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
 		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 				A00000000000000000000031 /* BackupImporter.swift */,
 				A00000000000000000000032 /* CZYZDAudioResolver.swift */,
 				A00000000000000000000036 /* GlyphDiagnostics.swift */,
+				A00000000000000000000044 /* FSRS6Scheduler.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -414,6 +417,7 @@
 				A00000000000000000000135 /* ReportIssueView.swift in Sources */,
 				A00000000000000000000143 /* ReportsView.swift in Sources */,
 				A00000000000000000000136 /* GlyphDiagnostics.swift in Sources */,
+				A00000000000000000000144 /* FSRS6Scheduler.swift in Sources */,
 				A00000000000000000000137 /* FlashcardText.swift in Sources */,
 				A00000000000000000000138 /* RareGlyphsView.swift in Sources */,
 			);
