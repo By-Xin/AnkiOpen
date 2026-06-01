@@ -30,6 +30,22 @@ extension CardReportMO {
         report.card = card
         return report
     }
+
+    var isResolved: Bool {
+        resolvedAt != nil
+    }
+
+    var categoryTitle: String {
+        ReportCategory(rawValue: category)?.title ?? "Other"
+    }
+
+    func markResolved(at date: Date = Date()) {
+        resolvedAt = date
+    }
+
+    func reopen() {
+        resolvedAt = nil
+    }
 }
 
 enum ReportCategory: String, CaseIterable, Identifiable {

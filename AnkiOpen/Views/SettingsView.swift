@@ -71,6 +71,17 @@ struct SettingsView: View {
                 }
 
                 Section("Reports") {
+                    NavigationLink {
+                        ReportsView()
+                    } label: {
+                        HStack {
+                            Label("Reports", systemImage: "exclamationmark.bubble")
+                            Spacer()
+                            Text("\(openReportsCount) open")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     LabeledContent("Local reports", value: "\(reports.count)")
                     Text("Reports are saved locally for now. Cloud submission/export can be added after the correction workflow is stable.")
                         .font(.footnote)
@@ -103,6 +114,10 @@ struct SettingsView: View {
                 Text(errorMessage ?? "")
             })
         }
+    }
+
+    private var openReportsCount: Int {
+        reports.filter { !$0.isResolved }.count
     }
 
     private func createBackup() {
