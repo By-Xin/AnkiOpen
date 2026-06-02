@@ -28,5 +28,6 @@ struct RootView: View {
                     Label("Settings", systemImage: "gearshape")
                 }
         }
+        .tint(AppPalette.tea)
     }
 }

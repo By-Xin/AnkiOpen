@@ -38,6 +38,7 @@ struct StudyView: View {
                 if let selectedUnit {
                     LabeledContent("Unit", value: "\(selectedUnit.notebook.name) / \(selectedUnit.name)")
                         .padding(.horizontal)
+                        .foregroundStyle(.secondary)
                 } else {
                     Picker("Notebook", selection: notebookSelection) {
                         Text("All Notebooks").tag(UUID?.none)
@@ -66,9 +67,13 @@ struct StudyView: View {
 
                 if let card = currentCard {
                     VStack(spacing: 18) {
-                        Text("\(currentIndex + 1) of \(dueCards.count)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        HStack {
+                            MetricPill(value: "\(currentIndex + 1)", label: "now")
+                            ProgressView(value: Double(currentIndex + 1), total: Double(max(dueCards.count, 1)))
+                                .tint(AppPalette.tea)
+                            MetricPill(value: "\(dueCards.count)", label: "due", tint: AppPalette.amber)
+                        }
+                        .padding(.horizontal)
 
                         Button {
                             withAnimation(.easeInOut) {
@@ -78,12 +83,18 @@ struct StudyView: View {
                             VStack(spacing: 18) {
                                 HStack(spacing: 8) {
                                     Text(isShowingBack ? "Back" : "Front")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(isShowingBack ? AppPalette.amber : AppPalette.tea)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 5)
+                                        .background(
+                                            (isShowingBack ? AppPalette.amber : AppPalette.tea).opacity(0.12),
+                                            in: Capsule()
+                                        )
                                     if audioFileName(for: card) != nil {
                                         Image(systemName: "speaker.wave.2.fill")
                                             .font(.caption)
-                                            .foregroundStyle(.blue)
+                                            .foregroundStyle(AppPalette.tea)
                                     }
                                 }
                                 let displayText = isShowingBack ? card.back : card.front
@@ -100,11 +111,19 @@ struct StudyView: View {
                                 if GlyphDiagnostics.containsRiskyGlyphs(displayText) {
                                     Label("Rare glyphs", systemImage: "textformat.alt")
                                         .font(.caption)
-                                        .foregroundStyle(.orange)
+                                        .foregroundStyle(AppPalette.cinnabar)
                                 }
                             }
                             .padding(24)
-                            .background(.thinMaterial)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(.secondarySystemGroupedBackground))
+                                    .shadow(color: .black.opacity(0.06), radius: 18, x: 0, y: 10)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(AppPalette.tea.opacity(0.16), lineWidth: 1)
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                         .buttonStyle(.plain)
@@ -120,13 +139,14 @@ struct StudyView: View {
                         }
 
                         if isShowingBack {
-                            HStack(spacing: 10) {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
                                 ForEach(ReviewRating.allCases) { rating in
                                     Button(rating.title) {
                                         review(card, rating: rating)
                                     }
                                     .buttonStyle(.borderedProminent)
                                     .controlSize(.regular)
+                                    .tint(tint(for: rating))
                                 }
                             }
                             .padding(.horizontal)
@@ -151,6 +171,8 @@ struct StudyView: View {
                     .frame(maxHeight: .infinity)
                 }
             }
+            .padding(.top, 8)
+            .background(AppPalette.paper.ignoresSafeArea())
             .navigationTitle("Study")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -223,5 +245,18 @@ struct StudyView: View {
 
     private func audioFileName(for card: FlashcardMO) -> String? {
         isShowingBack ? card.backAudioFileName : card.frontAudioFileName
+    }
+
+    private func tint(for rating: ReviewRating) -> Color {
+        switch rating {
+        case .again:
+            return AppPalette.cinnabar
+        case .hard:
+            return AppPalette.amber
+        case .good:
+            return AppPalette.tea
+        case .easy:
+            return .indigo
+        }
     }
 }

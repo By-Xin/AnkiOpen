@@ -50,10 +50,10 @@ struct ImportView: View {
                 }
 
                 Section("CSV Format") {
-                    LabeledContent("Required", value: "front, back")
-                    LabeledContent("Units", value: "unit")
-                    LabeledContent("Audio", value: "audio or frontAudio/backAudio")
-                    LabeledContent("Dictionary", value: "czyzd or 查词")
+                    Label("Required: front, back", systemImage: "checkmark.seal")
+                    Label("Units: unit", systemImage: "folder")
+                    Label("Audio: audio or frontAudio/backAudio", systemImage: "speaker.wave.2")
+                    Label("Dictionary: czyzd or 查词", systemImage: "character.book.closed")
                     Text("Chinese headers are supported: 汉字, 读音, 单元, 音频, 查词. Empty unit values import into Default. Select referenced audio files or the folder that contains them.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -183,6 +183,8 @@ struct ImportView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AppPalette.paper.ignoresSafeArea())
             .navigationTitle("Import")
             .onAppear {
                 if selectedNotebookID == nil {

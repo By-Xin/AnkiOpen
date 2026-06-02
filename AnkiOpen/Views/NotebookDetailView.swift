@@ -30,8 +30,18 @@ struct NotebookDetailView: View {
                 NavigationLink {
                     StudyView(initialNotebook: notebook)
                 } label: {
-                    Label("Study Due Cards", systemImage: "rectangle.stack.badge.play")
+                    HStack {
+                        LeadingSymbol(systemImage: "rectangle.stack.badge.play")
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Study Due Cards")
+                                .font(.headline)
+                            Text("\(notebook.activeCardsCount) active cards")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
+                .appListRow()
 
                 Button {
                     Task {
@@ -44,6 +54,7 @@ struct NotebookDetailView: View {
                     )
                 }
                 .disabled(isFillingAudio || notebook.activeCardsCount == 0)
+                .appListRow()
             }
 
             if let czyzdSummary {
@@ -64,14 +75,21 @@ struct NotebookDetailView: View {
                     NavigationLink {
                         UnitDetailView(unit: unit)
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(unit.name)
-                                .font(.headline)
-                            Text("\(unit.activeCardsCount) cards")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                        HStack(spacing: 12) {
+                            LeadingSymbol(systemImage: "folder")
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(unit.name)
+                                    .font(.headline.weight(.semibold))
+                                    .foregroundStyle(AppPalette.ink)
+                                Text("Unit \(unit.sortIndex + 1)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            MetricPill(value: "\(unit.activeCardsCount)", label: "cards", tint: AppPalette.amber)
                         }
                     }
+                    .appListRow()
                     .swipeActions(edge: .leading) {
                         Button {
                             unitToEdit = unit
@@ -90,6 +108,8 @@ struct NotebookDetailView: View {
                 }
             }
         }
+        .listStyle(.insetGrouped)
+        .appScreenBackground()
         .overlay {
             if units.isEmpty {
                 EmptyStateView(

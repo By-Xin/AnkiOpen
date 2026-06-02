@@ -41,8 +41,18 @@ struct UnitDetailView: View {
                 NavigationLink {
                     StudyView(initialNotebook: unit.notebook, initialUnit: unit)
                 } label: {
-                    Label("Study This Unit", systemImage: "rectangle.stack.badge.play")
+                    HStack {
+                        LeadingSymbol(systemImage: "rectangle.stack.badge.play")
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Study This Unit")
+                                .font(.headline)
+                            Text("\(cards.count) active cards")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
+                .appListRow()
 
                 Button {
                     Task {
@@ -55,6 +65,7 @@ struct UnitDetailView: View {
                     )
                 }
                 .disabled(isFillingAudio || cards.isEmpty)
+                .appListRow()
             }
 
             if let czyzdSummary {
@@ -75,33 +86,37 @@ struct UnitDetailView: View {
                     Button {
                         cardToEdit = card
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            FlashcardText(
-                                text: card.front,
-                                size: 17,
-                                relativeTo: .headline,
-                                weight: .semibold,
-                                lineLimit: 2
-                            )
-                                .foregroundStyle(.primary)
-                            FlashcardText(
-                                text: card.back,
-                                size: 15,
-                                relativeTo: .subheadline,
-                                weight: .regular,
-                                lineLimit: 2
-                            )
-                                .foregroundStyle(.secondary)
-                            if GlyphDiagnostics.containsRiskyGlyphs(card.front + card.back) {
-                                Label("Rare glyphs", systemImage: "textformat.alt")
+                        HStack(alignment: .top, spacing: 12) {
+                            LeadingSymbol(systemImage: "character.cursor.ibeam", tint: AppPalette.amber)
+                            VStack(alignment: .leading, spacing: 6) {
+                                FlashcardText(
+                                    text: card.front,
+                                    size: 17,
+                                    relativeTo: .headline,
+                                    weight: .semibold,
+                                    lineLimit: 2
+                                )
+                                    .foregroundStyle(AppPalette.ink)
+                                FlashcardText(
+                                    text: card.back,
+                                    size: 15,
+                                    relativeTo: .subheadline,
+                                    weight: .regular,
+                                    lineLimit: 2
+                                )
+                                    .foregroundStyle(.secondary)
+                                if GlyphDiagnostics.containsRiskyGlyphs(card.front + card.back) {
+                                    Label("Rare glyphs", systemImage: "textformat.alt")
+                                        .font(.caption)
+                                        .foregroundStyle(AppPalette.cinnabar)
+                                }
+                                Text("Due \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.caption)
-                                    .foregroundStyle(.orange)
+                                    .foregroundStyle(.tertiary)
                             }
-                            Text("Due \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
                         }
                     }
+                    .appListRow()
                     .swipeActions {
                         Button(role: .destructive) {
                             archive(card)
@@ -112,6 +127,8 @@ struct UnitDetailView: View {
                 }
             }
         }
+        .listStyle(.insetGrouped)
+        .appScreenBackground()
         .searchable(text: $searchText, prompt: "Search cards")
         .overlay {
             if cards.isEmpty {

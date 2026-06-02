@@ -25,9 +25,16 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("Review Scheduler") {
-                    LabeledContent("Algorithm", value: "FSRS")
-                    LabeledContent("Retention", value: "0.90")
-                    LabeledContent("Version", value: "FSRS-6 defaults")
+                    HStack(spacing: 12) {
+                        LeadingSymbol(systemImage: "calendar.badge.clock")
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("FSRS")
+                                .font(.headline)
+                            Text("Retention 0.90 · FSRS-6 defaults")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 Section("DeepSeek") {
@@ -133,6 +140,8 @@ struct SettingsView: View {
                     LabeledContent("License", value: "MIT")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AppPalette.paper.ignoresSafeArea())
             .navigationTitle("Settings")
             .fileImporter(
                 isPresented: $isShowingBackupImporter,

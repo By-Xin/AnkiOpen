@@ -21,14 +21,22 @@ struct NotebooksView: View {
                     NavigationLink {
                         NotebookDetailView(notebook: notebook)
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(notebook.name)
-                                .font(.headline)
-                            Text("\(notebook.unitsCount) units · \(notebook.activeCardsCount) cards")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                        HStack(spacing: 12) {
+                            LeadingSymbol(systemImage: "books.vertical")
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(notebook.name)
+                                    .font(.headline.weight(.semibold))
+                                    .foregroundStyle(AppPalette.ink)
+                                Text("Updated \(notebook.updatedAt.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 12)
+                            MetricPill(value: "\(notebook.unitsCount)", label: "units")
+                            MetricPill(value: "\(notebook.activeCardsCount)", label: "cards", tint: AppPalette.amber)
                         }
                     }
+                    .appListRow()
                     .swipeActions(edge: .leading) {
                         Button {
                             notebookToEdit = notebook
@@ -40,6 +48,8 @@ struct NotebooksView: View {
                 }
                 .onDelete(perform: delete)
             }
+            .listStyle(.insetGrouped)
+            .appScreenBackground()
             .overlay {
                 if notebooks.isEmpty {
                     EmptyStateView(
@@ -50,6 +60,7 @@ struct NotebooksView: View {
                 }
             }
             .navigationTitle("Notebooks")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

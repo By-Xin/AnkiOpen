@@ -22,6 +22,7 @@ struct DictionaryView: View {
             List {
                 Section("Search") {
                     HStack {
+                        LeadingSymbol(systemImage: "magnifyingglass")
                         TextField("Word or phrase", text: $query)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
@@ -37,7 +38,7 @@ struct DictionaryView: View {
                         }
                         .disabled(query.trimmed.isEmpty || isSearching)
                     }
-
+                    .appListRow()
                 }
 
                 Section("Dictionary Notebook") {
@@ -106,6 +107,7 @@ struct DictionaryView: View {
                                 HStack(alignment: .firstTextBaseline) {
                                     Text(entry.term)
                                         .flashcardCJKFont(size: 22, relativeTo: .title3, weight: .semibold)
+                                        .foregroundStyle(AppPalette.ink)
 
                                     Spacer()
 
@@ -164,6 +166,7 @@ struct DictionaryView: View {
                                 }
                             }
                             .padding(.vertical, 4)
+                            .appListRow()
                         }
                     }
                 } else if !query.trimmed.isEmpty, !isSearching {
@@ -177,6 +180,8 @@ struct DictionaryView: View {
                     .listRowBackground(Color.clear)
                 }
             }
+            .listStyle(.insetGrouped)
+            .appScreenBackground()
             .navigationTitle("Dictionary")
             .sheet(item: $entryToSave) { entry in
                 NavigationStack {
