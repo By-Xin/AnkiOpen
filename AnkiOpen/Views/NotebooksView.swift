@@ -6,6 +6,7 @@ struct NotebooksView: View {
     @FetchRequest private var notebooks: FetchedResults<NotebookMO>
     @FetchRequest private var cards: FetchedResults<FlashcardMO>
     @FetchRequest private var reports: FetchedResults<CardReportMO>
+    @FetchRequest private var reviewLogs: FetchedResults<ReviewLogMO>
     @State private var isShowingAddNotebook = false
     @State private var notebookToEdit: NotebookMO?
     @State private var errorMessage: String?
@@ -23,10 +24,14 @@ struct NotebooksView: View {
         let reportRequest = CardReportMO.fetchRequest()
         reportRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CardReportMO.createdAt, ascending: false)]
         _reports = FetchRequest(fetchRequest: reportRequest, animation: .default)
+
+        let reviewLogRequest = ReviewLogMO.fetchRequest()
+        reviewLogRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ReviewLogMO.reviewedAt, ascending: false)]
+        _reviewLogs = FetchRequest(fetchRequest: reviewLogRequest, animation: .default)
     }
 
     private var metrics: HomeDashboardMetrics {
-        HomeDashboardMetrics(cards: Array(cards), reports: Array(reports), at: now)
+        HomeDashboardMetrics(cards: Array(cards), reports: Array(reports), reviewLogs: Array(reviewLogs), at: now)
     }
 
     var body: some View {
@@ -53,6 +58,8 @@ struct NotebooksView: View {
                     .appListRow()
 
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
+                        MetricPill(value: "\(metrics.reviewedToday)", label: "今日复习", tint: AppPalette.tea)
+                        MetricPill(value: "\(metrics.reviewedLast7Days)", label: "近7日", tint: AppPalette.tea)
                         MetricPill(value: "\(metrics.activeCards)", label: "可用")
                         MetricPill(value: "\(metrics.archivedCards)", label: "归档", tint: .secondary)
                         MetricPill(value: "\(metrics.missingAudioCards)", label: "缺音频", tint: AppPalette.amber)

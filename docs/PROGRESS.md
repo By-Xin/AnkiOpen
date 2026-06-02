@@ -29,6 +29,7 @@ Last updated: 2026-06-02
 - Added archived card visibility and restore controls inside unit detail so archived cards can be recovered into study queues.
 - Added a Chinese home dashboard with due, active, archived, missing-audio, and open-feedback counts plus notebook due subtitles.
 - Added a Study completion summary with reviewed-card count, per-rating counts, and quick continuation actions.
+- Added home dashboard review activity counts for today and the last 7 days.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
@@ -80,6 +81,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after CSV archived-state import on 2026-06-02: 78 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after home dashboard overview on 2026-06-02: 79 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Study completion summary on 2026-06-02: 80 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after home review activity metrics on 2026-06-02: 81 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 

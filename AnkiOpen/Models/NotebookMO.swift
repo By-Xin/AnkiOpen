@@ -48,8 +48,16 @@ struct HomeDashboardMetrics: Equatable {
     let archivedCards: Int
     let missingAudioCards: Int
     let openReports: Int
+    let reviewedToday: Int
+    let reviewedLast7Days: Int
 
-    init(cards: [FlashcardMO], reports: [CardReportMO], at date: Date = Date()) {
+    init(
+        cards: [FlashcardMO],
+        reports: [CardReportMO],
+        reviewLogs: [ReviewLogMO] = [],
+        at date: Date = Date(),
+        calendar: Calendar = .current
+    ) {
         dueCards = cards.filter { !$0.isArchived && $0.dueAt <= date }.count
         activeCards = cards.filter { !$0.isArchived }.count
         archivedCards = cards.filter(\.isArchived).count
@@ -57,5 +65,10 @@ struct HomeDashboardMetrics: Equatable {
             !$0.isArchived && ($0.frontAudioFileName == nil || $0.backAudioFileName == nil)
         }.count
         openReports = reports.filter { !$0.isResolved }.count
+
+        let startOfToday = calendar.startOfDay(for: date)
+        let startOfSevenDayWindow = calendar.date(byAdding: .day, value: -6, to: startOfToday) ?? startOfToday
+        reviewedToday = reviewLogs.filter { $0.reviewedAt >= startOfToday && $0.reviewedAt <= date }.count
+        reviewedLast7Days = reviewLogs.filter { $0.reviewedAt >= startOfSevenDayWindow && $0.reviewedAt <= date }.count
     }
 }
