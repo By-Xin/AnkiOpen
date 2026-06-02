@@ -107,6 +107,16 @@ struct ReportCategoryCount: Equatable, Identifiable {
     }
 }
 
+struct ReportTrendDay: Equatable, Identifiable {
+    let dayStart: Date
+    let createdReports: Int
+    let resolvedReports: Int
+
+    var id: Date {
+        dayStart
+    }
+}
+
 struct ReportAnalytics: Equatable {
     let totalReports: Int
     let openReports: Int
@@ -114,14 +124,16 @@ struct ReportAnalytics: Equatable {
     let correctionLogs: Int
     let openCategoryCounts: [ReportCategoryCount]
     let resolvedCategoryCounts: [ReportCategoryCount]
+    let sevenDayTrend: [ReportTrendDay]
 
-    init(reports: [CardReportMO]) {
+    init(reports: [CardReportMO], at date: Date = Date(), calendar: Calendar = .current) {
         totalReports = reports.count
         openReports = reports.filter { !$0.isResolved }.count
         resolvedReports = reports.filter(\.isResolved).count
         correctionLogs = Set(reports.flatMap { $0.correctionLogs.map(\.id) }).count
         openCategoryCounts = Self.categoryCounts(for: reports.filter { !$0.isResolved })
         resolvedCategoryCounts = Self.categoryCounts(for: reports.filter(\.isResolved))
+        sevenDayTrend = Self.trendDays(reports: reports, at: date, calendar: calendar)
     }
 
     var hasReports: Bool {
@@ -138,6 +150,22 @@ struct ReportAnalytics: Equatable {
 
     var resolvedCategorySummary: String {
         Self.summaryText(for: resolvedCategoryCounts)
+    }
+
+    var createdLast7Days: Int {
+        sevenDayTrend.reduce(0) { $0 + $1.createdReports }
+    }
+
+    var resolvedLast7Days: Int {
+        sevenDayTrend.reduce(0) { $0 + $1.resolvedReports }
+    }
+
+    var resolutionRateText: String {
+        guard totalReports > 0 else {
+            return "无"
+        }
+        let percent = Int((Double(resolvedReports) / Double(totalReports) * 100).rounded())
+        return "\(percent)%"
     }
 
     private static func categoryCounts(for reports: [CardReportMO]) -> [ReportCategoryCount] {
@@ -165,6 +193,44 @@ struct ReportAnalytics: Equatable {
         return categoryCounts
             .map { "\($0.title) \($0.count)" }
             .joined(separator: "、")
+    }
+
+    private static func trendDays(
+        reports: [CardReportMO],
+        at date: Date,
+        calendar: Calendar
+    ) -> [ReportTrendDay] {
+        let todayStart = calendar.startOfDay(for: date)
+        guard let firstDay = calendar.date(byAdding: .day, value: -6, to: todayStart),
+              let tomorrow = calendar.date(byAdding: .day, value: 1, to: todayStart) else {
+            return []
+        }
+
+        return (0..<7).compactMap { offset in
+            guard let dayStart = calendar.date(byAdding: .day, value: offset, to: firstDay),
+                  let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
+                return nil
+            }
+
+            let created = reports.filter { report in
+                report.createdAt >= dayStart && report.createdAt < dayEnd
+            }.count
+            let resolved = reports.filter { report in
+                guard let resolvedAt = report.resolvedAt else {
+                    return false
+                }
+                return resolvedAt >= dayStart && resolvedAt < dayEnd
+            }.count
+
+            guard dayStart >= firstDay && dayStart < tomorrow else {
+                return nil
+            }
+            return ReportTrendDay(
+                dayStart: dayStart,
+                createdReports: created,
+                resolvedReports: resolved
+            )
+        }
     }
 }
 

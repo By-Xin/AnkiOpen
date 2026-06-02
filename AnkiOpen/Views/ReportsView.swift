@@ -123,20 +123,72 @@ private struct ReportAnalyticsSection: View {
     let analytics: ReportAnalytics
 
     var body: some View {
-        Section("概览") {
-            HStack(spacing: 10) {
-                ReportMetric(value: "\(analytics.openReports)", label: "未处理", tint: .orange)
-                ReportMetric(value: "\(analytics.resolvedReports)", label: "已处理", tint: .green)
-                ReportMetric(value: "\(analytics.correctionLogs)", label: "修正", tint: .blue)
-            }
-            .padding(.vertical, 4)
+        Group {
+            Section("概览") {
+                HStack(spacing: 10) {
+                    ReportMetric(value: "\(analytics.openReports)", label: "未处理", tint: .orange)
+                    ReportMetric(value: "\(analytics.resolvedReports)", label: "已处理", tint: .green)
+                    ReportMetric(value: "\(analytics.correctionLogs)", label: "修正", tint: .blue)
+                }
+                .padding(.vertical, 4)
 
-            if let leadingOpenCategory = analytics.leadingOpenCategory {
-                LabeledContent("优先处理", value: "\(leadingOpenCategory.title) \(leadingOpenCategory.count)")
+                if let leadingOpenCategory = analytics.leadingOpenCategory {
+                    LabeledContent("优先处理", value: "\(leadingOpenCategory.title) \(leadingOpenCategory.count)")
+                }
+
+                LabeledContent("未处理类型", value: analytics.openCategorySummary)
+                LabeledContent("已处理类型", value: analytics.resolvedCategorySummary)
             }
 
-            LabeledContent("未处理类型", value: analytics.openCategorySummary)
-            LabeledContent("已处理类型", value: analytics.resolvedCategorySummary)
+            Section("近7日趋势") {
+                HStack(spacing: 10) {
+                    ReportMetric(value: "\(analytics.createdLast7Days)", label: "新增", tint: AppPalette.cinnabar)
+                    ReportMetric(value: "\(analytics.resolvedLast7Days)", label: "处理", tint: AppPalette.tea)
+                    ReportMetric(value: analytics.resolutionRateText, label: "总处理率", tint: .indigo)
+                }
+                .padding(.vertical, 4)
+
+                ForEach(analytics.sevenDayTrend) { day in
+                    ReportTrendRow(day: day)
+                }
+            }
+        }
+    }
+}
+
+private struct ReportTrendRow: View {
+    let day: ReportTrendDay
+
+    private var maxCount: Int {
+        max(max(day.createdReports, day.resolvedReports), 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(day.dayStart.formatted(.dateTime.month(.defaultDigits).day()))
+                    .font(.subheadline.weight(.medium))
+                Spacer()
+                Text("新增 \(day.createdReports) · 处理 \(day.resolvedReports)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+
+            VStack(spacing: 5) {
+                trendBar(value: day.createdReports, tint: AppPalette.cinnabar)
+                trendBar(value: day.resolvedReports, tint: AppPalette.tea)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func trendBar(value: Int, tint: Color) -> some View {
+        HStack(spacing: 8) {
+            Capsule()
+                .fill(tint.opacity(value == 0 ? 0.12 : 0.55))
+                .frame(width: max(12, CGFloat(value) / CGFloat(maxCount) * 140), height: 6)
+            Spacer(minLength: 0)
         }
     }
 }
