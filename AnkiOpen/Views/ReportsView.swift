@@ -23,8 +23,16 @@ struct ReportsView: View {
         }
     }
 
+    private var analytics: ReportAnalytics {
+        ReportAnalytics(reports: Array(reports))
+    }
+
     var body: some View {
         List {
+            if analytics.hasReports {
+                ReportAnalyticsSection(analytics: analytics)
+            }
+
             Section {
                 Picker("状态", selection: $filter) {
                     ForEach(ReportStatusFilter.allCases) { filter in
@@ -57,6 +65,52 @@ struct ReportsView: View {
             }
         }
         .navigationTitle("反馈")
+    }
+}
+
+private struct ReportAnalyticsSection: View {
+    let analytics: ReportAnalytics
+
+    var body: some View {
+        Section("概览") {
+            HStack(spacing: 10) {
+                ReportMetric(value: "\(analytics.openReports)", label: "未处理", tint: .orange)
+                ReportMetric(value: "\(analytics.resolvedReports)", label: "已处理", tint: .green)
+                ReportMetric(value: "\(analytics.correctionLogs)", label: "修正", tint: .blue)
+            }
+            .padding(.vertical, 4)
+
+            if let leadingOpenCategory = analytics.leadingOpenCategory {
+                LabeledContent("优先处理", value: "\(leadingOpenCategory.title) \(leadingOpenCategory.count)")
+            }
+
+            LabeledContent("未处理类型", value: analytics.openCategorySummary)
+            LabeledContent("已处理类型", value: analytics.resolvedCategorySummary)
+        }
+    }
+}
+
+private struct ReportMetric: View {
+    let value: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(value)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 

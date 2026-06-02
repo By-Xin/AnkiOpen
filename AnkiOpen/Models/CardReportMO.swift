@@ -73,3 +73,77 @@ enum ReportCategory: String, CaseIterable, Identifiable {
         }
     }
 }
+
+struct ReportCategoryCount: Equatable, Identifiable {
+    let category: ReportCategory
+    let count: Int
+
+    var id: String {
+        category.rawValue
+    }
+
+    var title: String {
+        category.title
+    }
+}
+
+struct ReportAnalytics: Equatable {
+    let totalReports: Int
+    let openReports: Int
+    let resolvedReports: Int
+    let correctionLogs: Int
+    let openCategoryCounts: [ReportCategoryCount]
+    let resolvedCategoryCounts: [ReportCategoryCount]
+
+    init(reports: [CardReportMO]) {
+        totalReports = reports.count
+        openReports = reports.filter { !$0.isResolved }.count
+        resolvedReports = reports.filter(\.isResolved).count
+        correctionLogs = Set(reports.flatMap { $0.correctionLogs.map(\.id) }).count
+        openCategoryCounts = Self.categoryCounts(for: reports.filter { !$0.isResolved })
+        resolvedCategoryCounts = Self.categoryCounts(for: reports.filter(\.isResolved))
+    }
+
+    var hasReports: Bool {
+        totalReports > 0
+    }
+
+    var leadingOpenCategory: ReportCategoryCount? {
+        openCategoryCounts.first
+    }
+
+    var openCategorySummary: String {
+        Self.summaryText(for: openCategoryCounts)
+    }
+
+    var resolvedCategorySummary: String {
+        Self.summaryText(for: resolvedCategoryCounts)
+    }
+
+    private static func categoryCounts(for reports: [CardReportMO]) -> [ReportCategoryCount] {
+        let countsByCategory = Dictionary(grouping: reports) { report in
+            ReportCategory(rawValue: report.category) ?? .other
+        }
+        return ReportCategory.allCases.compactMap { category in
+            guard let count = countsByCategory[category]?.count, count > 0 else {
+                return nil
+            }
+            return ReportCategoryCount(category: category, count: count)
+        }
+        .sorted {
+            if $0.count == $1.count {
+                return $0.title < $1.title
+            }
+            return $0.count > $1.count
+        }
+    }
+
+    private static func summaryText(for categoryCounts: [ReportCategoryCount]) -> String {
+        guard !categoryCounts.isEmpty else {
+            return "无"
+        }
+        return categoryCounts
+            .map { "\($0.title) \($0.count)" }
+            .joined(separator: "、")
+    }
+}

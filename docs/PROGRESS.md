@@ -34,6 +34,7 @@ Last updated: 2026-06-02
 - Added a card-editor audio section that can preview existing front/back audio and newly matched CZYZD audio before saving.
 - Added card-editor controls to manually replace or remove front, back, or shared audio before saving.
 - Added a report-driven correction workflow: opening a reported card from Feedback, saving edits, recording before/after text and audio references, and automatically marking changed reports as resolved.
+- Added a Feedback analytics overview with open/resolved counts, correction-log count, leading open issue category, and category breakdowns.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -62,6 +63,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after card-editor audio replace/remove on 2026-06-02: 67 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after report-driven correction history on 2026-06-02: 68 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after report/correction backup on 2026-06-02: 70 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Feedback analytics overview on 2026-06-02: 71 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -125,7 +127,8 @@ Last updated: 2026-06-02
 - Reported cards can be opened directly from Feedback.
 - Saving a changed reported card records a before/after correction log for text and audio references.
 - Changed reports are automatically marked as resolved; unchanged saves leave the report in its current state.
+- Feedback shows open/resolved counts, correction-log count, the leading unresolved issue category, and category breakdowns.
 
 ## Next
 
-- Add richer report analytics once daily use exposes the common failure modes.
+- Add trend-style report analytics once daily use exposes enough history.
