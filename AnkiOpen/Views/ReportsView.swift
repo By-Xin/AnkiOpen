@@ -3,6 +3,8 @@ import SwiftUI
 struct ReportsView: View {
     @FetchRequest private var reports: FetchedResults<CardReportMO>
     @State private var filter: ReportStatusFilter = .open
+    @State private var categoryFilter: ReportCategory?
+    @State private var searchText = ""
 
     init() {
         let request = CardReportMO.fetchRequest()
@@ -13,13 +15,16 @@ struct ReportsView: View {
     }
 
     private var filteredReports: [CardReportMO] {
-        reports.filter { report in
+        let listFilter = ReportListFilter(category: categoryFilter, searchText: searchText)
+        return reports.filter { report in
+            let matchesStatus: Bool
             switch filter {
             case .open:
-                return !report.isResolved
+                matchesStatus = !report.isResolved
             case .resolved:
-                return report.isResolved
+                matchesStatus = report.isResolved
             }
+            return matchesStatus && listFilter.matches(report)
         }
     }
 
@@ -40,6 +45,13 @@ struct ReportsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+
+                Picker("类型", selection: $categoryFilter) {
+                    Text("全部类型").tag(nil as ReportCategory?)
+                    ForEach(ReportCategory.allCases) { category in
+                        Text(category.title).tag(category as ReportCategory?)
+                    }
+                }
             }
 
             if filteredReports.isEmpty {
@@ -65,6 +77,7 @@ struct ReportsView: View {
             }
         }
         .navigationTitle("反馈")
+        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索卡片或备注")
     }
 }
 

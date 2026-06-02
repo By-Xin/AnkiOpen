@@ -35,6 +35,7 @@ Last updated: 2026-06-02
 - Added card-editor controls to manually replace or remove front, back, or shared audio before saving.
 - Added a report-driven correction workflow: opening a reported card from Feedback, saving edits, recording before/after text and audio references, and automatically marking changed reports as resolved.
 - Added a Feedback analytics overview with open/resolved counts, correction-log count, leading open issue category, and category breakdowns.
+- Added Feedback type filtering and search across issue category, note, card front/back text, notebook, and unit.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -128,6 +129,7 @@ Last updated: 2026-06-02
 - Saving a changed reported card records a before/after correction log for text and audio references.
 - Changed reports are automatically marked as resolved; unchanged saves leave the report in its current state.
 - Feedback shows open/resolved counts, correction-log count, the leading unresolved issue category, and category breakdowns.
+- Feedback can be filtered by issue type and searched by category, note, card text, notebook, or unit.
 
 ## Next
 

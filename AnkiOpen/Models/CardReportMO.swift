@@ -47,6 +47,26 @@ extension CardReportMO {
     func reopen() {
         resolvedAt = nil
     }
+
+    func matchesSearchText(_ searchText: String) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            return true
+        }
+
+        let searchableFields = [
+            categoryTitle,
+            note,
+            card.front,
+            card.back,
+            card.notebook.name,
+            card.unit?.name
+        ].compactMap { $0 }
+
+        return searchableFields.contains { field in
+            field.localizedCaseInsensitiveContains(query)
+        }
+    }
 }
 
 enum ReportCategory: String, CaseIterable, Identifiable {
@@ -145,5 +165,24 @@ struct ReportAnalytics: Equatable {
         return categoryCounts
             .map { "\($0.title) \($0.count)" }
             .joined(separator: "、")
+    }
+}
+
+struct ReportListFilter: Equatable {
+    let category: ReportCategory?
+    let searchText: String
+
+    init(category: ReportCategory? = nil, searchText: String = "") {
+        self.category = category
+        self.searchText = searchText
+    }
+
+    func matches(_ report: CardReportMO) -> Bool {
+        if let category,
+           ReportCategory(rawValue: report.category) != category {
+            return false
+        }
+
+        return report.matchesSearchText(searchText)
     }
 }
