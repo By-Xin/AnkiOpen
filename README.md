@@ -8,7 +8,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Local Core Data persistence
 - Notebook and unit CRUD
 - Flashcard CRUD, archive, and restore from unit detail
-- CSV import with `front,back`, optional `unit`, optional `audio`, or optional `frontAudio,backAudio` columns
+- CSV import with `front,back`, optional `unit`, optional `audio`, optional `frontAudio,backAudio`, and optional `isArchived` columns
 - CSV export from notebook and unit detail screens for lightweight editing and sharing
 - Optional CSV `czyzd` / `查词` column for CZYZD dictionary auto-fill
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
@@ -64,6 +64,15 @@ unit,front,back,czyzd
 ```
 
 Supported lookup headers include `czyzd`, `dictionary`, `lookup`, `查词`, `词典`, and `潮语词典`. Existing non-empty back text is preserved.
+
+Use `isArchived` to import cards directly into the unit archive:
+
+```csv
+unit,front,back,isArchived
+1,Old card,Old answer,true
+```
+
+Supported archived values include `true`, `yes`, `1`, `archived`, `归档`, `已归档`, and `是`.
 
 Audio can be attached by selecting the CSV and referenced audio files in the same import picker. Supported audio extensions are `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, and `aif`.
 
@@ -123,6 +132,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Notebook, unit, and card management
 - [x] CSV import
 - [x] Notebook and unit CSV export
+- [x] CSV archived-state import/export round trip
 - [x] CSV audio import and playback
 - [x] Study modes and review logs
 - [x] Unit and UI test scaffolding

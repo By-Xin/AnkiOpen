@@ -16,6 +16,7 @@ struct ImportSummary: Equatable {
     let importedRows: Int
     let skippedRows: Int
     let audioFilesImported: Int
+    let archivedRows: Int
     let unitNames: [String]
     let unitSummaries: [ImportUnitSummary]
     let skippedRowDetails: [String]
@@ -31,6 +32,7 @@ struct ImportSummary: Equatable {
         importedRows: Int,
         skippedRows: Int,
         audioFilesImported: Int,
+        archivedRows: Int = 0,
         unitNames: [String] = [],
         unitSummaries: [ImportUnitSummary] = [],
         skippedRowDetails: [String] = [],
@@ -45,6 +47,7 @@ struct ImportSummary: Equatable {
         self.importedRows = importedRows
         self.skippedRows = skippedRows
         self.audioFilesImported = audioFilesImported
+        self.archivedRows = archivedRows
         self.unitNames = unitNames
         self.unitSummaries = unitSummaries
         self.skippedRowDetails = skippedRowDetails
@@ -74,6 +77,7 @@ struct ImportPreview: Equatable {
     let importableRows: Int
     let skippedRows: Int
     let duplicateRows: Int
+    let archivedRows: Int
     let units: [String]
     let missingAudioFiles: [String]
     let unsupportedAudioFiles: [String]
@@ -181,6 +185,9 @@ final class CSVImporter {
                 frontAudioFileName: frontAudioFileName,
                 backAudioFileName: backAudioFileName
             )
+            if row.isArchived {
+                card.archive()
+            }
             importedCardIDs.append(card.id)
             if let dictionaryLookupTerm = row.dictionaryLookupTerm {
                 dictionaryLookupTermsByCardID[card.id] = dictionaryLookupTerm
@@ -202,6 +209,7 @@ final class CSVImporter {
             importedRows: imported,
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
+            archivedRows: plan.archivedRows,
             unitNames: plan.unitNames,
             unitSummaries: unitSummaries,
             skippedRowDetails: plan.skippedRowDetails,
@@ -311,6 +319,7 @@ final class CSVImporter {
                 unitName: mapping.unitName(from: row),
                 frontAudioFileName: frontAudioFileName,
                 backAudioFileName: backAudioFileName,
+                isArchived: mapping.isArchived(from: row),
                 dictionaryLookupTerm: dictionaryLookupTerm
             ))
             seenPairs.insert(pair)
@@ -459,6 +468,10 @@ private struct CSVImportPlan {
         invalidRows + duplicateRows
     }
 
+    var archivedRows: Int {
+        rows.filter(\.isArchived).count
+    }
+
     var preview: ImportPreview {
         ImportPreview(
             fileName: fileName,
@@ -466,6 +479,7 @@ private struct CSVImportPlan {
             importableRows: rows.count,
             skippedRows: skippedRows,
             duplicateRows: duplicateRows,
+            archivedRows: archivedRows,
             units: unitNames,
             missingAudioFiles: missingAudioFiles,
             unsupportedAudioFiles: unsupportedAudioFiles,
@@ -489,6 +503,7 @@ private struct CSVImportRow {
     let unitName: String?
     let frontAudioFileName: String?
     let backAudioFileName: String?
+    let isArchived: Bool
     let dictionaryLookupTerm: String?
 }
 
@@ -500,6 +515,7 @@ private struct CSVColumnMapping {
     private let sharedAudioIndex: Int?
     private let unitIndex: Int?
     private let dictionaryLookupIndex: Int?
+    private let archivedIndex: Int?
     private let frontIndex: Int
     private let backIndex: Int
 
@@ -514,6 +530,7 @@ private struct CSVColumnMapping {
             sharedAudioIndex = nil
             unitIndex = nil
             dictionaryLookupIndex = nil
+            archivedIndex = nil
             return
         }
 
@@ -529,6 +546,7 @@ private struct CSVColumnMapping {
             sharedAudioIndex = normalized.firstIndex { Self.sharedAudioHeaderNames.contains($0) }
             unitIndex = normalized.firstIndex { Self.unitHeaderNames.contains($0) }
             dictionaryLookupIndex = normalized.firstIndex { Self.dictionaryLookupHeaderNames.contains($0) }
+            archivedIndex = normalized.firstIndex { Self.archivedHeaderNames.contains($0) }
         } else {
             bodyRows = rows
             hasHeader = false
@@ -539,6 +557,7 @@ private struct CSVColumnMapping {
             sharedAudioIndex = first.indices.contains(2) && !first.indices.contains(3) ? 2 : nil
             unitIndex = nil
             dictionaryLookupIndex = nil
+            archivedIndex = nil
         }
     }
 
@@ -562,6 +581,20 @@ private struct CSVColumnMapping {
 
         let term = row[dictionaryLookupIndex].trimmingCharacters(in: .whitespacesAndNewlines)
         return term.isEmpty ? nil : term
+    }
+
+    func isArchived(from row: [String]) -> Bool {
+        guard let archivedIndex,
+              row.indices.contains(archivedIndex) else {
+            return false
+        }
+
+        switch Self.normalizedBoolean(row[archivedIndex]) {
+        case "true", "yes", "y", "1", "archived", "archive", "已归档", "归档", "是":
+            return true
+        default:
+            return false
+        }
     }
 
     func audioFileNames(from row: [String]) -> (front: String?, back: String?) {
@@ -610,7 +643,19 @@ private struct CSVColumnMapping {
         "查词", "词典", "字典", "潮汕词典", "潮语词典"
     ]
 
+    private static let archivedHeaderNames: Set<String> = [
+        "isarchived", "is_archived", "is archived", "archived", "archive", "status",
+        "归档", "已归档", "是否归档", "状态"
+    ]
+
     private static func normalizedHeader(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\u{FEFF}", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+    }
+
+    private static func normalizedBoolean(_ value: String) -> String {
         value
             .replacingOccurrences(of: "\u{FEFF}", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)

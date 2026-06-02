@@ -60,7 +60,8 @@ struct ImportView: View {
                     Label("单元列：unit", systemImage: "folder")
                     Label("音频列：audio 或 frontAudio/backAudio", systemImage: "speaker.wave.2")
                     Label("词典列：czyzd 或 查词", systemImage: "character.book.closed")
-                    Text("也支持中文表头：汉字、读音、单元、音频、查词。单元为空时会导入到默认单元。若 CSV 引用了本地音频，请同时选择音频文件或所在文件夹。")
+                    Label("归档列：isArchived", systemImage: "archivebox")
+                    Text("也支持中文表头：汉字、读音、单元、音频、查词、已归档。单元为空时会导入到默认单元。若 CSV 引用了本地音频，请同时选择音频文件或所在文件夹。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -88,6 +89,7 @@ struct ImportView: View {
                         LabeledContent("将导入", value: "\(preview.importableRows)")
                         LabeledContent("将跳过", value: "\(preview.skippedRows)")
                         LabeledContent("重复", value: "\(preview.duplicateRows)")
+                        LabeledContent("归档", value: "\(preview.archivedRows)")
                         LabeledContent("词典查询", value: "\(preview.dictionaryLookupRows)")
                         LabeledContent("问题", value: "\(preview.issueCount)")
 
@@ -144,6 +146,7 @@ struct ImportView: View {
                         LabeledContent("总行数", value: "\(summary.totalRows)")
                         LabeledContent("已导入", value: "\(summary.importedRows)")
                         LabeledContent("已跳过", value: "\(summary.skippedRows)")
+                        LabeledContent("归档", value: "\(summary.archivedRows)")
                         LabeledContent("音频", value: "\(summary.audioFilesImported)")
                         LabeledContent("词典查询", value: "\(summary.dictionaryLookupRows)")
                         LabeledContent("问题", value: "\(summary.issueCount)")
