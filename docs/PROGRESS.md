@@ -14,6 +14,7 @@ Last updated: 2026-06-02
 - Added optional CSV `unit` column. Blank unit values import into `Default`; numeric values import as `Unit 1`, `Unit 2`, etc.
 - Added local audio file storage and Study playback controls for both card sides.
 - Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
+- Added Study card tools for current-side audio status, playback, missing-audio feedback, and direct card editing.
 - Added JSON backup export from Settings, including notebooks, units, cards, audio references, FSRS fields, and review logs.
 - Added JSON backup restore from Settings with duplicate handling for notebooks, units, cards, and review logs.
 - Upgraded backups to `schemaVersion: 3` so referenced audio files are embedded in JSON and restored into local audio storage.
@@ -93,6 +94,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Feedback 7-day trend analytics on 2026-06-02: 85 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after release and daily acceptance checklist on 2026-06-02: 86 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after global missing-audio queue on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Study audio feedback tools on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -106,6 +108,10 @@ Last updated: 2026-06-02
 - All modes write review logs and update the card's FSRS-6 state fields when a rating is selected.
 - New cards enter same-day learning steps for `Again`, `Hard`, and `Good`; `Easy` graduates directly to review.
 - Completed study queues show a session summary with reviewed-card count and rating breakdowns, plus actions to recheck due cards, force-study future cards, or shuffle all cards.
+- Each study card shows the current side's audio status and location.
+- If the current side has audio, Study can play it inline.
+- If the current side is missing audio, Study can open a prefilled audio feedback sheet.
+- Study can open the existing card editor so CZYZD matching, manual audio replacement, and card text edits are available without leaving the learning flow.
 
 ## CSV Import
 

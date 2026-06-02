@@ -13,6 +13,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Optional CSV `czyzd` / `查词` column for CZYZD dictionary auto-fill
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Study completion summary with per-rating counts and quick continuation actions
+- Study cards show audio status, can play the current side, can report missing audio, and can open the card editor without leaving study
 - Review history screen with searchable recent logs and card detail links
 - CSV export from Review History and Feedback for spreadsheet review
 - Audio playback on the front and back side of a card
@@ -125,6 +126,7 @@ Settings includes a Chinese `发布与验收清单` page with persistent checkbo
 
 All modes still write review logs and update the card's next due date when a rating is selected.
 After a study queue is completed, the app shows a Chinese session summary with reviewed-card count, per-rating counts, and quick actions to recheck due cards, forced-study future cards, or shuffle all cards.
+During study, each card shows whether the current side has audio. Missing-audio cards can be reported with an audio note or opened directly in the card editor for CZYZD matching or manual audio replacement.
 
 ## Dictionary
 
@@ -148,6 +150,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] CSV audio import and playback
 - [x] Study modes and review logs
 - [x] Study completion summary
+- [x] Study audio status, quick feedback, and card editing
 - [x] Review history browser
 - [x] Review history and feedback CSV export
 - [x] Unit and UI test scaffolding

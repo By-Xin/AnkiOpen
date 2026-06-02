@@ -8,6 +8,12 @@ struct ReportIssueView: View {
     @State private var note = ""
     @State private var errorMessage: String?
 
+    init(card: FlashcardMO, initialCategory: ReportCategory = .audioMismatch, initialNote: String = "") {
+        self.card = card
+        _category = State(initialValue: initialCategory)
+        _note = State(initialValue: initialNote)
+    }
+
     var body: some View {
         NavigationStack {
             Form {

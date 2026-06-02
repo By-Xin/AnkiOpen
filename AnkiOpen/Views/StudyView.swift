@@ -13,6 +13,8 @@ struct StudyView: View {
     @State private var isShowingBack = false
     @State private var errorMessage: String?
     @State private var cardToReport: FlashcardMO?
+    @State private var cardToEdit: FlashcardMO?
+    @State private var reportContext: StudyReportContext?
     @State private var sessionSummary = StudySessionSummary()
     @StateObject private var audioPlayer = AudioPlaybackController()
 
@@ -47,6 +49,7 @@ struct StudyView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
+                        reportContext = nil
                         cardToReport = currentCard
                     } label: {
                         Label("反馈", systemImage: "exclamationmark.bubble")
@@ -75,8 +78,17 @@ struct StudyView: View {
             }, message: {
                 Text(errorMessage ?? "")
             })
-            .sheet(item: $cardToReport) { card in
-                ReportIssueView(card: card)
+            .sheet(item: $cardToReport, onDismiss: {
+                reportContext = nil
+            }) { card in
+                ReportIssueView(
+                    card: card,
+                    initialCategory: reportContext?.category ?? .audioMismatch,
+                    initialNote: reportContext?.note ?? ""
+                )
+            }
+            .sheet(item: $cardToEdit, onDismiss: reloadDueCards) { card in
+                CardEditorView(mode: .edit(card))
             }
         }
     }
@@ -126,14 +138,7 @@ struct StudyView: View {
 
                         cardFaceButton(for: card)
 
-                        if let audioFileName = audioFileName(for: card) {
-                            Button {
-                                audioPlayer.play(storedFileName: audioFileName)
-                            } label: {
-                                Label("播放音频", systemImage: "speaker.wave.2")
-                            }
-                            .buttonStyle(.bordered)
-                        }
+                        studyCardTools(for: card)
                     }
                     .padding(.bottom, 112)
                 }
@@ -302,6 +307,74 @@ struct StudyView: View {
         .background(.regularMaterial)
     }
 
+    private func studyCardTools(for card: FlashcardMO) -> some View {
+        let currentSideMissingAudio = audioFileName(for: card) == nil
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Label(
+                    audioStatusTitle(for: card),
+                    systemImage: currentSideMissingAudio ? "speaker.slash" : "speaker.wave.2.fill"
+                )
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(currentSideMissingAudio ? AppPalette.cinnabar : AppPalette.tea)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        (currentSideMissingAudio ? AppPalette.cinnabar : AppPalette.tea).opacity(0.12),
+                        in: Capsule()
+                    )
+
+                Spacer(minLength: 10)
+
+                Text(card.locationTitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            HStack(spacing: 10) {
+                if let audioFileName = audioFileName(for: card) {
+                    Button {
+                        audioPlayer.play(storedFileName: audioFileName)
+                    } label: {
+                        Label(isShowingBack ? "播放背面" : "播放正面", systemImage: "speaker.wave.2")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(AppPalette.tea)
+                } else {
+                    Button {
+                        report(card, category: .audioMismatch, note: "\(isShowingBack ? "背面" : "正面")缺少音频。")
+                    } label: {
+                        Label("反馈缺音频", systemImage: "exclamationmark.bubble")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(AppPalette.cinnabar)
+                }
+
+                Button {
+                    cardToEdit = card
+                } label: {
+                    Label("编辑卡片", systemImage: "pencil")
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if card.isMissingAudio {
+                Text("这张卡片\(card.missingAudioTitle)，可以先反馈问题，也可以编辑卡片并用潮语词典匹配或手动选择音频。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke((currentSideMissingAudio ? AppPalette.cinnabar : AppPalette.tea).opacity(0.14), lineWidth: 1)
+        )
+        .padding(.horizontal)
+    }
+
     private var notebookSelection: Binding<UUID?> {
         Binding {
             selectedNotebook?.id
@@ -336,8 +409,20 @@ struct StudyView: View {
         }
     }
 
+    private func report(_ card: FlashcardMO, category: ReportCategory, note: String = "") {
+        reportContext = StudyReportContext(category: category, note: note)
+        cardToReport = card
+    }
+
     private func audioFileName(for card: FlashcardMO) -> String? {
         isShowingBack ? card.backAudioFileName : card.frontAudioFileName
+    }
+
+    private func audioStatusTitle(for card: FlashcardMO) -> String {
+        if audioFileName(for: card) == nil {
+            return isShowingBack ? "当前背面缺音频" : "当前正面缺音频"
+        }
+        return isShowingBack ? "背面有音频" : "正面有音频"
     }
 
     private func tint(for rating: ReviewRating) -> Color {
@@ -352,4 +437,9 @@ struct StudyView: View {
             return .indigo
         }
     }
+}
+
+private struct StudyReportContext {
+    let category: ReportCategory
+    let note: String
 }
