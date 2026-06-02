@@ -44,15 +44,23 @@ extension NotebookMO {
 
 struct HomeDashboardMetrics: Equatable {
     let dueCards: Int
+    let dueTomorrowCards: Int
+    let futureDueCards: Int
     let activeCards: Int
     let archivedCards: Int
     let missingAudioCards: Int
+    let rareGlyphCards: Int
+    let newCards: Int
     let openReports: Int
     let reviewedToday: Int
     let reviewedLast7Days: Int
 
     var hasAttentionItems: Bool {
         missingAudioCards > 0 || openReports > 0
+    }
+
+    var hasMaintenanceItems: Bool {
+        hasAttentionItems || rareGlyphCards > 0
     }
 
     init(
@@ -62,12 +70,23 @@ struct HomeDashboardMetrics: Equatable {
         at date: Date = Date(),
         calendar: Calendar = .current
     ) {
-        dueCards = cards.filter { !$0.isArchived && $0.dueAt <= date }.count
-        activeCards = cards.filter { !$0.isArchived }.count
+        let active = cards.filter { !$0.isArchived }
+        let todayStart = calendar.startOfDay(for: date)
+        let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: todayStart) ?? todayStart.addingTimeInterval(86_400)
+        let dayAfterTomorrow = calendar.date(byAdding: .day, value: 1, to: tomorrowStart) ?? tomorrowStart.addingTimeInterval(86_400)
+
+        dueCards = active.filter { $0.dueAt <= date }.count
+        dueTomorrowCards = active.filter { $0.dueAt >= tomorrowStart && $0.dueAt < dayAfterTomorrow }.count
+        futureDueCards = active.filter { $0.dueAt > date }.count
+        activeCards = active.count
         archivedCards = cards.filter(\.isArchived).count
-        missingAudioCards = cards.filter {
-            !$0.isArchived && ($0.frontAudioFileName == nil || $0.backAudioFileName == nil)
+        missingAudioCards = active.filter {
+            $0.frontAudioFileName == nil || $0.backAudioFileName == nil
         }.count
+        rareGlyphCards = active.filter {
+            GlyphDiagnostics.containsRiskyGlyphs($0.front + $0.back)
+        }.count
+        newCards = active.filter { $0.reps == 0 }.count
         openReports = reports.filter { !$0.isResolved }.count
 
         let startOfToday = calendar.startOfDay(for: date)

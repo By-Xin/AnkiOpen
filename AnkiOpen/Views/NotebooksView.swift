@@ -107,6 +107,25 @@ struct NotebooksView: View {
 
                 Section("工具") {
                     NavigationLink {
+                        MaintenanceCenterView()
+                    } label: {
+                        HStack {
+                            Label("维护中心", systemImage: "wrench.and.screwdriver")
+                            Spacer()
+                            if metrics.hasMaintenanceItems {
+                                Text("\(metrics.missingAudioCards + metrics.openReports + metrics.rareGlyphCards)")
+                                    .font(.caption.weight(.semibold))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
+                                    .background(AppPalette.cinnabar, in: Capsule())
+                            }
+                        }
+                    }
+                    .appListRow()
+
+                    NavigationLink {
                         ImportView()
                     } label: {
                         Label("导入 CSV", systemImage: "square.and.arrow.down")
@@ -276,6 +295,162 @@ private struct HomeAttentionRow: View {
             Spacer(minLength: 12)
             MetricPill(value: "\(count)", label: countLabel, tint: tint)
         }
+    }
+}
+
+private struct MaintenanceCenterView: View {
+    @FetchRequest private var cards: FetchedResults<FlashcardMO>
+    @FetchRequest private var reports: FetchedResults<CardReportMO>
+    @FetchRequest private var reviewLogs: FetchedResults<ReviewLogMO>
+    @State private var now = Date()
+
+    init() {
+        let cardRequest = FlashcardMO.fetchRequest()
+        cardRequest.sortDescriptors = [
+            NSSortDescriptor(keyPath: \FlashcardMO.dueAt, ascending: true),
+            NSSortDescriptor(keyPath: \FlashcardMO.updatedAt, ascending: false)
+        ]
+        _cards = FetchRequest(fetchRequest: cardRequest, animation: .default)
+
+        let reportRequest = CardReportMO.fetchRequest()
+        reportRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CardReportMO.createdAt, ascending: false)]
+        _reports = FetchRequest(fetchRequest: reportRequest, animation: .default)
+
+        let reviewLogRequest = ReviewLogMO.fetchRequest()
+        reviewLogRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ReviewLogMO.reviewedAt, ascending: false)]
+        _reviewLogs = FetchRequest(fetchRequest: reviewLogRequest, animation: .default)
+    }
+
+    private var metrics: HomeDashboardMetrics {
+        HomeDashboardMetrics(cards: Array(cards), reports: Array(reports), reviewLogs: Array(reviewLogs), at: now)
+    }
+
+    var body: some View {
+        List {
+            Section("总览") {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
+                    MetricPill(value: "\(metrics.dueCards)", label: "今日到期", tint: AppPalette.cinnabar)
+                    MetricPill(value: "\(metrics.dueTomorrowCards)", label: "明日到期", tint: AppPalette.amber)
+                    MetricPill(value: "\(metrics.newCards)", label: "未学习", tint: AppPalette.tea)
+                    MetricPill(value: "\(metrics.futureDueCards)", label: "未到期")
+                    MetricPill(value: "\(metrics.reviewedToday)", label: "今日复习", tint: AppPalette.tea)
+                    MetricPill(value: "\(metrics.reviewedLast7Days)", label: "近7日")
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("这里集中显示影响日常学习质量的项目：缺音频、未处理反馈、生僻字和复习节奏。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("需要处理") {
+                NavigationLink {
+                    MissingAudioCardsView()
+                } label: {
+                    MaintenanceLinkRow(
+                        title: "补齐缺失音频",
+                        detail: "批量匹配 CZYZD 音频，或逐张手动替换。",
+                        systemImage: "speaker.slash",
+                        count: metrics.missingAudioCards,
+                        countLabel: "缺音频",
+                        tint: AppPalette.amber
+                    )
+                }
+
+                NavigationLink {
+                    ReportsView()
+                } label: {
+                    MaintenanceLinkRow(
+                        title: "处理卡片反馈",
+                        detail: "修正音频、潮拼、释义或错别字反馈。",
+                        systemImage: "exclamationmark.bubble",
+                        count: metrics.openReports,
+                        countLabel: "未处理",
+                        tint: AppPalette.cinnabar
+                    )
+                }
+
+                NavigationLink {
+                    RareGlyphsView()
+                } label: {
+                    MaintenanceLinkRow(
+                        title: "检查生僻字",
+                        detail: "用 DeepSeek 建议替代显示困难的字。",
+                        systemImage: "textformat.alt",
+                        count: metrics.rareGlyphCards,
+                        countLabel: "卡片",
+                        tint: .indigo
+                    )
+                }
+            }
+
+            Section("学习节奏") {
+                NavigationLink {
+                    StudyView()
+                } label: {
+                    MaintenanceLinkRow(
+                        title: "开始学习",
+                        detail: "复习今日到期卡片，也可以切换随机或强制学习。",
+                        systemImage: "rectangle.stack.badge.play",
+                        count: metrics.dueCards,
+                        countLabel: "到期",
+                        tint: AppPalette.tea
+                    )
+                }
+
+                NavigationLink {
+                    ReviewHistoryView()
+                } label: {
+                    MaintenanceLinkRow(
+                        title: "查看复习记录",
+                        detail: "按卡片、笔记本、单元或评分搜索最近记录。",
+                        systemImage: "clock.arrow.circlepath",
+                        count: metrics.reviewedLast7Days,
+                        countLabel: "近7日",
+                        tint: AppPalette.tea
+                    )
+                }
+            }
+
+            Section("数据状态") {
+                LabeledContent("可用卡片", value: "\(metrics.activeCards)")
+                LabeledContent("归档卡片", value: "\(metrics.archivedCards)")
+                LabeledContent("本机数据", value: "离线保存")
+            }
+        }
+        .listStyle(.insetGrouped)
+        .appScreenBackground()
+        .navigationTitle("维护中心")
+        .onAppear {
+            now = Date()
+        }
+    }
+}
+
+private struct MaintenanceLinkRow: View {
+    let title: String
+    let detail: String
+    let systemImage: String
+    let count: Int
+    let countLabel: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            LeadingSymbol(systemImage: systemImage, tint: tint)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(AppPalette.ink)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 12)
+            MetricPill(value: "\(count)", label: countLabel, tint: tint)
+        }
+        .padding(.vertical, 2)
     }
 }
 
