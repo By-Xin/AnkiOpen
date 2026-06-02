@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct ImportView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest private var notebooks: FetchedResults<NotebookMO>
+    @FetchRequest private var importBatches: FetchedResults<ImportBatchMO>
     @State private var selectedNotebookID: UUID?
     @State private var newNotebookName = ""
     @State private var isCreatingNotebook = false
@@ -26,9 +27,14 @@ struct ImportView: View {
     private let czyzdDictionaryService = CZYZDDictionaryEnrichmentService()
 
     init() {
-        let request = NotebookMO.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \NotebookMO.name, ascending: true)]
-        _notebooks = FetchRequest(fetchRequest: request, animation: .default)
+        let notebookRequest = NotebookMO.fetchRequest()
+        notebookRequest.sortDescriptors = [NSSortDescriptor(keyPath: \NotebookMO.name, ascending: true)]
+        _notebooks = FetchRequest(fetchRequest: notebookRequest, animation: .default)
+
+        let importBatchRequest = ImportBatchMO.fetchRequest()
+        importBatchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \ImportBatchMO.importedAt, ascending: false)]
+        importBatchRequest.fetchLimit = 10
+        _importBatches = FetchRequest(fetchRequest: importBatchRequest, animation: .default)
     }
 
     var body: some View {
@@ -200,6 +206,40 @@ struct ImportView: View {
                         }
                     }
                 }
+
+                if !recentImportBatches.isEmpty {
+                    Section("导入历史") {
+                        ForEach(recentImportBatches) { batch in
+                            NavigationLink {
+                                NotebookDetailView(notebook: batch.notebook)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text(batch.fileName)
+                                            .font(.headline)
+                                        Spacer()
+                                        Text("\(batch.importedRows) 张")
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(AppPalette.cinnabar)
+                                    }
+                                    Text("\(batch.notebook.name) · \(batch.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    HStack(spacing: 10) {
+                                        Label("导入 \(batch.importedRows)", systemImage: "checkmark.circle")
+                                        Label("跳过 \(batch.skippedRows)", systemImage: "forward.end")
+                                        if batch.errorsSummary != nil {
+                                            Label("有问题", systemImage: "exclamationmark.triangle")
+                                                .foregroundStyle(AppPalette.cinnabar)
+                                        }
+                                    }
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(AppPalette.paper.ignoresSafeArea())
@@ -245,6 +285,10 @@ struct ImportView: View {
             return newNotebookName.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         return existingDestinationNotebook()?.name ?? "请选择"
+    }
+
+    private var recentImportBatches: [ImportBatchMO] {
+        Array(importBatches.prefix(10))
     }
 
     private func existingDestinationNotebook() -> NotebookMO? {
