@@ -50,6 +50,8 @@
 		A00000000000000000000152 /* CZYZDDictionaryNotebookBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */; };
 		A00000000000000000000153 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000053 /* Appearance.swift */; };
 		A00000000000000000000154 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000054 /* Assets.xcassets */; };
+		A00000000000000000000155 /* CZYZDChaopinImageTextResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000055 /* CZYZDChaopinImageTextResolver.swift */; };
+		A00000000000000000000156 /* DeepSeekDictionaryParsingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000056 /* DeepSeekDictionaryParsingClient.swift */; };
 		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
 		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
 		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
@@ -128,6 +130,8 @@
 		A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryNotebookBuilder.swift; sourceTree = "<group>"; };
 		A00000000000000000000053 /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
 		A00000000000000000000054 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A00000000000000000000055 /* CZYZDChaopinImageTextResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDChaopinImageTextResolver.swift; sourceTree = "<group>"; };
+		A00000000000000000000056 /* DeepSeekDictionaryParsingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekDictionaryParsingClient.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
 		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
 		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
@@ -217,7 +221,9 @@
 				A00000000000000000000044 /* FSRS6Scheduler.swift */,
 				A00000000000000000000045 /* DeepSeekSettingsStore.swift */,
 				A00000000000000000000046 /* DeepSeekGlyphSuggestionClient.swift */,
+				A00000000000000000000056 /* DeepSeekDictionaryParsingClient.swift */,
 				A00000000000000000000048 /* CZYZDDictionaryLookup.swift */,
+				A00000000000000000000055 /* CZYZDChaopinImageTextResolver.swift */,
 				A00000000000000000000051 /* CZYZDDictionaryEnrichmentService.swift */,
 				A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */,
 			);
@@ -451,7 +457,9 @@
 				A00000000000000000000144 /* FSRS6Scheduler.swift in Sources */,
 				A00000000000000000000145 /* DeepSeekSettingsStore.swift in Sources */,
 				A00000000000000000000146 /* DeepSeekGlyphSuggestionClient.swift in Sources */,
+				A00000000000000000000156 /* DeepSeekDictionaryParsingClient.swift in Sources */,
 				A00000000000000000000148 /* CZYZDDictionaryLookup.swift in Sources */,
+				A00000000000000000000155 /* CZYZDChaopinImageTextResolver.swift in Sources */,
 				A00000000000000000000151 /* CZYZDDictionaryEnrichmentService.swift in Sources */,
 				A00000000000000000000152 /* CZYZDDictionaryNotebookBuilder.swift in Sources */,
 				A00000000000000000000137 /* FlashcardText.swift in Sources */,

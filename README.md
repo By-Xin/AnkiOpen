@@ -16,7 +16,8 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - JSON backup export and restore from Settings
 - FSRS-6 spaced repetition scheduling with default retention `0.90`
 - DeepSeek-powered rare glyph replacement suggestions from Settings and Rare Glyphs
-- CZYZD dictionary lookup for Chaoshan words, pronunciation, meanings, and available audio
+- CZYZD dictionary lookup for Chaoshan words, chaopin OCR, meanings, and available audio
+- Optional DeepSeek cleanup for CZYZD dictionary results
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
 
 ## Development
@@ -25,7 +26,7 @@ Open `AnkiOpen.xcodeproj` in Xcode, select the `AnkiOpen` scheme, and run on an 
 
 The project references [`open-spaced-repetition/swift-fsrs`](https://github.com/open-spaced-repetition/swift-fsrs). Xcode will resolve the package automatically when network access is available. The production review path currently uses the app-local FSRS-6 scheduler because `swift-fsrs` 5.0.0 does not expose the needed scheduling API publicly.
 
-DeepSeek integration uses the OpenAI-compatible `https://api.deepseek.com/chat/completions` endpoint. Add an API key in Settings, then open Settings -> Rare Glyphs to ask for replacement suggestions and apply them to affected cards.
+DeepSeek integration uses the OpenAI-compatible `https://api.deepseek.com/chat/completions` endpoint. Add an API key in Settings, then use it for rare glyph replacement suggestions and optional CZYZD dictionary result cleanup.
 
 ## CSV Import
 
@@ -87,7 +88,9 @@ All modes still write review logs and update the card's next due date when a rat
 
 ## Dictionary
 
-The 潮语词典 page searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+The 潮语词典 page searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, attempts local Vision OCR to extract romanized chaopin text, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin, Han-character chaopin placeholders, and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+
+When a DeepSeek API key is configured and dictionary cleanup is enabled in Settings, lookup results are also sent through DeepSeek to normalize the `潮拼` and `解释` fields. AI cleanup failure does not block local dictionary results.
 
 Dictionary results can be saved into a new notebook as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
 
@@ -113,6 +116,7 @@ Dictionary results can be saved into a new notebook as flashcards. When CZYZD pr
 - [x] App icon and polished visual identity
 - [x] Hierarchical Chinese home screen and localized core workflows
 - [x] Attach CZYZD audio when saving dictionary cards
+- [x] CZYZD chaopin OCR and DeepSeek dictionary cleanup
 - [ ] TestFlight/App Store setup
 
 ## License

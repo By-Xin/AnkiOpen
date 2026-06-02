@@ -259,9 +259,8 @@ final class CZYZDDictionaryNotebookBuilder {
     }
 
     static func cardBackText(from entry: CZYZDDictionaryEntry) -> String {
-        let chaoshanPronunciation = entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin
         return [
-            chaoshanPronunciation.trimmed.isEmpty ? "" : "潮拼: \(chaoshanPronunciation.trimmed)",
+            entry.chaopin.trimmed.isEmpty ? "" : "潮拼: \(entry.chaopin.trimmed)",
             entry.definition.trimmed.isEmpty ? "" : "解释: \(entry.definition.trimmed)"
         ]
         .filter { !$0.isEmpty }

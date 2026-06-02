@@ -45,9 +45,14 @@ enum CZYZDDictionaryLookupError: LocalizedError {
 
 final class CZYZDDictionaryLookup {
     private let session: URLSession
+    private let entryRefiner: CZYZDDictionaryEntryRefining?
 
-    init(session: URLSession = .shared) {
+    init(
+        session: URLSession = .shared,
+        entryRefiner: CZYZDDictionaryEntryRefining? = CZYZDDefaultDictionaryEntryRefiner()
+    ) {
         self.session = session
+        self.entryRefiner = entryRefiner
     }
 
     func lookup(term: String) async throws -> [CZYZDDictionaryEntry] {
@@ -69,7 +74,11 @@ final class CZYZDDictionaryLookup {
             throw CZYZDDictionaryLookupError.invalidHTML
         }
 
-        return Self.entries(in: html, matching: term)
+        let parsedEntries = Self.entries(in: html, matching: term)
+        guard let entryRefiner else {
+            return parsedEntries
+        }
+        return await entryRefiner.refine(parsedEntries)
     }
 
     static func entries(in html: String, matching term: String) -> [CZYZDDictionaryEntry] {
@@ -94,7 +103,9 @@ final class CZYZDDictionaryLookup {
     private static func parseEntry(_ raw: RawEntry) -> CZYZDDictionaryEntry {
         let plainText = strippedHTML(raw.html)
         let chaopin = chaopin(in: raw.html)
-        let pronunciation = chaopin.text.isEmpty ? pronunciation(in: raw.html, plainText: plainText, term: raw.term) : chaopin.text
+        let pronunciation = chaopin.text.isEmpty && chaopin.imageURL == nil
+            ? pronunciation(in: raw.html, plainText: plainText, term: raw.term)
+            : chaopin.text
         return CZYZDDictionaryEntry(
             term: raw.term,
             chaopin: chaopin.text,
@@ -115,7 +126,7 @@ final class CZYZDDictionaryLookup {
         let title = imageHTML.flatMap { attribute("title", in: $0) }
         let alt = imageHTML.flatMap { attribute("alt", in: $0) }
         let src = imageHTML.flatMap { attribute("src", in: $0) }
-        let text = cleanedBracketText(title ?? alt ?? "")
+        let text = CZYZDChaopinTextCleaner.romanizedChaopin(from: cleanedBracketText(title ?? alt ?? "")) ?? ""
         return (text, absoluteURL(from: src))
     }
 
@@ -271,4 +282,57 @@ final class CZYZDDictionaryLookup {
 private struct RawEntry {
     let term: String
     let html: String
+}
+
+protocol CZYZDDictionaryEntryRefining {
+    func refine(_ entries: [CZYZDDictionaryEntry]) async -> [CZYZDDictionaryEntry]
+}
+
+final class CZYZDDefaultDictionaryEntryRefiner: CZYZDDictionaryEntryRefining {
+    private let chaopinResolver: CZYZDChaopinImageTextResolver
+    private let deepSeekParser: DeepSeekDictionaryParsingClient
+
+    init(
+        chaopinResolver: CZYZDChaopinImageTextResolver = CZYZDChaopinImageTextResolver(),
+        deepSeekParser: DeepSeekDictionaryParsingClient = DeepSeekDictionaryParsingClient()
+    ) {
+        self.chaopinResolver = chaopinResolver
+        self.deepSeekParser = deepSeekParser
+    }
+
+    func refine(_ entries: [CZYZDDictionaryEntry]) async -> [CZYZDDictionaryEntry] {
+        var refinedEntries: [CZYZDDictionaryEntry] = []
+        refinedEntries.reserveCapacity(entries.count)
+
+        for entry in entries {
+            var refinedEntry = await refineChaopinImageIfNeeded(entry)
+
+            if DeepSeekSettingsStore.isDictionaryParsingEnabled,
+               !DeepSeekSettingsStore.loadAPIKey().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               let parsedEntry = try? await deepSeekParser.refine(entry: refinedEntry) {
+                refinedEntry = parsedEntry
+            }
+
+            refinedEntries.append(refinedEntry)
+        }
+
+        return refinedEntries
+    }
+
+    private func refineChaopinImageIfNeeded(_ entry: CZYZDDictionaryEntry) async -> CZYZDDictionaryEntry {
+        guard entry.chaopin.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let imageURL = entry.chaopinImageURL,
+              let chaopin = await chaopinResolver.resolveText(from: imageURL) else {
+            return entry
+        }
+
+        return CZYZDDictionaryEntry(
+            term: entry.term,
+            chaopin: chaopin,
+            chaopinImageURL: entry.chaopinImageURL,
+            pronunciation: entry.pronunciation,
+            definition: entry.definition,
+            audioURL: entry.audioURL
+        )
+    }
 }

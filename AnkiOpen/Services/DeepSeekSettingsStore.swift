@@ -23,6 +23,7 @@ enum DeepSeekSettingsStore {
     private static let apiKeyService = "com.xinby.AnkiOpen.deepseek"
     private static let apiKeyAccount = "api-key"
     private static let modelKey = "deepseek.model"
+    private static let dictionaryParsingKey = "deepseek.dictionaryParsingEnabled"
 
     static var selectedModel: DeepSeekModel {
         get {
@@ -34,6 +35,18 @@ enum DeepSeekSettingsStore {
         }
         set {
             UserDefaults.standard.set(newValue.rawValue, forKey: modelKey)
+        }
+    }
+
+    static var isDictionaryParsingEnabled: Bool {
+        get {
+            if UserDefaults.standard.object(forKey: dictionaryParsingKey) == nil {
+                return true
+            }
+            return UserDefaults.standard.bool(forKey: dictionaryParsingKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: dictionaryParsingKey)
         }
     }
 

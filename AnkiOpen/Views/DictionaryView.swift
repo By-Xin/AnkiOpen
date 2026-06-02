@@ -131,7 +131,7 @@ struct DictionaryView: View {
                                     }
                                 }
 
-                                if entry.chaopinImageURL != nil || !entry.chaopin.isEmpty || !entry.pronunciation.isEmpty {
+                                if entry.chaopinImageURL != nil || !entry.chaopin.isEmpty {
                                     LabeledContent {
                                         HStack(spacing: 8) {
                                             if let imageURL = entry.chaopinImageURL {
@@ -142,13 +142,16 @@ struct DictionaryView: View {
                                                             .resizable()
                                                             .scaledToFit()
                                                     default:
-                                                        Text(entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin)
+                                                        Text(entry.chaopin.isEmpty ? "潮拼图片" : entry.chaopin)
                                                             .font(.body)
                                                     }
                                                 }
                                                 .frame(width: 92, height: 28, alignment: .leading)
-                                            } else {
-                                                Text(entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin)
+                                            }
+
+                                            if !entry.chaopin.isEmpty {
+                                                Text(entry.chaopin)
+                                                    .font(.body.monospaced())
                                             }
                                         }
                                     } label: {

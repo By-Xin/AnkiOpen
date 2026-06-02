@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var errorMessage: String?
     @State private var deepSeekAPIKey = ""
     @State private var deepSeekModel = DeepSeekSettingsStore.selectedModel
+    @State private var isDeepSeekDictionaryParsingEnabled = DeepSeekSettingsStore.isDictionaryParsingEnabled
     @State private var deepSeekStatusMessage: String?
 
     private let backupExporter = BackupExporter()
@@ -48,6 +49,11 @@ struct SettingsView: View {
                         }
                     }
 
+                    Toggle("清洗潮语词典结果", isOn: $isDeepSeekDictionaryParsingEnabled)
+                        .onChange(of: isDeepSeekDictionaryParsingEnabled) { value in
+                            DeepSeekSettingsStore.isDictionaryParsingEnabled = value
+                        }
+
                     LabeledContent("接口", value: "api.deepseek.com")
 
                     Button {
@@ -62,7 +68,7 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("用于生僻字功能：让 DeepSeek 给出更适合显示和学习的替代字。默认使用 V4 Flash，优先保证速度。")
+                    Text("用于生僻字和词典清洗：生僻字会询问替代字；词典会把网页结果整理成潮拼和解释。默认使用 V4 Flash，优先保证速度。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -158,6 +164,7 @@ struct SettingsView: View {
             .onAppear {
                 deepSeekAPIKey = DeepSeekSettingsStore.loadAPIKey()
                 deepSeekModel = DeepSeekSettingsStore.selectedModel
+                isDeepSeekDictionaryParsingEnabled = DeepSeekSettingsStore.isDictionaryParsingEnabled
             }
             .onChange(of: deepSeekModel) { model in
                 DeepSeekSettingsStore.selectedModel = model
@@ -194,6 +201,7 @@ struct SettingsView: View {
         do {
             try DeepSeekSettingsStore.saveAPIKey(deepSeekAPIKey)
             DeepSeekSettingsStore.selectedModel = deepSeekModel
+            DeepSeekSettingsStore.isDictionaryParsingEnabled = isDeepSeekDictionaryParsingEnabled
             deepSeekStatusMessage = deepSeekAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 ? "API Key 已清空。"
                 : "DeepSeek 设置已保存。"

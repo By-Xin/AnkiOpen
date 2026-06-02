@@ -84,10 +84,13 @@ final class CZYZDDictionaryEnrichmentService {
     }
 
     static func cardBackText(from entry: CZYZDDictionaryEntry) -> String {
-        let chaoshanPronunciation = entry.chaopin.isEmpty ? entry.pronunciation : entry.chaopin
         return [
-            chaoshanPronunciation.trimmingCharacters(in: .whitespacesAndNewlines),
-            entry.definition.trimmingCharacters(in: .whitespacesAndNewlines)
+            entry.chaopin.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? ""
+                : "潮拼: \(entry.chaopin.trimmingCharacters(in: .whitespacesAndNewlines))",
+            entry.definition.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? ""
+                : "解释: \(entry.definition.trimmingCharacters(in: .whitespacesAndNewlines))"
         ]
         .filter { !$0.isEmpty }
         .joined(separator: "\n")

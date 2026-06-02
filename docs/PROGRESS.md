@@ -26,6 +26,8 @@ Last updated: 2026-06-02
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
 - Moved Study answer/rating controls into a safe-area bottom inset so they no longer cover card text.
 - Added CZYZD audio download when saving dictionary entries or batch-building dictionary notebooks; stored audio is attached to both sides of the generated card.
+- Added local Vision OCR for CZYZD chaopin images so romanized readings such as `le2` can be extracted from pronunciation PNGs instead of using CZYZD's Han-character alt text.
+- Added optional DeepSeek dictionary result cleanup that turns CZYZD output into structured `潮拼` and `解释` fields when a DeepSeek API key is configured.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -47,6 +49,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after CSV CZYZD auto-fill on 2026-06-01: 54 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CZYZD dictionary parsing cleanup on 2026-06-01: 55 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Chinese home/localization and CZYZD dictionary audio card saving on 2026-06-02: 60 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after CZYZD chaopin OCR and DeepSeek dictionary cleanup on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
 - Built and installed the app to the connected iPhone on 2026-06-02. Launch was blocked by iOS because the device was locked.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -79,11 +82,13 @@ Last updated: 2026-06-02
 - Settings stores the DeepSeek API key in Keychain and keeps the selected model locally.
 - Rare Glyphs can ask DeepSeek for a practical replacement character or phrase.
 - Suggestions are cached locally and can be applied to all affected cards after review.
+- DeepSeek can also clean dictionary lookup results into structured `潮拼` and `解释` fields when enabled in Settings.
 
 ## CZYZD Dictionary
 
 - The Dictionary tab searches CZYZD by word or phrase.
 - Results display the matched term, CZYZD Chaoshan pronunciation image under `潮拼`, cleaned definition text under `解释`, and a speaker button when CZYZD exposes an audio clip.
+- The app attempts local OCR on the CZYZD chaopin image and only stores romanized chaopin text when it can extract a Latin-reading value.
 - Mandarin pinyin and source labels such as `字义` are filtered out of the main dictionary result.
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
 - Individual results can be saved as cards into a newly created notebook.
