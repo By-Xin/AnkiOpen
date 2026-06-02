@@ -63,6 +63,8 @@ Last updated: 2026-06-02
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
 - Created initial GitHub Issues for FSRS, CSV import polish, backup/export, visual polish, and CI.
+- Published GitHub Release `v0.1.0` for the first MVP: https://github.com/By-Xin/AnkiOpen/releases/tag/v0.1.0
+- Added `docs/RELEASE_RUNBOOK.md` for repeatable local archive export, development device install, GitHub Release checks, and `devicectl unavailable` troubleshooting.
 
 ## Verification
 
@@ -108,6 +110,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Maintenance Center on 2026-06-02: 97 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after audio integrity checks on 2026-06-02: 99 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Chinese unit-name migration and localized error messages on 2026-06-02: 100 unit/app tests and 1 UI launch smoke test.
+- Passed local first-release validation on 2026-06-02: 100 unit/app tests, 1 UI launch smoke test, Release archive, development IPA export, and GitHub Actions run `26829166120`.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Built, installed, and launched the Chinese unit-name migration build on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
@@ -213,3 +216,4 @@ Last updated: 2026-06-02
 ## Next
 
 - Add App Store Connect/TestFlight account steps once a paid Apple Developer account is ready.
+- Re-run final phone install once `xcrun devicectl list devices` shows the iPhone as `available` instead of `unavailable`.
