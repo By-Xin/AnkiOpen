@@ -51,6 +51,10 @@ struct HomeDashboardMetrics: Equatable {
     let reviewedToday: Int
     let reviewedLast7Days: Int
 
+    var hasAttentionItems: Bool {
+        missingAudioCards > 0 || openReports > 0
+    }
+
     init(
         cards: [FlashcardMO],
         reports: [CardReportMO],

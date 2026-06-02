@@ -69,6 +69,42 @@ struct NotebooksView: View {
                     .appListRow()
                 }
 
+                if metrics.hasAttentionItems {
+                    Section("待处理") {
+                        if metrics.missingAudioCards > 0 {
+                            NavigationLink {
+                                MissingAudioCardsView()
+                            } label: {
+                                HomeAttentionRow(
+                                    title: "补齐缺失音频",
+                                    detail: "进入缺音频队列，批量匹配或逐张修正。",
+                                    systemImage: "speaker.slash",
+                                    count: metrics.missingAudioCards,
+                                    countLabel: "缺音频",
+                                    tint: AppPalette.amber
+                                )
+                            }
+                            .appListRow()
+                        }
+
+                        if metrics.openReports > 0 {
+                            NavigationLink {
+                                ReportsView()
+                            } label: {
+                                HomeAttentionRow(
+                                    title: "处理卡片反馈",
+                                    detail: "检查音频、潮拼、释义或其他待修正问题。",
+                                    systemImage: "exclamationmark.bubble",
+                                    count: metrics.openReports,
+                                    countLabel: "未处理",
+                                    tint: AppPalette.cinnabar
+                                )
+                            }
+                            .appListRow()
+                        }
+                    }
+                }
+
                 Section("工具") {
                     NavigationLink {
                         ImportView()
@@ -95,6 +131,25 @@ struct NotebooksView: View {
                         ReviewHistoryView()
                     } label: {
                         Label("复习记录", systemImage: "clock.arrow.circlepath")
+                    }
+                    .appListRow()
+
+                    NavigationLink {
+                        ReportsView()
+                    } label: {
+                        HStack {
+                            Label("反馈", systemImage: "exclamationmark.bubble")
+                            Spacer()
+                            if metrics.openReports > 0 {
+                                Text("\(metrics.openReports)")
+                                    .font(.caption.weight(.semibold))
+                                    .monospacedDigit()
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
+                                    .background(AppPalette.cinnabar, in: Capsule())
+                            }
+                        }
                     }
                     .appListRow()
 
@@ -195,6 +250,32 @@ struct NotebooksView: View {
             return "更新于 \(updated)"
         }
         return "更新于 \(updated) · \(dueCount) 张到期"
+    }
+}
+
+private struct HomeAttentionRow: View {
+    let title: String
+    let detail: String
+    let systemImage: String
+    let count: Int
+    let countLabel: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            LeadingSymbol(systemImage: systemImage, tint: tint)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(AppPalette.ink)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 12)
+            MetricPill(value: "\(count)", label: countLabel, tint: tint)
+        }
     }
 }
 

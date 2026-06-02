@@ -31,6 +31,7 @@ Last updated: 2026-06-02
 - Added a Chinese home dashboard with due, active, archived, missing-audio, and open-feedback counts plus notebook due subtitles.
 - Added a Study completion summary with reviewed-card count, per-rating counts, and quick continuation actions.
 - Added home dashboard review activity counts for today and the last 7 days.
+- Added Home `待处理` links that appear when there are missing-audio cards or unresolved feedback reports.
 - Added a searchable Review History screen with recent review logs, rating chips, card details, and card edit access.
 - Added CSV export from Review History and Feedback so filtered logs and issue reports can be shared for spreadsheet review.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
@@ -95,6 +96,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after release and daily acceptance checklist on 2026-06-02: 86 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after global missing-audio queue on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Study audio feedback tools on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Home pending-work links on 2026-06-02: 88 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
