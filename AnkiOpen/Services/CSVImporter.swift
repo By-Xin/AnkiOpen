@@ -115,9 +115,9 @@ enum CSVImporterError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unreadableFile:
-            return "The selected CSV file could not be read."
+            return "无法读取选择的 CSV 文件。"
         case .invalidEncoding:
-            return "The CSV file must be UTF-8 encoded."
+            return "CSV 文件必须使用 UTF-8 编码。"
         }
     }
 }
@@ -272,7 +272,7 @@ final class CSVImporter {
         for (index, row) in bodyRows.enumerated() {
             let sourceLine = index + 1 + (mapping.hasHeader ? 1 : 0)
             guard row.count >= 2 else {
-                errors.append("Line \(sourceLine): expected at least two columns.")
+                errors.append("第 \(sourceLine) 行：至少需要两列。")
                 invalidRows += 1
                 continue
             }
@@ -281,7 +281,7 @@ final class CSVImporter {
             let back = mapping.back(from: row) ?? ""
             let dictionaryLookupTerm = mapping.dictionaryLookupTerm(from: row)
             guard !front.isEmpty, !back.isEmpty || dictionaryLookupTerm != nil else {
-                errors.append("Line \(sourceLine): front and back must both be non-empty unless a CZYZD lookup column is provided.")
+                errors.append("第 \(sourceLine) 行：除非提供查词列，否则正面和背面都不能为空。")
                 invalidRows += 1
                 continue
             }
@@ -291,7 +291,7 @@ final class CSVImporter {
             let pair = CardPair(front: front, back: back)
             guard !seenPairs.contains(pair) else {
                 duplicateRows += 1
-                skippedRowDetails.append("Line \(sourceLine): duplicate front/back pair skipped.")
+                skippedRowDetails.append("第 \(sourceLine) 行：同一笔记本内正反面完全重复，已跳过。")
                 continue
             }
 
@@ -355,7 +355,7 @@ final class CSVImporter {
             let copied = try AudioFileStore.copyAudio(named: fileName, from: mediaByFileName)
             return copied.isEmpty ? nil : copied
         } catch {
-            errors.append("Line \(sourceLine): \(error.localizedDescription)")
+            errors.append("第 \(sourceLine) 行：\(error.localizedDescription)")
             return nil
         }
     }
@@ -381,7 +381,7 @@ final class CSVImporter {
         guard AudioFileStore.supportedExtensions.contains(URL(fileURLWithPath: lookupName).pathExtension.lowercased()) else {
             unsupportedAudioFiles.insert(lookupName)
             appendUnique(
-                "Line \(sourceLine): \(AudioFileStoreError.unsupportedFormat(lookupName).localizedDescription)",
+                "第 \(sourceLine) 行：\(AudioFileStoreError.unsupportedFormat(lookupName).localizedDescription)",
                 to: &warnings
             )
             return nil
@@ -390,7 +390,7 @@ final class CSVImporter {
         guard mediaByFileName[lookupName] != nil else {
             missingAudioFiles.insert(lookupName)
             appendUnique(
-                "Line \(sourceLine): \(AudioFileStoreError.missingFile(lookupName).localizedDescription)",
+                "第 \(sourceLine) 行：\(AudioFileStoreError.missingFile(lookupName).localizedDescription)",
                 to: &warnings
             )
             return nil

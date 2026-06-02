@@ -34,11 +34,11 @@ enum CZYZDDictionaryLookupError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidSearchURL:
-            return "Could not build the CZYZD search URL."
+            return "无法生成潮语词典搜索地址。"
         case .invalidResponse:
-            return "CZYZD search returned an invalid response."
+            return "潮语词典搜索返回异常。"
         case .invalidHTML:
-            return "CZYZD search returned unreadable HTML."
+            return "潮语词典页面无法读取。"
         }
     }
 }

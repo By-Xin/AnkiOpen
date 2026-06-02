@@ -14,7 +14,7 @@ enum ReviewSchedulerError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedRating:
-            return "Unsupported review rating."
+            return "不支持的复习评分。"
         }
     }
 }

@@ -10,10 +10,20 @@ struct AnkiOpenApp: App {
             RootView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .onAppear {
+                    migrateLegacyUnitNames()
                     #if DEBUG
                     DebugLaunchCSVImporter.importIfRequested(context: persistenceController.container.viewContext)
                     #endif
                 }
+        }
+    }
+
+    private func migrateLegacyUnitNames() {
+        do {
+            try NotebookUnitMO.migrateLegacyEnglishNames(context: persistenceController.container.viewContext)
+        } catch {
+            persistenceController.container.viewContext.rollback()
+            print("Unit name migration failed: \(error.localizedDescription)")
         }
     }
 }

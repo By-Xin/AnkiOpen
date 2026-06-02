@@ -181,7 +181,7 @@ enum BackupExporterError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .writeFailed:
-            return "The backup file could not be written."
+            return "无法写入备份文件。"
         }
     }
 }

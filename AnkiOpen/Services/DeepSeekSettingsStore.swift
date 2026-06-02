@@ -119,7 +119,7 @@ struct KeychainError: LocalizedError {
     let status: OSStatus
 
     var errorDescription: String? {
-        "Keychain error \(status)."
+        "钥匙串写入失败，错误码 \(status)。"
     }
 }
 

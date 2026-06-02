@@ -44,7 +44,7 @@ final class CZYZDDictionaryEnrichmentService {
 
             guard let card = fetchCard(id: cardID, context: context) else {
                 failedCards += 1
-                messages.append("Could not find imported card for CZYZD lookup term \(term).")
+                messages.append("找不到需要查词的导入卡片：\(term)。")
                 continue
             }
 
@@ -55,14 +55,14 @@ final class CZYZDDictionaryEnrichmentService {
             do {
                 guard let entry = try await lookup.lookup(term: term).first else {
                     failedCards += 1
-                    messages.append("No CZYZD dictionary entry found for \(term).")
+                    messages.append("潮语词典没有找到 \(term)。")
                     continue
                 }
 
                 let back = Self.cardBackText(from: entry)
                 guard !back.isEmpty else {
                     failedCards += 1
-                    messages.append("CZYZD entry for \(term) did not include pronunciation or definition.")
+                    messages.append("潮语词典结果 \(term) 没有可用的潮拼或解释。")
                     continue
                 }
 
@@ -71,7 +71,7 @@ final class CZYZDDictionaryEnrichmentService {
                 updatedCards += 1
             } catch {
                 failedCards += 1
-                messages.append("CZYZD dictionary lookup failed for \(term): \(error.localizedDescription)")
+                messages.append("潮语词典查询 \(term) 失败：\(error.localizedDescription)")
             }
         }
 

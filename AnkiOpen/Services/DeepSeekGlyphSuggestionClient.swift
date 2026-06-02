@@ -9,11 +9,11 @@ enum DeepSeekGlyphSuggestionError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "Add a DeepSeek API key in Settings first."
+            return "请先在设置里填写 DeepSeek API Key。"
         case .invalidResponse:
-            return "DeepSeek returned an unreadable response."
+            return "DeepSeek 返回了无法读取的结果。"
         case .emptySuggestion:
-            return "DeepSeek did not return a replacement suggestion."
+            return "DeepSeek 没有返回替代字建议。"
         case .server(let message):
             return message
         }

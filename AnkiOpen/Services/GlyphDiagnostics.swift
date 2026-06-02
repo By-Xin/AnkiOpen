@@ -19,11 +19,11 @@ struct GlyphDiagnostics {
     }
 
     enum Category: String {
-        case cjkExtensionB = "CJK Extension B"
-        case cjkExtensionCToI = "CJK Extension C-I"
-        case privateUse = "Private Use"
-        case ideographicDescription = "IDS"
-        case variationSelector = "Variation Selector"
+        case cjkExtensionB = "中日韩扩展 B"
+        case cjkExtensionCToI = "中日韩扩展 C-I"
+        case privateUse = "私用区字符"
+        case ideographicDescription = "表意文字描述符"
+        case variationSelector = "异体选择符"
     }
 
     static func findings(in text: String) -> [Finding] {

@@ -10,15 +10,15 @@ enum AudioFileStoreError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unsupportedFormat(let name):
-            return "\(name) is not a supported audio format."
+            return "\(name) 不是支持的音频格式。"
         case .missingFile(let name):
-            return "Audio file \(name) was referenced by the CSV but not selected."
+            return "CSV 引用了音频文件 \(name)，但导入时没有选择这个文件。"
         case .copyFailed(let name):
-            return "Could not copy audio file \(name) into local storage."
+            return "无法把音频文件 \(name) 复制到本机存储。"
         case .restoreFailed(let name):
-            return "Could not restore audio file \(name) into local storage."
+            return "无法从备份恢复音频文件 \(name)。"
         case .storeDownloadedFailed(let name):
-            return "Could not store downloaded audio file \(name)."
+            return "无法保存下载的音频文件 \(name)。"
         }
     }
 }

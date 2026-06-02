@@ -59,8 +59,8 @@ final class CZYZDDictionaryAudioDownloader: CZYZDDictionaryAudioDownloading {
 
 @MainActor
 final class CZYZDDictionaryNotebookBuilder {
-    static let defaultNotebookName = "CZYZD Dictionary"
-    static let defaultUnitName = "Common Characters"
+    static let defaultNotebookName = "潮语词典"
+    static let defaultUnitName = "常用字"
 
     private let lookup: CZYZDDictionaryLookingUp
     private let audioDownloader: CZYZDDictionaryAudioDownloading
@@ -134,7 +134,7 @@ final class CZYZDDictionaryNotebookBuilder {
                 failedTerms: 0,
                 audioFilesAdded: 0,
                 nextIndex: terms.count,
-                messages: ["All bundled common terms have already been checked."]
+                messages: ["内置常用词已经全部检查完。"]
             )
         }
 
@@ -152,7 +152,7 @@ final class CZYZDDictionaryNotebookBuilder {
                 guard let entry = try await lookup.lookup(term: term).first else {
                     failed += 1
                     if messages.count < 8 {
-                        messages.append("No CZYZD entry found for \(term).")
+                        messages.append("潮语词典没有找到 \(term)。")
                     }
                     continue
                 }
@@ -184,7 +184,7 @@ final class CZYZDDictionaryNotebookBuilder {
                 try context.save()
             }
         } catch {
-            messages.append("Could not save dictionary notebook.")
+            messages.append("无法保存词典笔记本。")
         }
 
         return CZYZDDictionaryNotebookImportSummary(

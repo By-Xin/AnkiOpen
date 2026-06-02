@@ -12,7 +12,7 @@ final class PersistenceController {
         notebook.createdAt = Date()
         notebook.updatedAt = Date()
 
-        let unit = NotebookUnitMO.insert(name: "Unit 1", notebook: notebook, context: context)
+        let unit = NotebookUnitMO.insert(name: "单元 1", notebook: notebook, context: context)
         _ = FlashcardMO.insert(
             front: "What is spaced repetition?",
             back: "A learning technique that schedules reviews over increasing intervals.",

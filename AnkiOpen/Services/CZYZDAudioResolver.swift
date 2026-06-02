@@ -30,13 +30,13 @@ enum CZYZDAudioResolverError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidSearchURL:
-            return "Could not build the CZYZD search URL."
+            return "无法生成潮语词典搜索地址。"
         case .invalidResponse:
-            return "CZYZD search returned an invalid response."
+            return "潮语词典搜索返回异常。"
         case .invalidHTML:
-            return "CZYZD search returned unreadable HTML."
+            return "潮语词典页面无法读取。"
         case .invalidAudioResponse:
-            return "CZYZD audio download returned an invalid response."
+            return "潮语词典音频下载返回异常。"
         }
     }
 }
@@ -257,7 +257,7 @@ final class CZYZDAudioAttachmentService {
                 checkedCards: 0,
                 matchedCards: 0,
                 failedCards: failedFetchCount,
-                messages: ["Could not load imported cards for CZYZD matching."]
+                messages: ["无法读取需要匹配潮语音频的卡片。"]
             )
         }
 
@@ -299,7 +299,7 @@ final class CZYZDAudioAttachmentService {
                 try context.save()
             }
         } catch {
-            messages.append("Could not save matched CZYZD audio.")
+            messages.append("无法保存已匹配的潮语音频。")
         }
 
         return CZYZDAudioAttachmentSummary(

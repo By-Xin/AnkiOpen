@@ -20,9 +20,9 @@ enum BackupImporterError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unreadableFile:
-            return "The selected backup file could not be read."
+            return "无法读取选择的备份文件。"
         case .unsupportedSchema(let version):
-            return "Backup schema version \(version) is not supported."
+            return "不支持备份格式版本 \(version)。"
         }
     }
 }

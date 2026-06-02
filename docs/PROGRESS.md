@@ -11,7 +11,7 @@ Last updated: 2026-06-02
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
 - Added notebook and unit CSV export for lightweight spreadsheet editing and sharing.
 - Added optional CSV `isArchived` / `已归档` import so CSV export/import preserves archived card state.
-- Added optional CSV `unit` column. Blank unit values import into `Default`; numeric values import as `Unit 1`, `Unit 2`, etc.
+- Added optional CSV `unit` column. Blank unit values import into `默认单元`; numeric values import as `单元 1`, `单元 2`, etc.
 - Added local audio file storage and Study playback controls for both card sides.
 - Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
 - Added Study card tools for current-side audio status, playback, missing-audio feedback, and direct card editing.
@@ -35,7 +35,7 @@ Last updated: 2026-06-02
 - Added a Home `维护中心` with daily health metrics for today/tomorrow due cards, future due cards, new cards, missing audio, rare glyphs, feedback, and review activity.
 - Added a searchable Review History screen with recent review logs, rating chips, card details, and card edit access.
 - Added CSV export from Review History and Feedback so filtered logs and issue reports can be shared for spreadsheet review.
-- Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
+- Added Dictionary actions to save a CZYZD result into a new notebook and to build a `潮语词典` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
 - Moved Study answer/rating controls into a safe-area bottom inset so they no longer cover card text.
@@ -55,6 +55,7 @@ Last updated: 2026-06-02
 - Added a global missing-audio queue from Home tools with search, front/back filters, batch CZYZD audio repair, and direct card editing.
 - Updated batch CZYZD audio repair so cards missing only one side can reuse the existing audio from the other side before hitting the network.
 - Added audio integrity checks so cards with stored audio file names but missing local files are treated as audio issues in Study, card editing, maintenance metrics, and the missing-audio repair queue.
+- Localized default and numeric unit names to `默认单元` / `单元 N`, added startup migration from legacy `Default` / `Unit N`, and localized import, backup, audio, DeepSeek, glyph, and CZYZD error messages.
 - Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
@@ -106,7 +107,9 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Dictionary existing-notebook save targets on 2026-06-02: 96 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Maintenance Center on 2026-06-02: 97 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after audio integrity checks on 2026-06-02: 99 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Chinese unit-name migration and localized error messages on 2026-06-02: 100 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
+- Built, installed, and launched the Chinese unit-name migration build on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Current Study Behavior
@@ -133,8 +136,9 @@ Last updated: 2026-06-02
   - `unit,front,back,isArchived` for restoring archived cards from exported CSV
   - `front,back,audio` where one audio file is used on both sides
   - `front,back,frontAudio,backAudio` where each side can use a different file
-- If the `unit` column is absent or blank, cards import into `Default`.
-- Numeric unit values are normalized to `Unit 1`, `Unit 2`, and so on.
+- If the `unit` column is absent or blank, cards import into `默认单元`.
+- Numeric unit values are normalized to `单元 1`, `单元 2`, and so on.
+- Legacy English unit names `Default` and `Unit N` are migrated to `默认单元` and `单元 N` on app launch; duplicate migrated units are merged.
 - During import, select the CSV file and any referenced audio files together.
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
@@ -151,7 +155,7 @@ Last updated: 2026-06-02
 - Suggestions are cached locally and can be applied to all affected cards after review.
 - DeepSeek can also clean dictionary lookup results into structured `潮拼` and `解释` fields when enabled in Settings.
 
-## CZYZD Dictionary
+## 潮语词典
 
 - The Dictionary tab searches CZYZD by word or phrase.
 - Results display the matched term, CZYZD Chaoshan pronunciation image under `潮拼`, cleaned definition text under `解释`, and a speaker button when CZYZD exposes an audio clip.
@@ -164,7 +168,7 @@ Last updated: 2026-06-02
 - Card editing can preview current front/back audio and pending matched audio before saving.
 - Card editing can replace or remove front, back, or shared audio before saving.
 - Individual results can be saved as cards into a newly created notebook or an existing notebook/unit; duplicate cards are skipped within the target notebook before creating empty units.
-- A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
+- A batch builder downloads a bundled common-character seed list in small batches into `潮语词典`, stores progress locally, and skips duplicate cards in that notebook.
 - Saved dictionary cards attach available CZYZD audio to both front and back playback buttons.
 
 ## Backup Export And Restore

@@ -32,6 +32,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Persistent import history with direct links back to imported notebooks
 - Global missing-audio queue with search, front/back filters, batch CZYZD audio fill, and direct card editing
 - Audio integrity checks that detect stored audio references whose local files are missing, then route them through the same repair queue
+- Chinese-first unit defaults, localized errors, and startup migration from legacy `Default` / `Unit N` names
 - In-app release and daily acceptance checklist from Settings
 - Unit detail shows archived cards separately and can restore them into study queues
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
@@ -59,7 +60,7 @@ front,back
 Question,Answer
 ```
 
-Cards are organized as `Notebook -> Unit -> Card`. If the CSV does not include a `unit` column, cards are imported into a `Default` unit. Numeric unit values are displayed as `Unit 1`, `Unit 2`, and so on.
+Cards are organized as `笔记本 -> 单元 -> 卡片`. If the CSV does not include a `unit` column, cards are imported into `默认单元`. Numeric unit values are displayed as `单元 1`, `单元 2`, and so on. Existing legacy `Default` / `Unit N` names are migrated to Chinese on app launch.
 
 Use a unit column:
 
@@ -140,7 +141,7 @@ The 潮语词典 page searches CZYZD directly. It returns exact phrase matches w
 
 When a DeepSeek API key is configured and dictionary cleanup is enabled in Settings, lookup results are also sent through DeepSeek to normalize the `潮拼` and `解释` fields. AI cleanup failure does not block local dictionary results.
 
-Dictionary results can be saved into a new notebook or appended to an existing notebook/unit as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
+Dictionary results can be saved into a new notebook or appended to an existing notebook/unit as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `潮语词典` notebook, skipping duplicate cards in that notebook.
 
 The card editor can also query CZYZD using the current front text and fill the back side with structured `潮拼` and `解释`. If the back side already has content, the app asks before overwriting it. It can also match CZYZD audio from the front text; matched audio is stored only when the card is saved and is applied to both playback sides. Existing front/back audio and newly matched audio can be previewed before saving. Audio can also be manually replaced or removed for the front, back, or both sides.
 
@@ -184,6 +185,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Feedback type filter and search
 - [x] Global missing-audio queue and batch repair
 - [x] Audio integrity checks for missing local audio files
+- [x] Chinese unit-name defaults, legacy unit migration, and localized import/backup/lookup errors
 - [x] Import result unit summary and navigation
 - [x] Persistent import history
 - [x] Archived card visibility and restore controls

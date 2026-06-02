@@ -13,7 +13,7 @@ final class NotebookUnitMO: NSManagedObject, Identifiable {
 }
 
 extension NotebookUnitMO {
-    static let defaultName = "Default"
+    static let defaultName = "默认单元"
 
     @nonobjc class func fetchRequest() -> NSFetchRequest<NotebookUnitMO> {
         NSFetchRequest<NotebookUnitMO>(entityName: "NotebookUnit")
@@ -66,10 +66,64 @@ extension NotebookUnitMO {
             return defaultName
         }
 
+        if let localizedName = localizedLegacyName(for: trimmed) {
+            return localizedName
+        }
+
         if trimmed.rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil {
-            return "Unit \(trimmed)"
+            return "单元 \(trimmed)"
         }
         return trimmed
+    }
+
+    static func migrateLegacyEnglishNames(context: NSManagedObjectContext) throws {
+        let request = fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \NotebookUnitMO.sortIndex, ascending: true)]
+        let units = try context.fetch(request)
+        let now = Date()
+
+        for unit in units {
+            guard let localizedName = localizedLegacyName(for: unit.name) else {
+                continue
+            }
+
+            if let target = unit.notebook.units.first(where: {
+                $0 !== unit && $0.name.caseInsensitiveCompare(localizedName) == .orderedSame
+            }) {
+                for card in unit.flashcards {
+                    card.unit = target
+                    card.updatedAt = now
+                }
+                target.updatedAt = now
+                context.delete(unit)
+            } else {
+                unit.name = localizedName
+                unit.updatedAt = now
+            }
+        }
+
+        if context.hasChanges {
+            try context.save()
+        }
+    }
+
+    private static func localizedLegacyName(for rawName: String) -> String? {
+        let trimmed = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.caseInsensitiveCompare("Default") == .orderedSame {
+            return defaultName
+        }
+
+        let lowercased = trimmed.lowercased()
+        guard lowercased.hasPrefix("unit ") else {
+            return nil
+        }
+
+        let number = String(trimmed.dropFirst(5)).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !number.isEmpty,
+              number.rangeOfCharacter(from: CharacterSet.decimalDigits.inverted) == nil else {
+            return nil
+        }
+        return "单元 \(number)"
     }
 
     private static func nextSortIndex(in notebook: NotebookMO) -> Int32 {
