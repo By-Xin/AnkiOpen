@@ -5,6 +5,10 @@ struct ReportsView: View {
     @State private var filter: ReportStatusFilter = .open
     @State private var categoryFilter: ReportCategory?
     @State private var searchText = ""
+    @State private var csvExportURL: URL?
+    @State private var errorMessage: String?
+
+    private let csvExporter = CSVExporter()
 
     init() {
         let request = CardReportMO.fetchRequest()
@@ -65,6 +69,17 @@ struct ReportsView: View {
                     .listRowBackground(Color.clear)
                 }
             } else {
+                if let csvExportURL {
+                    Section("导出") {
+                        ShareLink(item: csvExportURL) {
+                            Label("分享反馈 CSV", systemImage: "square.and.arrow.up")
+                        }
+                        Text(csvExportURL.lastPathComponent)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Section(filter.title) {
                     ForEach(filteredReports) { report in
                         NavigationLink {
@@ -78,6 +93,29 @@ struct ReportsView: View {
         }
         .navigationTitle("反馈")
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索卡片或备注")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    exportCSV()
+                } label: {
+                    Label("导出 CSV", systemImage: "square.and.arrow.up")
+                }
+                .disabled(filteredReports.isEmpty)
+            }
+        }
+        .alert("导出错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
+        }, message: {
+            Text(errorMessage ?? "")
+        })
+    }
+
+    private func exportCSV() {
+        do {
+            csvExportURL = try csvExporter.writeReportsCSV(filteredReports)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

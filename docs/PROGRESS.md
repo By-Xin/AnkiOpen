@@ -31,6 +31,7 @@ Last updated: 2026-06-02
 - Added a Study completion summary with reviewed-card count, per-rating counts, and quick continuation actions.
 - Added home dashboard review activity counts for today and the last 7 days.
 - Added a searchable Review History screen with recent review logs, rating chips, card details, and card edit access.
+- Added CSV export from Review History and Feedback so filtered logs and issue reports can be shared for spreadsheet review.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
@@ -84,6 +85,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Study completion summary on 2026-06-02: 80 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after home review activity metrics on 2026-06-02: 81 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Review History browser on 2026-06-02: 82 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Review History and Feedback CSV export on 2026-06-02: 84 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -156,6 +158,11 @@ Last updated: 2026-06-02
 - Changed reports are automatically marked as resolved; unchanged saves leave the report in its current state.
 - Feedback shows open/resolved counts, correction-log count, the leading unresolved issue category, and category breakdowns.
 - Feedback can be filtered by issue type and searched by category, note, card text, notebook, or unit.
+- Feedback can export the current filtered report list to CSV, including status, category, note, card location, audio references, and correction count.
+
+## Review History
+
+- Review History can export the current filtered review log list to CSV, including reviewed time, rating, card location, front/back text, and due-date changes.
 
 ## Next
 

@@ -194,6 +194,10 @@ struct NotebooksView: View {
 private struct ReviewHistoryView: View {
     @FetchRequest private var reviewLogs: FetchedResults<ReviewLogMO>
     @State private var searchText = ""
+    @State private var csvExportURL: URL?
+    @State private var errorMessage: String?
+
+    private let csvExporter = CSVExporter()
 
     init() {
         let request = ReviewLogMO.fetchRequest()
@@ -226,6 +230,17 @@ private struct ReviewHistoryView: View {
                     .listRowBackground(Color.clear)
                 }
             } else {
+                if let csvExportURL {
+                    Section("导出") {
+                        ShareLink(item: csvExportURL) {
+                            Label("分享复习记录 CSV", systemImage: "square.and.arrow.up")
+                        }
+                        Text(csvExportURL.lastPathComponent)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Section("最近复习") {
                     ForEach(filteredLogs) { log in
                         NavigationLink {
@@ -241,6 +256,29 @@ private struct ReviewHistoryView: View {
         .appScreenBackground()
         .navigationTitle("复习记录")
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索卡片、笔记本或评分")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    exportCSV()
+                } label: {
+                    Label("导出 CSV", systemImage: "square.and.arrow.up")
+                }
+                .disabled(filteredLogs.isEmpty)
+            }
+        }
+        .alert("导出错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
+        }, message: {
+            Text(errorMessage ?? "")
+        })
+    }
+
+    private func exportCSV() {
+        do {
+            csvExportURL = try csvExporter.writeReviewHistoryCSV(filteredLogs)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 

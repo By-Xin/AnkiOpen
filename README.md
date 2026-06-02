@@ -14,6 +14,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Study completion summary with per-rating counts and quick continuation actions
 - Review history screen with searchable recent logs and card detail links
+- CSV export from Review History and Feedback for spreadsheet review
 - Audio playback on the front and back side of a card
 - Review logs and due-card querying
 - JSON backup export and restore from Settings
@@ -142,6 +143,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Study modes and review logs
 - [x] Study completion summary
 - [x] Review history browser
+- [x] Review history and feedback CSV export
 - [x] Unit and UI test scaffolding
 - [x] JSON backup export
 - [x] JSON backup restore

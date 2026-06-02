@@ -14,6 +14,31 @@ enum CSVExporterError: LocalizedError {
 
 final class CSVExporter {
     private let header = ["unit", "front", "back", "frontAudio", "backAudio", "isArchived"]
+    private let reportHeader = [
+        "创建时间",
+        "状态",
+        "处理时间",
+        "类型",
+        "备注",
+        "笔记本",
+        "单元",
+        "正面",
+        "背面",
+        "正面音频",
+        "背面音频",
+        "修正次数",
+        "最近修正"
+    ]
+    private let reviewHistoryHeader = [
+        "复习时间",
+        "评分",
+        "笔记本",
+        "单元",
+        "正面",
+        "背面",
+        "原到期",
+        "新到期"
+    ]
 
     func export(notebook: NotebookMO) -> String {
         export(rows: rows(for: notebook))
@@ -21,6 +46,16 @@ final class CSVExporter {
 
     func export(unit: NotebookUnitMO) -> String {
         export(rows: rows(for: unit))
+    }
+
+    func exportReports(_ reports: [CardReportMO]) -> String {
+        let allRows = [reportHeader] + reports.map(ReportCSVExportRow.init(report:)).map(\.columns)
+        return rowsToCSV(allRows)
+    }
+
+    func exportReviewHistory(_ logs: [ReviewLogMO]) -> String {
+        let allRows = [reviewHistoryHeader] + logs.map(ReviewHistoryCSVExportRow.init(log:)).map(\.columns)
+        return rowsToCSV(allRows)
     }
 
     func writeNotebookCSV(_ notebook: NotebookMO) throws -> URL {
@@ -31,12 +66,22 @@ final class CSVExporter {
         try writeCSV(export(unit: unit), fileStem: "\(unit.notebook.name)-\(unit.name)")
     }
 
+    func writeReportsCSV(_ reports: [CardReportMO]) throws -> URL {
+        try writeCSV(exportReports(reports), fileStem: "反馈记录")
+    }
+
+    func writeReviewHistoryCSV(_ logs: [ReviewLogMO]) throws -> URL {
+        try writeCSV(exportReviewHistory(logs), fileStem: "复习记录")
+    }
+
     private func export(rows: [CSVExportRow]) -> String {
-        let allRows = [header] + rows.map(\.columns)
-        return allRows.map { row in
+        rowsToCSV([header] + rows.map(\.columns))
+    }
+
+    private func rowsToCSV(_ rows: [[String]]) -> String {
+        rows.map { row in
             row.map(Self.escape).joined(separator: ",")
-        }
-        .joined(separator: "\n") + "\n"
+        }.joined(separator: "\n") + "\n"
     }
 
     private func rows(for notebook: NotebookMO) -> [CSVExportRow] {
@@ -118,5 +163,56 @@ private struct CSVExportRow {
             card.backAudioFileName ?? "",
             card.isArchived ? "true" : "false"
         ]
+    }
+}
+
+private struct ReportCSVExportRow {
+    let report: CardReportMO
+
+    var columns: [String] {
+        let correctionLogs = report.correctionLogs.sorted { $0.createdAt > $1.createdAt }
+        return [
+            CSVDateFormatter.string(from: report.createdAt),
+            report.isResolved ? "已处理" : "未处理",
+            CSVDateFormatter.string(from: report.resolvedAt),
+            report.categoryTitle,
+            report.note,
+            report.card.notebook.name,
+            report.card.unit?.name ?? "",
+            report.card.front,
+            report.card.back,
+            report.card.frontAudioFileName ?? "",
+            report.card.backAudioFileName ?? "",
+            "\(correctionLogs.count)",
+            CSVDateFormatter.string(from: correctionLogs.first?.createdAt)
+        ]
+    }
+}
+
+private struct ReviewHistoryCSVExportRow {
+    let log: ReviewLogMO
+
+    var columns: [String] {
+        [
+            CSVDateFormatter.string(from: log.reviewedAt),
+            log.ratingTitle,
+            log.card.notebook.name,
+            log.card.unit?.name ?? "",
+            log.card.front,
+            log.card.back,
+            CSVDateFormatter.string(from: log.previousDueAt),
+            CSVDateFormatter.string(from: log.nextDueAt)
+        ]
+    }
+}
+
+private enum CSVDateFormatter {
+    private static let formatter = ISO8601DateFormatter()
+
+    static func string(from date: Date?) -> String {
+        guard let date else {
+            return ""
+        }
+        return formatter.string(from: date)
     }
 }
