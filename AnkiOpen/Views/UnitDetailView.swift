@@ -12,8 +12,10 @@ struct UnitDetailView: View {
     @State private var errorMessage: String?
     @State private var isFillingAudio = false
     @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
+    @State private var csvExportURL: URL?
 
     private let czyzdAttachmentService = CZYZDAudioAttachmentService()
+    private let csvExporter = CSVExporter()
 
     init(unit: NotebookUnitMO) {
         self.unit = unit
@@ -83,6 +85,24 @@ struct UnitDetailView: View {
                 }
                 .disabled(isFillingAudio || activeCards.isEmpty)
                 .appListRow()
+
+                Button {
+                    exportCSV()
+                } label: {
+                    Label("生成单元 CSV", systemImage: "doc.badge.arrow.up")
+                }
+                .disabled(cards.isEmpty)
+                .appListRow()
+
+                if let csvExportURL {
+                    ShareLink(item: csvExportURL) {
+                        Label("分享 CSV", systemImage: "square.and.arrow.up")
+                    }
+                    .appListRow()
+                    Text(csvExportURL.lastPathComponent)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if let czyzdSummary {
@@ -193,6 +213,14 @@ struct UnitDetailView: View {
         card.restore()
         do {
             try viewContext.save()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func exportCSV() {
+        do {
+            csvExportURL = try csvExporter.writeUnitCSV(unit)
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -9,6 +9,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Notebook and unit CRUD
 - Flashcard CRUD, archive, and restore from unit detail
 - CSV import with `front,back`, optional `unit`, optional `audio`, or optional `frontAudio,backAudio` columns
+- CSV export from notebook and unit detail screens for lightweight editing and sharing
 - Optional CSV `czyzd` / `查词` column for CZYZD dictionary auto-fill
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
 - Audio playback on the front and back side of a card
@@ -82,6 +83,16 @@ Question,Answer,front.mp3,back.mp3
 
 The app copies selected audio into its local sandbox, so the original files are not needed after import.
 
+## CSV Export
+
+Notebook and unit detail screens can generate a shareable CSV with:
+
+```csv
+unit,front,back,frontAudio,backAudio,isArchived
+```
+
+This export is meant for lightweight review, spreadsheet editing, and sharing. Full app migration should still use JSON backup because it preserves review logs, reports, correction history, media data, and FSRS state.
+
 ## Backup Export And Restore
 
 Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio files, FSRS state fields, review logs, card reports, and report-driven correction history. Restore deduplicates existing notebooks, units, cards, review logs, reports, and correction logs.
@@ -111,6 +122,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Programmatic Core Data model
 - [x] Notebook, unit, and card management
 - [x] CSV import
+- [x] Notebook and unit CSV export
 - [x] CSV audio import and playback
 - [x] Study modes and review logs
 - [x] Unit and UI test scaffolding

@@ -9,6 +9,7 @@ Last updated: 2026-06-02
 - Implemented notebook CRUD, unit CRUD, card CRUD, card archive/restore, CSV import, due-card query, and study review flow.
 - Added `Notebook -> Unit -> Card` navigation and unit-scoped study entry points.
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
+- Added notebook and unit CSV export for lightweight spreadsheet editing and sharing.
 - Added optional CSV `unit` column. Blank unit values import into `Default`; numeric values import as `Unit 1`, `Unit 2`, etc.
 - Added local audio file storage and Study playback controls for both card sides.
 - Added Study mode selection for scheduled due review, all-card custom study, and forced not-yet-due learning.
@@ -72,6 +73,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after import result unit navigation on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after persistent import history on 2026-06-02: 73 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after archived card restore controls on 2026-06-02: 74 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after notebook/unit CSV export on 2026-06-02: 76 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -101,6 +103,7 @@ Last updated: 2026-06-02
 - CZYZD lookup headers include `czyzd`, `dictionary`, `lookup`, `查词`, `词典`, and `潮语词典`. Existing non-empty back text is preserved.
 - After import, the result summary shows each imported unit, the number of cards added to it, and a direct link into that unit.
 - The Import screen keeps a recent import history after app relaunch, with direct links back to imported notebooks.
+- Notebook and unit detail screens can generate shareable CSV files with `unit`, `front`, `back`, front/back audio file names, and archived state.
 
 ## Rare Glyph Replacement
 
