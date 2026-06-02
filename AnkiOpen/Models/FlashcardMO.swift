@@ -98,16 +98,53 @@ extension FlashcardMO {
         !isArchived && (frontAudioFileName == nil || backAudioFileName == nil)
     }
 
+    var hasBrokenAudioReference: Bool {
+        !isArchived && (
+            isBrokenAudioReference(frontAudioFileName) || isBrokenAudioReference(backAudioFileName)
+        )
+    }
+
+    var needsAudioAttention: Bool {
+        isMissingAudio || hasBrokenAudioReference
+    }
+
     var missingAudioTitle: String {
-        switch (frontAudioFileName == nil, backAudioFileName == nil) {
-        case (true, true):
+        switch (frontAudioStatus, backAudioStatus) {
+        case (.missing, .missing):
             return "正反两面缺音频"
-        case (true, false):
+        case (.missing, _):
             return "正面缺音频"
-        case (false, true):
+        case (_, .missing):
             return "背面缺音频"
-        case (false, false):
+        case (.broken, .broken):
+            return "正反两面音频文件缺失"
+        case (.broken, _):
+            return "正面音频文件缺失"
+        case (_, .broken):
+            return "背面音频文件缺失"
+        case (.available, .available):
             return "音频完整"
+        }
+    }
+
+    var isFrontAudioMissingOrBroken: Bool {
+        frontAudioStatus != .available
+    }
+
+    var isBackAudioMissingOrBroken: Bool {
+        backAudioStatus != .available
+    }
+
+    var isBothSidesMissingOrBroken: Bool {
+        isFrontAudioMissingOrBroken && isBackAudioMissingOrBroken
+    }
+
+    func clearBrokenAudioReferences() {
+        if isBrokenAudioReference(frontAudioFileName) {
+            frontAudioFileName = nil
+        }
+        if isBrokenAudioReference(backAudioFileName) {
+            backAudioFileName = nil
         }
     }
 
@@ -117,6 +154,34 @@ extension FlashcardMO {
         }
         return notebook.name
     }
+
+    private var frontAudioStatus: AudioReferenceStatus {
+        audioReferenceStatus(for: frontAudioFileName)
+    }
+
+    private var backAudioStatus: AudioReferenceStatus {
+        audioReferenceStatus(for: backAudioFileName)
+    }
+
+    private func audioReferenceStatus(for storedFileName: String?) -> AudioReferenceStatus {
+        guard AudioFileStore.cleanedStoredFileName(storedFileName) != nil else {
+            return .missing
+        }
+        return AudioFileStore.storedAudioExists(storedFileName) ? .available : .broken
+    }
+
+    private func isBrokenAudioReference(_ storedFileName: String?) -> Bool {
+        guard AudioFileStore.cleanedStoredFileName(storedFileName) != nil else {
+            return false
+        }
+        return !AudioFileStore.storedAudioExists(storedFileName)
+    }
+}
+
+private enum AudioReferenceStatus {
+    case missing
+    case broken
+    case available
 }
 
 enum MissingAudioScope: String, CaseIterable, Identifiable {
@@ -146,7 +211,7 @@ struct MissingAudioCardFilter: Equatable {
     var searchText: String = ""
 
     func matches(_ card: FlashcardMO) -> Bool {
-        guard card.isMissingAudio else {
+        guard card.needsAudioAttention else {
             return false
         }
 
@@ -155,11 +220,11 @@ struct MissingAudioCardFilter: Equatable {
         case .all:
             matchesScope = true
         case .front:
-            matchesScope = card.frontAudioFileName == nil
+            matchesScope = card.isFrontAudioMissingOrBroken
         case .back:
-            matchesScope = card.backAudioFileName == nil
+            matchesScope = card.isBackAudioMissingOrBroken
         case .both:
-            matchesScope = card.frontAudioFileName == nil && card.backAudioFileName == nil
+            matchesScope = card.isBothSidesMissingOrBroken
         }
 
         guard matchesScope else {
@@ -176,5 +241,31 @@ struct MissingAudioCardFilter: Equatable {
             || card.notebook.name.localizedCaseInsensitiveContains(term)
             || (card.unit?.name.localizedCaseInsensitiveContains(term) ?? false)
             || card.missingAudioTitle.localizedCaseInsensitiveContains(term)
+    }
+}
+
+struct AudioIntegritySummary: Equatable {
+    let attentionCards: Int
+    let missingFront: Int
+    let missingBack: Int
+    let brokenReferences: Int
+
+    init(cards: [FlashcardMO]) {
+        let active = cards.filter { !$0.isArchived }
+        attentionCards = active.filter(\.needsAudioAttention).count
+        missingFront = active.filter(\.isFrontAudioMissingOrBroken).count
+        missingBack = active.filter(\.isBackAudioMissingOrBroken).count
+        brokenReferences = active.reduce(0) { count, card in
+            count
+                + Self.brokenReferenceCount(for: card.frontAudioFileName)
+                + Self.brokenReferenceCount(for: card.backAudioFileName)
+        }
+    }
+
+    private static func brokenReferenceCount(for storedFileName: String?) -> Int {
+        guard AudioFileStore.cleanedStoredFileName(storedFileName) != nil else {
+            return 0
+        }
+        return AudioFileStore.storedAudioExists(storedFileName) ? 0 : 1
     }
 }

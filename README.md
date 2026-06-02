@@ -31,6 +31,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Import results show per-unit card counts with direct links into imported units
 - Persistent import history with direct links back to imported notebooks
 - Global missing-audio queue with search, front/back filters, batch CZYZD audio fill, and direct card editing
+- Audio integrity checks that detect stored audio references whose local files are missing, then route them through the same repair queue
 - In-app release and daily acceptance checklist from Settings
 - Unit detail shows archived cards separately and can restore them into study queues
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
@@ -131,6 +132,7 @@ Settings includes a Chinese `发布与验收清单` page with persistent checkbo
 All modes still write review logs and update the card's next due date when a rating is selected.
 After a study queue is completed, the app shows a Chinese session summary with reviewed-card count, per-rating counts, and quick actions to recheck due cards, forced-study future cards, or shuffle all cards.
 During study, each card shows whether the current side has audio. Missing-audio cards can be reported with an audio note or opened directly in the card editor for CZYZD matching or manual audio replacement.
+Cards whose audio file names exist in the database but whose local files are missing are treated as audio issues. Study shows them as missing audio, the editor clears broken references on save, and the missing-audio queue can clean and refill them.
 
 ## Dictionary
 
@@ -181,6 +183,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Feedback 7-day trend analytics
 - [x] Feedback type filter and search
 - [x] Global missing-audio queue and batch repair
+- [x] Audio integrity checks for missing local audio files
 - [x] Import result unit summary and navigation
 - [x] Persistent import history
 - [x] Archived card visibility and restore controls

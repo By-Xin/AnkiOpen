@@ -360,7 +360,7 @@ struct StudyView: View {
                 .buttonStyle(.bordered)
             }
 
-            if card.isMissingAudio {
+            if card.needsAudioAttention {
                 Text("这张卡片\(card.missingAudioTitle)，可以先反馈问题，也可以编辑卡片并用潮语词典匹配或手动选择音频。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -415,7 +415,11 @@ struct StudyView: View {
     }
 
     private func audioFileName(for card: FlashcardMO) -> String? {
-        isShowingBack ? card.backAudioFileName : card.frontAudioFileName
+        let storedFileName = isShowingBack ? card.backAudioFileName : card.frontAudioFileName
+        guard AudioFileStore.storedAudioExists(storedFileName) else {
+            return nil
+        }
+        return AudioFileStore.cleanedStoredFileName(storedFileName)
     }
 
     private func audioStatusTitle(for card: FlashcardMO) -> String {

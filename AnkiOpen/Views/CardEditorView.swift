@@ -154,7 +154,9 @@ struct CardEditorView: View {
                     }
 
                     if let card = editableCard {
-                        if !shouldRemoveFrontAudio, let frontAudioFileName = card.frontAudioFileName {
+                        if !shouldRemoveFrontAudio,
+                           let frontAudioFileName = card.frontAudioFileName,
+                           AudioFileStore.storedAudioExists(frontAudioFileName) {
                             Button {
                                 _ = audioPlayer.play(storedFileName: frontAudioFileName)
                             } label: {
@@ -162,7 +164,9 @@ struct CardEditorView: View {
                             }
                         }
 
-                        if !shouldRemoveBackAudio, let backAudioFileName = card.backAudioFileName {
+                        if !shouldRemoveBackAudio,
+                           let backAudioFileName = card.backAudioFileName,
+                           AudioFileStore.storedAudioExists(backAudioFileName) {
                             Button {
                                 _ = audioPlayer.play(storedFileName: backAudioFileName)
                             } label: {
@@ -534,14 +538,21 @@ struct CardEditorView: View {
             return nil
         }
 
-        switch (card.frontAudioFileName, card.backAudioFileName) {
-        case (.some, .some):
+        if card.hasBrokenAudioReference {
+            return "当前卡片有音频文件丢失；保存后会清空丢失引用。"
+        }
+
+        switch (
+            AudioFileStore.storedAudioExists(card.frontAudioFileName),
+            AudioFileStore.storedAudioExists(card.backAudioFileName)
+        ) {
+        case (true, true):
             return "当前卡片正反两面已有音频。"
-        case (.some, .none):
+        case (true, false):
             return "当前卡片正面已有音频。"
-        case (.none, .some):
+        case (false, true):
             return "当前卡片背面已有音频。"
-        case (.none, .none):
+        case (false, false):
             return nil
         }
     }
@@ -579,14 +590,26 @@ struct CardEditorView: View {
         if shouldRemoveFrontAudio {
             return nil
         }
-        return manual ?? shared ?? existing
+        if let manual {
+            return manual
+        }
+        if let shared {
+            return shared
+        }
+        return AudioFileStore.storedAudioExists(existing) ? AudioFileStore.cleanedStoredFileName(existing) : nil
     }
 
     private func finalBackAudioFileName(existing: String?, shared: String?, manual: String?) -> String? {
         if shouldRemoveBackAudio {
             return nil
         }
-        return manual ?? shared ?? existing
+        if let manual {
+            return manual
+        }
+        if let shared {
+            return shared
+        }
+        return AudioFileStore.storedAudioExists(existing) ? AudioFileStore.cleanedStoredFileName(existing) : nil
     }
 
     private var hasFrontAudioCandidate: Bool {

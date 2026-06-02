@@ -34,6 +34,21 @@ enum AudioFileStore {
         audioDirectory().appendingPathComponent(storedFileName)
     }
 
+    static func storedAudioExists(_ storedFileName: String?) -> Bool {
+        guard let cleanName = cleanedStoredFileName(storedFileName) else {
+            return false
+        }
+        return FileManager.default.fileExists(atPath: localURL(for: cleanName).path)
+    }
+
+    static func cleanedStoredFileName(_ storedFileName: String?) -> String? {
+        guard let storedFileName else {
+            return nil
+        }
+        let cleanName = URL(fileURLWithPath: storedFileName.trimmingCharacters(in: .whitespacesAndNewlines)).lastPathComponent
+        return cleanName.isEmpty ? nil : cleanName
+    }
+
     static func copyAudio(named fileName: String, from selectedFiles: [String: URL]) throws -> String {
         let cleanName = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanName.isEmpty else {

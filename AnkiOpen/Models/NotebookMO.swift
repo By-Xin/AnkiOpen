@@ -26,9 +26,7 @@ extension NotebookMO {
     }
 
     var missingAudioCardsCount: Int {
-        flashcards.filter {
-            !$0.isArchived && ($0.frontAudioFileName == nil || $0.backAudioFileName == nil)
-        }.count
+        flashcards.filter(\.needsAudioAttention).count
     }
 
     func dueCardsCount(at date: Date = Date()) -> Int {
@@ -80,9 +78,7 @@ struct HomeDashboardMetrics: Equatable {
         futureDueCards = active.filter { $0.dueAt > date }.count
         activeCards = active.count
         archivedCards = cards.filter(\.isArchived).count
-        missingAudioCards = active.filter {
-            $0.frontAudioFileName == nil || $0.backAudioFileName == nil
-        }.count
+        missingAudioCards = active.filter(\.needsAudioAttention).count
         rareGlyphCards = active.filter {
             GlyphDiagnostics.containsRiskyGlyphs($0.front + $0.back)
         }.count

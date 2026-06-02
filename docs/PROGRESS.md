@@ -54,6 +54,7 @@ Last updated: 2026-06-02
 - Added Feedback type filtering and search across issue category, note, card front/back text, notebook, and unit.
 - Added a global missing-audio queue from Home tools with search, front/back filters, batch CZYZD audio repair, and direct card editing.
 - Updated batch CZYZD audio repair so cards missing only one side can reuse the existing audio from the other side before hitting the network.
+- Added audio integrity checks so cards with stored audio file names but missing local files are treated as audio issues in Study, card editing, maintenance metrics, and the missing-audio repair queue.
 - Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
@@ -104,6 +105,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after CZYZD multi-syllable and definition-pair parsing on 2026-06-02: 94 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Dictionary existing-notebook save targets on 2026-06-02: 96 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Maintenance Center on 2026-06-02: 97 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after audio integrity checks on 2026-06-02: 99 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -192,10 +194,10 @@ Last updated: 2026-06-02
 
 - Home tools includes `缺音频卡片`.
 - Home tools includes `维护中心`, which links to the missing-audio queue, feedback, rare glyphs, study, and review history from one repair-focused dashboard.
-- The queue shows unarchived cards missing front audio, back audio, or both.
+- The queue shows unarchived cards missing front audio, back audio, both, or referencing local audio files that no longer exist.
 - It supports search across card text, notebook, unit, and missing-audio status.
 - It can filter by all missing cards, missing front audio, missing back audio, or both sides missing.
-- Batch repair first reuses existing audio from the other side of the card when possible, then uses CZYZD matching for cards still missing local audio.
+- Batch repair first clears broken local audio references, then reuses existing audio from the other side of the card when the file still exists, then uses CZYZD matching for cards still missing local audio.
 - Tapping a row opens the existing card editor, so manual audio replacement, CZYZD matching, and feedback reporting stay in one workflow.
 
 ## Release Checklist

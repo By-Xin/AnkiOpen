@@ -311,13 +311,17 @@ final class CZYZDAudioAttachmentService {
     }
 
     private func attachExistingAudioIfPossible(to card: FlashcardMO) -> Bool {
-        if card.frontAudioFileName == nil, let backAudioFileName = card.backAudioFileName {
+        if card.frontAudioFileName == nil,
+           let backAudioFileName = card.backAudioFileName,
+           AudioFileStore.storedAudioExists(backAudioFileName) {
             card.frontAudioFileName = backAudioFileName
             card.updatedAt = Date()
             return true
         }
 
-        if card.backAudioFileName == nil, let frontAudioFileName = card.frontAudioFileName {
+        if card.backAudioFileName == nil,
+           let frontAudioFileName = card.frontAudioFileName,
+           AudioFileStore.storedAudioExists(frontAudioFileName) {
             card.backAudioFileName = frontAudioFileName
             card.updatedAt = Date()
             return true

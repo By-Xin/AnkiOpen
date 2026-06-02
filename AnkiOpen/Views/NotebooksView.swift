@@ -666,9 +666,7 @@ private struct MissingAudioCardsView: View {
 
     init() {
         let request = FlashcardMO.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "isArchived == NO AND (frontAudioFileName == nil OR backAudioFileName == nil)"
-        )
+        request.predicate = NSPredicate(format: "isArchived == NO")
         request.sortDescriptors = [
             NSSortDescriptor(keyPath: \FlashcardMO.updatedAt, ascending: false),
             NSSortDescriptor(keyPath: \FlashcardMO.createdAt, ascending: false)
@@ -677,7 +675,7 @@ private struct MissingAudioCardsView: View {
     }
 
     private var allMissingCards: [FlashcardMO] {
-        cards.filter(\.isMissingAudio)
+        cards.filter(\.needsAudioAttention)
     }
 
     private var filteredCards: [FlashcardMO] {
@@ -686,16 +684,17 @@ private struct MissingAudioCardsView: View {
     }
 
     private var summary: MissingAudioSummary {
-        MissingAudioSummary(cards: allMissingCards)
+        MissingAudioSummary(cards: Array(cards))
     }
 
     var body: some View {
         List {
             Section("概览") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
                     MetricPill(value: "\(summary.total)", label: "总数", tint: AppPalette.amber)
                     MetricPill(value: "\(summary.missingFront)", label: "缺正面", tint: AppPalette.cinnabar)
                     MetricPill(value: "\(summary.missingBack)", label: "缺背面", tint: AppPalette.tea)
+                    MetricPill(value: "\(summary.brokenReferences)", label: "文件丢失", tint: .indigo)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -711,7 +710,7 @@ private struct MissingAudioCardsView: View {
                 }
                 .disabled(isFillingAudio || allMissingCards.isEmpty)
 
-                Text("会优先复用卡片另一面已有的本地音频；两面都缺时，再按正面文字从 CZYZD 匹配音频。")
+                Text("会先清理已经丢失的本地音频引用，再优先复用卡片另一面已有音频；两面都缺时，再按正面文字从 CZYZD 匹配音频。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -781,6 +780,9 @@ private struct MissingAudioCardsView: View {
         }
 
         var summaries: [CZYZDAudioAttachmentSummary] = []
+        guard clearBrokenAudioReferences() else {
+            return
+        }
         let notebooks = uniqueNotebooks(from: allMissingCards)
         for notebook in notebooks {
             summaries.append(
@@ -805,17 +807,34 @@ private struct MissingAudioCardsView: View {
         }
         return notebooks
     }
+
+    private func clearBrokenAudioReferences() -> Bool {
+        for card in cards {
+            card.clearBrokenAudioReferences()
+        }
+        do {
+            try viewContext.save()
+            return true
+        } catch {
+            viewContext.rollback()
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
 }
 
 private struct MissingAudioSummary: Equatable {
     let total: Int
     let missingFront: Int
     let missingBack: Int
+    let brokenReferences: Int
 
     init(cards: [FlashcardMO]) {
-        total = cards.filter(\.isMissingAudio).count
-        missingFront = cards.filter { $0.isMissingAudio && $0.frontAudioFileName == nil }.count
-        missingBack = cards.filter { $0.isMissingAudio && $0.backAudioFileName == nil }.count
+        let summary = AudioIntegritySummary(cards: cards)
+        total = summary.attentionCards
+        missingFront = summary.missingFront
+        missingBack = summary.missingBack
+        brokenReferences = summary.brokenReferences
     }
 }
 
