@@ -2,6 +2,10 @@ import SwiftUI
 
 struct DictionaryView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \NotebookMO.updatedAt, ascending: false)],
+        animation: .default
+    ) private var notebooks: FetchedResults<NotebookMO>
     @StateObject private var audioPlayer = AudioPlaybackController()
     @AppStorage("czyzdDictionaryBuilderNextIndex") private var builderNextIndex = 0
     @State private var query = ""
@@ -10,7 +14,10 @@ struct DictionaryView: View {
     @State private var isBuildingNotebook = false
     @State private var isSavingEntry = false
     @State private var entryToSave: CZYZDDictionaryEntry?
+    @State private var saveTarget: DictionarySaveTarget = .newNotebook
     @State private var saveNotebookName = CZYZDDictionaryNotebookBuilder.defaultNotebookName
+    @State private var selectedExistingNotebookID: UUID?
+    @State private var saveUnitName = CZYZDDictionaryNotebookBuilder.defaultUnitName
     @State private var builderNotebookName = CZYZDDictionaryNotebookBuilder.defaultNotebookName
     @State private var builderBatchSize = 10
     @State private var notebookSummary: CZYZDDictionaryNotebookImportSummary?
@@ -115,6 +122,13 @@ struct DictionaryView: View {
 
                                     Button {
                                         saveNotebookName = "\(entry.term) 词典"
+                                        saveUnitName = CZYZDDictionaryNotebookBuilder.defaultUnitName
+                                        if let firstNotebook = notebooks.first {
+                                            selectedExistingNotebookID = selectedExistingNotebookID ?? firstNotebook.id
+                                            saveTarget = .existingNotebook
+                                        } else {
+                                            saveTarget = .newNotebook
+                                        }
                                         entryToSave = entry
                                     } label: {
                                         Image(systemName: "plus.rectangle.on.rectangle")
@@ -198,8 +212,36 @@ struct DictionaryView: View {
                                 .foregroundStyle(.secondary)
                         }
 
-                        Section("新笔记本") {
-                            TextField("笔记本名称", text: $saveNotebookName)
+                        Section("保存位置") {
+                            Picker("目标", selection: $saveTarget) {
+                                ForEach(DictionarySaveTarget.available(hasExistingNotebooks: !notebooks.isEmpty)) { target in
+                                    Text(target.title).tag(target)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .disabled(isSavingEntry)
+
+                            if saveTarget == .existingNotebook, !notebooks.isEmpty {
+                                Picker("笔记本", selection: $selectedExistingNotebookID) {
+                                    ForEach(notebooks) { notebook in
+                                        Text(notebook.name).tag(Optional(notebook.id))
+                                    }
+                                }
+                                .disabled(isSavingEntry)
+
+                                TextField("单元名称", text: $saveUnitName)
+                                    .disabled(isSavingEntry)
+                                Text("如果单元不存在，会自动创建。空白时使用默认单元。")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                TextField("笔记本名称", text: $saveNotebookName)
+                                    .disabled(isSavingEntry)
+                                Text("会创建一个新笔记本，并把词条保存到默认词典单元。")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+
                             if isSavingEntry {
                                 ProgressView("正在保存并下载音频...")
                             }
@@ -219,7 +261,7 @@ struct DictionaryView: View {
                                     await saveEntry(entry)
                                 }
                             }
-                            .disabled(saveNotebookName.trimmed.isEmpty || isSavingEntry)
+                            .disabled(!canSaveEntry || isSavingEntry)
                         }
                     }
                 }
@@ -232,6 +274,22 @@ struct DictionaryView: View {
         }
     }
 
+    private var selectedExistingNotebook: NotebookMO? {
+        guard let selectedExistingNotebookID else {
+            return notebooks.first
+        }
+        return notebooks.first { $0.id == selectedExistingNotebookID } ?? notebooks.first
+    }
+
+    private var canSaveEntry: Bool {
+        switch saveTarget {
+        case .newNotebook:
+            return !saveNotebookName.trimmed.isEmpty
+        case .existingNotebook:
+            return selectedExistingNotebook != nil
+        }
+    }
+
     @MainActor
     private func saveEntry(_ entry: CZYZDDictionaryEntry) async {
         isSavingEntry = true
@@ -240,12 +298,28 @@ struct DictionaryView: View {
         }
 
         do {
-            notebookSummary = try await CZYZDDictionaryNotebookBuilder().addEntry(
-                entry,
-                toNewNotebookNamed: saveNotebookName,
-                context: viewContext
-            )
-            builderNotebookName = saveNotebookName
+            switch saveTarget {
+            case .newNotebook:
+                notebookSummary = try await CZYZDDictionaryNotebookBuilder().addEntry(
+                    entry,
+                    toNewNotebookNamed: saveNotebookName,
+                    context: viewContext
+                )
+                builderNotebookName = saveNotebookName
+            case .existingNotebook:
+                guard let notebook = selectedExistingNotebook else {
+                    errorMessage = "请选择一个笔记本。"
+                    return
+                }
+                notebookSummary = try await CZYZDDictionaryNotebookBuilder().addEntry(
+                    entry,
+                    toExistingNotebook: notebook,
+                    unitName: saveUnitName,
+                    context: viewContext
+                )
+                builderNotebookName = notebook.name
+                selectedExistingNotebookID = notebook.id
+            }
             entryToSave = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -299,5 +373,25 @@ struct DictionaryView: View {
 private extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+private enum DictionarySaveTarget: String, CaseIterable, Identifiable {
+    case existingNotebook
+    case newNotebook
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .existingNotebook:
+            return "已有笔记本"
+        case .newNotebook:
+            return "新建笔记本"
+        }
+    }
+
+    static func available(hasExistingNotebooks: Bool) -> [DictionarySaveTarget] {
+        hasExistingNotebooks ? [.existingNotebook, .newNotebook] : [.newNotebook]
     }
 }

@@ -135,7 +135,7 @@ The 潮语词典 page searches CZYZD directly. It returns exact phrase matches w
 
 When a DeepSeek API key is configured and dictionary cleanup is enabled in Settings, lookup results are also sent through DeepSeek to normalize the `潮拼` and `解释` fields. AI cleanup failure does not block local dictionary results.
 
-Dictionary results can be saved into a new notebook as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
+Dictionary results can be saved into a new notebook or appended to an existing notebook/unit as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
 
 The card editor can also query CZYZD using the current front text and fill the back side with structured `潮拼` and `解释`. If the back side already has content, the app asks before overwriting it. It can also match CZYZD audio from the front text; matched audio is stored only when the card is saved and is applied to both playback sides. Existing front/back audio and newly matched audio can be previewed before saving. Audio can also be manually replaced or removed for the front, back, or both sides.
 

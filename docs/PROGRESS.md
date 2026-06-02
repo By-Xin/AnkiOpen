@@ -42,6 +42,7 @@ Last updated: 2026-06-02
 - Added local Vision OCR for CZYZD chaopin images so romanized readings such as `le2` can be extracted from pronunciation PNGs instead of using CZYZD's Han-character alt text.
 - Added optional DeepSeek dictionary result cleanup that turns CZYZD output into structured `潮拼` and `解释` fields when a DeepSeek API key is configured.
 - Improved CZYZD parsing to preserve multi-syllable chaopin, accept accented romanization such as `uá2`, and extract local chaopin from current CZYZD definition pairs such as `hǎo||ho2`.
+- Added Dictionary save targets so individual CZYZD results can be saved into either a new notebook or an existing notebook/unit.
 - Added CZYZD lookup inside the card editor so a card's front text can fill the back side with structured `潮拼` and `解释`.
 - Added card-editor CZYZD audio matching; matched audio is stored only when the card is saved and is applied to both sides.
 - Added a card-editor audio section that can preview existing front/back audio and newly matched CZYZD audio before saving.
@@ -99,6 +100,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Study audio feedback tools on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Home pending-work links on 2026-06-02: 88 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CZYZD multi-syllable and definition-pair parsing on 2026-06-02: 94 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Dictionary existing-notebook save targets on 2026-06-02: 96 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -156,7 +158,7 @@ Last updated: 2026-06-02
 - Card editing can match CZYZD audio from the front text; the audio is saved only when the card is saved and is applied to both front/back playback.
 - Card editing can preview current front/back audio and pending matched audio before saving.
 - Card editing can replace or remove front, back, or shared audio before saving.
-- Individual results can be saved as cards into a newly created notebook.
+- Individual results can be saved as cards into a newly created notebook or an existing notebook/unit; duplicate cards are skipped within the target notebook before creating empty units.
 - A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
 - Saved dictionary cards attach available CZYZD audio to both front and back playback buttons.
 

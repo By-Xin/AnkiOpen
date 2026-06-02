@@ -80,18 +80,41 @@ final class CZYZDDictionaryNotebookBuilder {
     ) async throws -> CZYZDDictionaryNotebookImportSummary {
         let notebook = createNotebook(named: notebookName, context: context)
         let unit = NotebookUnitMO.findOrCreate(named: Self.defaultUnitName, in: notebook, context: context)
-        let result = await addCardIfNeeded(entry: entry, unit: unit, context: context)
-        try context.save()
+        return try await addEntry(entry, toUnit: unit, context: context)
+    }
 
-        return CZYZDDictionaryNotebookImportSummary(
-            checkedTerms: 1,
-            addedCards: result.didAdd ? 1 : 0,
-            skippedCards: result.didAdd ? 0 : 1,
-            failedTerms: 0,
-            audioFilesAdded: result.didAttachAudio ? 1 : 0,
-            nextIndex: 0,
-            messages: result.message.map { [$0] } ?? []
-        )
+    func addEntry(
+        _ entry: CZYZDDictionaryEntry,
+        toExistingNotebook notebook: NotebookMO,
+        unitName: String?,
+        context: NSManagedObjectContext
+    ) async throws -> CZYZDDictionaryNotebookImportSummary {
+        let back = Self.cardBackText(from: entry)
+        guard !entry.term.trimmed.isEmpty, !back.isEmpty else {
+            return CZYZDDictionaryNotebookImportSummary(
+                checkedTerms: 1,
+                addedCards: 0,
+                skippedCards: 1,
+                failedTerms: 0,
+                audioFilesAdded: 0,
+                nextIndex: 0,
+                messages: ["\(entry.term) is missing usable dictionary text."]
+            )
+        }
+        guard !containsCard(front: entry.term, back: back, in: notebook, context: context) else {
+            return CZYZDDictionaryNotebookImportSummary(
+                checkedTerms: 1,
+                addedCards: 0,
+                skippedCards: 1,
+                failedTerms: 0,
+                audioFilesAdded: 0,
+                nextIndex: 0,
+                messages: ["\(entry.term) already exists in \(notebook.name)."]
+            )
+        }
+
+        let unit = NotebookUnitMO.findOrCreate(named: unitName, in: notebook, context: context)
+        return try await addEntry(entry, toUnit: unit, context: context)
     }
 
     func importCommonTerms(
@@ -234,6 +257,25 @@ final class CZYZDDictionaryNotebookBuilder {
         unit.updatedAt = Date()
         unit.notebook.updatedAt = Date()
         return DictionaryCardInsertResult(didAdd: true, didAttachAudio: didAttachAudio, message: message)
+    }
+
+    private func addEntry(
+        _ entry: CZYZDDictionaryEntry,
+        toUnit unit: NotebookUnitMO,
+        context: NSManagedObjectContext
+    ) async throws -> CZYZDDictionaryNotebookImportSummary {
+        let result = await addCardIfNeeded(entry: entry, unit: unit, context: context)
+        try context.save()
+
+        return CZYZDDictionaryNotebookImportSummary(
+            checkedTerms: 1,
+            addedCards: result.didAdd ? 1 : 0,
+            skippedCards: result.didAdd ? 0 : 1,
+            failedTerms: 0,
+            audioFilesAdded: result.didAttachAudio ? 1 : 0,
+            nextIndex: 0,
+            messages: result.message.map { [$0] } ?? []
+        )
     }
 
     private func containsCard(
