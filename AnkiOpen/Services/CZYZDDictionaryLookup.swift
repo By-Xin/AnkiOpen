@@ -106,12 +106,16 @@ final class CZYZDDictionaryLookup {
         let pronunciation = chaopin.text.isEmpty && chaopin.imageURL == nil
             ? pronunciation(in: raw.html, plainText: plainText, term: raw.term)
             : chaopin.text
+        let definition = definition(in: raw.html, plainText: plainText, term: raw.term, pronunciation: pronunciation)
+        let resolvedChaopin = chaopin.text.isEmpty
+            ? chaopinFromDefinition(in: plainText)
+            : chaopin.text
         return CZYZDDictionaryEntry(
             term: raw.term,
-            chaopin: chaopin.text,
+            chaopin: resolvedChaopin,
             chaopinImageURL: chaopin.imageURL,
             pronunciation: pronunciation,
-            definition: definition(in: raw.html, plainText: plainText, term: raw.term, pronunciation: pronunciation),
+            definition: definition,
             audioURL: CZYZDAudioResolver.firstAudioURL(in: raw.html)
         )
     }
@@ -175,9 +179,32 @@ final class CZYZDDictionaryLookup {
         return cleanupDefinition(plainText, term: term, pronunciation: pronunciation)
     }
 
+    private static func chaopinFromDefinition(in plainText: String) -> String {
+        guard let regex = try? NSRegularExpression(
+            pattern: #"\|\|\s*([\p{Latin}0-9ⁿ'\-]+)"#,
+            options: [.caseInsensitive]
+        ) else {
+            return ""
+        }
+
+        let range = NSRange(plainText.startIndex..<plainText.endIndex, in: plainText)
+        let values = regex.matches(in: plainText, range: range).compactMap { match -> String? in
+            guard let valueRange = Range(match.range(at: 1), in: plainText) else {
+                return nil
+            }
+            return String(plainText[valueRange])
+        }
+
+        return CZYZDChaopinTextCleaner.romanizedChaopin(from: values.joined(separator: " ")) ?? ""
+    }
+
     private static func cleanupDefinition(_ plainText: String, term: String, pronunciation: String) -> String {
-        var value = plainText
-            .replacingOccurrences(of: term, with: "")
+        var value = plainText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !term.isEmpty, value.hasPrefix(term) {
+            value.removeFirst(term.count)
+        }
+
+        value = value
             .replacingOccurrences(of: pronunciation, with: "")
             .replacingOccurrences(of: #"潮州音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"潮阳音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
@@ -185,7 +212,11 @@ final class CZYZDDictionaryLookup {
             .replacingOccurrences(of: #"惠来音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"陆丰音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: #"海丰音\s*[:：]?\s*\S+"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"拼\s*音\s*[:：]?\s*[A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿ\s]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"潮\s*拼\s*[:：]?\s*[\p{Latin}0-9ⁿ'\- ]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\b\d+\.\s*[\p{Latin}0-9\s]+\|\|[\p{Latin}0-9ⁿ'\-]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[\p{Latin}0-9\s]+\|\|[\p{Latin}0-9ⁿ'\-]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"汉语拼音\s*[:：]?\s*[\p{Latin}0-9\s]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"拼\s*音\s*[:：]?\s*[\p{Latin}0-9\s]+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: "拼音", with: "")
             .replacingOccurrences(of: "读音", with: "")
             .replacingOccurrences(of: "發音", with: "")

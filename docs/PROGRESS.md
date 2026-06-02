@@ -41,6 +41,7 @@ Last updated: 2026-06-02
 - Added CZYZD audio download when saving dictionary entries or batch-building dictionary notebooks; stored audio is attached to both sides of the generated card.
 - Added local Vision OCR for CZYZD chaopin images so romanized readings such as `le2` can be extracted from pronunciation PNGs instead of using CZYZD's Han-character alt text.
 - Added optional DeepSeek dictionary result cleanup that turns CZYZD output into structured `潮拼` and `解释` fields when a DeepSeek API key is configured.
+- Improved CZYZD parsing to preserve multi-syllable chaopin, accept accented romanization such as `uá2`, and extract local chaopin from current CZYZD definition pairs such as `hǎo||ho2`.
 - Added CZYZD lookup inside the card editor so a card's front text can fill the back side with structured `潮拼` and `解释`.
 - Added card-editor CZYZD audio matching; matched audio is stored only when the card is saved and is applied to both sides.
 - Added a card-editor audio section that can preview existing front/back audio and newly matched CZYZD audio before saving.
@@ -97,6 +98,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after global missing-audio queue on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Study audio feedback tools on 2026-06-02: 87 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Home pending-work links on 2026-06-02: 88 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after CZYZD multi-syllable and definition-pair parsing on 2026-06-02: 94 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -147,7 +149,8 @@ Last updated: 2026-06-02
 - The Dictionary tab searches CZYZD by word or phrase.
 - Results display the matched term, CZYZD Chaoshan pronunciation image under `潮拼`, cleaned definition text under `解释`, and a speaker button when CZYZD exposes an audio clip.
 - The app attempts local OCR on the CZYZD chaopin image and only stores romanized chaopin text when it can extract a Latin-reading value.
-- Mandarin pinyin and source labels such as `字义` are filtered out of the main dictionary result.
+- Multi-syllable chaopin is preserved, accented romanization such as `uá2` is accepted, and CZYZD definition pairs such as `hǎo||ho2` can provide local chaopin when image titles are Han-character placeholders.
+- Mandarin pinyin, CZYZD `pinyin||chaopin` prefixes, and source labels such as `字义` are filtered out of the main dictionary result.
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
 - Card editing can use the card front text to fetch CZYZD and fill the back side; non-empty back text asks for confirmation before overwriting.
 - Card editing can match CZYZD audio from the front text; the audio is saved only when the card is saved and is applied to both front/back playback.

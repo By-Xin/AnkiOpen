@@ -131,7 +131,7 @@ During study, each card shows whether the current side has audio. Missing-audio 
 
 ## Dictionary
 
-The 潮语词典 page searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, attempts local Vision OCR to extract romanized chaopin text, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin, Han-character chaopin placeholders, and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+The 潮语词典 page searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, attempts local Vision OCR to extract romanized chaopin text, preserves multi-syllable chaopin such as `le2 ho2`, and falls back to CZYZD definition pairs such as `hǎo||ho2` when the image title is only a Han-character placeholder. It shows cleaned definition text under `解释` and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin, Han-character chaopin placeholders, source labels such as `字义`, and CZYZD `pinyin||chaopin` prefixes are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
 
 When a DeepSeek API key is configured and dictionary cleanup is enabled in Settings, lookup results are also sent through DeepSeek to normalize the `潮拼` and `解释` fields. AI cleanup failure does not block local dictionary results.
 

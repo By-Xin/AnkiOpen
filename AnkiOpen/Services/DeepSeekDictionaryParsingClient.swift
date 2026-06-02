@@ -63,9 +63,9 @@ struct DeepSeekDictionaryParsingClient {
 
     static func refinedEntry(from content: String, fallback entry: CZYZDDictionaryEntry) throws -> CZYZDDictionaryEntry {
         let payload = try JSONDecoder().decode(DictionaryParsingPayload.self, from: Data(content.utf8))
-        let parsedChaopin = CZYZDChaopinTextCleaner.romanizedChaopin(from: payload.chaopin)
+        let parsedChaopin = CZYZDChaopinTextCleaner.romanizedChaopin(from: payload.chaopin ?? "")
         let fallbackChaopin = CZYZDChaopinTextCleaner.romanizedChaopin(from: entry.chaopin)
-        let definition = cleanDefinition(payload.definition)
+        let definition = cleanDefinition(payload.definition ?? "")
         let fallbackDefinition = cleanDefinition(entry.definition)
 
         return CZYZDDictionaryEntry(
@@ -81,9 +81,11 @@ struct DeepSeekDictionaryParsingClient {
     static func cleanDefinition(_ value: String) -> String {
         var cleanValue = value
             .replacingOccurrences(of: #"(?i)\b(?:chaopin|pengim|peng'im)\b\s*[:：]?\s*"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"潮\s*拼\s*[:：]?\s*[A-Za-z0-9êÊṳṲⁿ⁰¹²³⁴⁵⁶⁷⁸⁹\- ]+"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"汉语拼音\s*[:：]?\s*[A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿ\s]+"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"拼\s*音\s*[:：]?\s*[A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿ\s]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"潮\s*拼\s*[:：]?\s*[\p{Latin}0-9ⁿ'\- ]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\b\d+\.\s*[\p{Latin}0-9\s]+\|\|[\p{Latin}0-9ⁿ'\-]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[\p{Latin}0-9\s]+\|\|[\p{Latin}0-9ⁿ'\-]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"汉语拼音\s*[:：]?\s*[\p{Latin}0-9\s]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"拼\s*音\s*[:：]?\s*[\p{Latin}0-9\s]+"#, with: "", options: .regularExpression)
             .replacingOccurrences(of: "字义", with: "")
             .replacingOccurrences(of: "字 义", with: "")
             .replacingOccurrences(of: "词义", with: "")
@@ -170,6 +172,6 @@ private struct DeepSeekDictionaryChatResponse: Decodable {
 }
 
 private struct DictionaryParsingPayload: Decodable {
-    let chaopin: String
-    let definition: String
+    let chaopin: String?
+    let definition: String?
 }

@@ -7,26 +7,21 @@ import UIKit
 
 enum CZYZDChaopinTextCleaner {
     static func romanizedChaopin(from rawValue: String) -> String? {
-        let normalized = rawValue
-            .replacingOccurrences(of: "¹", with: "1")
-            .replacingOccurrences(of: "²", with: "2")
-            .replacingOccurrences(of: "³", with: "3")
-            .replacingOccurrences(of: "⁴", with: "4")
-            .replacingOccurrences(of: "⁵", with: "5")
-            .replacingOccurrences(of: "⁶", with: "6")
-            .replacingOccurrences(of: "⁷", with: "7")
-            .replacingOccurrences(of: "⁸", with: "8")
-            .replacingOccurrences(of: "⁹", with: "9")
-            .replacingOccurrences(of: "⁰", with: "0")
+        let normalized = normalizedToneDigits(rawValue)
             .replacingOccurrences(of: #"[\[\]（）()【】]"#, with: " ", options: .regularExpression)
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         let tokens = normalized
-            .split(whereSeparator: { $0.isWhitespace || $0 == "," || $0 == ";" || $0 == "，" || $0 == "；" })
-            .map(String.init)
+            .split(whereSeparator: { $0.unicodeScalars.allSatisfy { separatorCharacters.contains($0) } })
+            .map(cleanToken)
+            .filter(isLikelyRomanizedChaopin)
 
-        return tokens.first(where: isLikelyRomanizedChaopin)
+        guard !tokens.isEmpty else {
+            return nil
+        }
+
+        return tokens.joined(separator: " ")
     }
 
     static func isLikelyRomanizedChaopin(_ value: String) -> Bool {
@@ -37,14 +32,41 @@ enum CZYZDChaopinTextCleaner {
         guard cleanValue.range(of: #"\p{Han}"#, options: .regularExpression) == nil else {
             return false
         }
-        guard cleanValue.range(of: #"[A-Za-zêÊṳṲⁿ]"#, options: .regularExpression) != nil else {
+        guard cleanValue.range(of: #"\p{Latin}"#, options: .regularExpression) != nil else {
+            return false
+        }
+        guard cleanValue.range(of: #"[0-9]"#, options: .regularExpression) != nil else {
             return false
         }
         return cleanValue.range(
-            of: #"^[A-Za-z0-9êÊṳṲⁿ⁰¹²³⁴⁵⁶⁷⁸⁹\-]+$"#,
+            of: #"^[\p{Latin}0-9ⁿ'\-]+$"#,
             options: .regularExpression
         ) != nil
     }
+
+    private static func normalizedToneDigits(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "¹", with: "1")
+            .replacingOccurrences(of: "²", with: "2")
+            .replacingOccurrences(of: "³", with: "3")
+            .replacingOccurrences(of: "⁴", with: "4")
+            .replacingOccurrences(of: "⁵", with: "5")
+            .replacingOccurrences(of: "⁶", with: "6")
+            .replacingOccurrences(of: "⁷", with: "7")
+            .replacingOccurrences(of: "⁸", with: "8")
+            .replacingOccurrences(of: "⁹", with: "9")
+            .replacingOccurrences(of: "⁰", with: "0")
+            .replacingOccurrences(of: "’", with: "'")
+    }
+
+    private static func cleanToken(_ value: Substring) -> String {
+        String(value)
+            .replacingOccurrences(of: #"^[^\p{Latin}0-9ⁿ]+"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[^\p{Latin}0-9ⁿ]+$"#, with: "", options: .regularExpression)
+    }
+
+    private static let separatorCharacters = CharacterSet.whitespacesAndNewlines
+        .union(CharacterSet(charactersIn: ",;，；/|、"))
 }
 
 final class CZYZDChaopinImageTextResolver {
