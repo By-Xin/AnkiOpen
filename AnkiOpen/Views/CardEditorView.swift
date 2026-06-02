@@ -21,6 +21,7 @@ struct CardEditorView: View {
     @State private var isMatchingAudio = false
     @State private var pendingAudioDownload: CZYZDAudioDownload?
     @State private var isShowingReport = false
+    @StateObject private var audioPlayer = AudioPlaybackController()
 
     private let dictionaryLookup: CZYZDDictionaryLookingUp
     private let audioResolver: CZYZDAudioResolving
@@ -111,6 +112,46 @@ struct CardEditorView: View {
                     Text("会用正面文字查询潮语词典，并把结果整理为“潮拼”和“解释”；匹配到的音频会在保存时应用到正反两面。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                }
+
+                Section("音频") {
+                    if let pendingAudioDownload {
+                        LabeledContent("待保存", value: pendingAudioDownload.suggestedFileName)
+
+                        Button {
+                            _ = audioPlayer.play(data: pendingAudioDownload.data)
+                        } label: {
+                            Label("试听待保存音频", systemImage: "speaker.wave.2")
+                        }
+
+                        Text("保存后会替换为正反两面共用的本地音频。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let card = editableCard {
+                        if let frontAudioFileName = card.frontAudioFileName {
+                            Button {
+                                _ = audioPlayer.play(storedFileName: frontAudioFileName)
+                            } label: {
+                                Label("试听当前正面音频", systemImage: "speaker.wave.2")
+                            }
+                        }
+
+                        if let backAudioFileName = card.backAudioFileName {
+                            Button {
+                                _ = audioPlayer.play(storedFileName: backAudioFileName)
+                            } label: {
+                                Label("试听当前背面音频", systemImage: "speaker.wave.2")
+                            }
+                        }
+                    }
+
+                    if pendingAudioDownload == nil, currentAudioSummary == nil {
+                        Text("暂无音频。可以先用“按正面匹配音频”从潮语词典查找。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if editableCard != nil {

@@ -61,6 +61,7 @@
 		A00000000000000000000128 /* BackupExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000027 /* BackupExporterTests.swift */; };
 		A00000000000000000000147 /* DeepSeekGlyphSuggestionClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */; };
 		A00000000000000000000150 /* CZYZDDictionaryLookupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */; };
+		A00000000000000000000157 /* AudioPlaybackControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000057 /* AudioPlaybackControllerTests.swift */; };
 		A00000000000000000000122 /* AnkiOpenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000022 /* AnkiOpenUITests.swift */; };
 		A00000000000000000000123 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000301 /* FSRS */; };
 /* End PBXBuildFile section */
@@ -139,6 +140,7 @@
 		A00000000000000000000027 /* BackupExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupExporterTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekGlyphSuggestionClientTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryLookupTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000057 /* AudioPlaybackControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlaybackControllerTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000501 /* AnkiOpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnkiOpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000502 /* AnkiOpenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000000000000000000503 /* AnkiOpenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnkiOpenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -238,6 +240,7 @@
 				A00000000000000000000027 /* BackupExporterTests.swift */,
 				A00000000000000000000047 /* DeepSeekGlyphSuggestionClientTests.swift */,
 				A00000000000000000000050 /* CZYZDDictionaryLookupTests.swift */,
+				A00000000000000000000057 /* AudioPlaybackControllerTests.swift */,
 			);
 			path = AnkiOpenTests;
 			sourceTree = "<group>";
@@ -478,6 +481,7 @@
 				A00000000000000000000128 /* BackupExporterTests.swift in Sources */,
 				A00000000000000000000147 /* DeepSeekGlyphSuggestionClientTests.swift in Sources */,
 				A00000000000000000000150 /* CZYZDDictionaryLookupTests.swift in Sources */,
+				A00000000000000000000157 /* AudioPlaybackControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

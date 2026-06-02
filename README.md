@@ -20,6 +20,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Optional DeepSeek cleanup for CZYZD dictionary results
 - Card editor CZYZD auto-fill from the card front text
 - Card editor CZYZD audio matching from the card front text
+- Card editor audio preview for existing and newly matched clips
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
 
 ## Development
@@ -96,7 +97,7 @@ When a DeepSeek API key is configured and dictionary cleanup is enabled in Setti
 
 Dictionary results can be saved into a new notebook as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
 
-The card editor can also query CZYZD using the current front text and fill the back side with structured `潮拼` and `解释`. If the back side already has content, the app asks before overwriting it. It can also match CZYZD audio from the front text; matched audio is stored only when the card is saved and is applied to both playback sides.
+The card editor can also query CZYZD using the current front text and fill the back side with structured `潮拼` and `解释`. If the back side already has content, the app asks before overwriting it. It can also match CZYZD audio from the front text; matched audio is stored only when the card is saved and is applied to both playback sides. Existing front/back audio and newly matched audio can be previewed before saving.
 
 ## Progress
 
@@ -123,6 +124,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] CZYZD chaopin OCR and DeepSeek dictionary cleanup
 - [x] Card editor CZYZD auto-fill
 - [x] Card editor CZYZD audio matching
+- [x] Card editor audio preview
 - [ ] TestFlight/App Store setup
 
 ## License
