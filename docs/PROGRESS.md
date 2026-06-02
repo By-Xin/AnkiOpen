@@ -29,6 +29,7 @@ Last updated: 2026-06-02
 - Added local Vision OCR for CZYZD chaopin images so romanized readings such as `le2` can be extracted from pronunciation PNGs instead of using CZYZD's Han-character alt text.
 - Added optional DeepSeek dictionary result cleanup that turns CZYZD output into structured `潮拼` and `解释` fields when a DeepSeek API key is configured.
 - Added CZYZD lookup inside the card editor so a card's front text can fill the back side with structured `潮拼` and `解释`.
+- Added card-editor CZYZD audio matching; matched audio is stored only when the card is saved and is applied to both sides.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -52,6 +53,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Chinese home/localization and CZYZD dictionary audio card saving on 2026-06-02: 60 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CZYZD chaopin OCR and DeepSeek dictionary cleanup on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after card-editor CZYZD auto-fill on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after card-editor CZYZD audio matching on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
 - Built and installed the app to the connected iPhone on 2026-06-02. Launch was blocked by iOS because the device was locked.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -94,6 +96,7 @@ Last updated: 2026-06-02
 - Mandarin pinyin and source labels such as `字义` are filtered out of the main dictionary result.
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
 - Card editing can use the card front text to fetch CZYZD and fill the back side; non-empty back text asks for confirmation before overwriting.
+- Card editing can match CZYZD audio from the front text; the audio is saved only when the card is saved and is applied to both front/back playback.
 - Individual results can be saved as cards into a newly created notebook.
 - A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
 - Saved dictionary cards attach available CZYZD audio to both front and back playback buttons.
@@ -110,4 +113,4 @@ Last updated: 2026-06-02
 ## Next
 
 - Relaunch on the connected iPhone after the device is available again.
-- Add a card-editor audio attach flow so CZYZD audio can be applied to existing individual cards without creating a new dictionary notebook.
+- Add a visible audio playback/check UI in card editing so users can confirm existing or newly matched clips before saving.
