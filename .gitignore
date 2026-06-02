@@ -1,5 +1,8 @@
 DerivedData/
 .build/
+build/
+imports/
+scripts/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
