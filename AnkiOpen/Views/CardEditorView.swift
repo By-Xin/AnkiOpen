@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CardEditorView: View {
     enum Mode {
@@ -21,6 +22,12 @@ struct CardEditorView: View {
     @State private var isMatchingAudio = false
     @State private var pendingAudioDownload: CZYZDAudioDownload?
     @State private var isShowingReport = false
+    @State private var isShowingAudioImporter = false
+    @State private var audioImportTarget: AudioImportTarget?
+    @State private var pendingFrontAudio: PendingAudioAttachment?
+    @State private var pendingBackAudio: PendingAudioAttachment?
+    @State private var shouldRemoveFrontAudio = false
+    @State private var shouldRemoveBackAudio = false
     @StateObject private var audioPlayer = AudioPlaybackController()
 
     private let dictionaryLookup: CZYZDDictionaryLookingUp
@@ -115,13 +122,13 @@ struct CardEditorView: View {
                 }
 
                 Section("音频") {
-                    if let pendingAudioDownload {
-                        LabeledContent("待保存", value: pendingAudioDownload.suggestedFileName)
+                    if let pendingAudioDownload, (!shouldRemoveFrontAudio || !shouldRemoveBackAudio) {
+                        LabeledContent("词典待保存", value: pendingAudioDownload.suggestedFileName)
 
                         Button {
                             _ = audioPlayer.play(data: pendingAudioDownload.data)
                         } label: {
-                            Label("试听待保存音频", systemImage: "speaker.wave.2")
+                            Label("试听词典匹配音频", systemImage: "speaker.wave.2")
                         }
 
                         Text("保存后会替换为正反两面共用的本地音频。")
@@ -129,8 +136,22 @@ struct CardEditorView: View {
                             .foregroundStyle(.secondary)
                     }
 
+                    if let pendingFrontAudio {
+                        pendingAudioRow(title: "待保存正面", attachment: pendingFrontAudio)
+                    } else if shouldRemoveFrontAudio {
+                        Label("保存后移除正面音频", systemImage: "minus.circle")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if let pendingBackAudio {
+                        pendingAudioRow(title: "待保存背面", attachment: pendingBackAudio)
+                    } else if shouldRemoveBackAudio {
+                        Label("保存后移除背面音频", systemImage: "minus.circle")
+                            .foregroundStyle(.secondary)
+                    }
+
                     if let card = editableCard {
-                        if let frontAudioFileName = card.frontAudioFileName {
+                        if !shouldRemoveFrontAudio, let frontAudioFileName = card.frontAudioFileName {
                             Button {
                                 _ = audioPlayer.play(storedFileName: frontAudioFileName)
                             } label: {
@@ -138,7 +159,7 @@ struct CardEditorView: View {
                             }
                         }
 
-                        if let backAudioFileName = card.backAudioFileName {
+                        if !shouldRemoveBackAudio, let backAudioFileName = card.backAudioFileName {
                             Button {
                                 _ = audioPlayer.play(storedFileName: backAudioFileName)
                             } label: {
@@ -147,7 +168,47 @@ struct CardEditorView: View {
                         }
                     }
 
-                    if pendingAudioDownload == nil, currentAudioSummary == nil {
+                    Button {
+                        beginAudioImport(for: .front)
+                    } label: {
+                        Label("选择正面音频", systemImage: "speaker.wave.2")
+                    }
+
+                    Button {
+                        beginAudioImport(for: .back)
+                    } label: {
+                        Label("选择背面音频", systemImage: "speaker.wave.2")
+                    }
+
+                    Button {
+                        beginAudioImport(for: .both)
+                    } label: {
+                        Label("选择共用音频", systemImage: "speaker.wave.2.fill")
+                    }
+
+                    if hasFrontAudioCandidate || hasBackAudioCandidate {
+                        Button(role: .destructive) {
+                            removeFrontAudio()
+                        } label: {
+                            Label("移除正面音频", systemImage: "minus.circle")
+                        }
+                        .disabled(!hasFrontAudioCandidate)
+
+                        Button(role: .destructive) {
+                            removeBackAudio()
+                        } label: {
+                            Label("移除背面音频", systemImage: "minus.circle")
+                        }
+                        .disabled(!hasBackAudioCandidate)
+
+                        Button(role: .destructive) {
+                            removeAllAudio()
+                        } label: {
+                            Label("移除全部音频", systemImage: "speaker.slash")
+                        }
+                    }
+
+                    if !hasFrontAudioCandidate, !hasBackAudioCandidate {
                         Text("暂无音频。可以先用“按正面匹配音频”从潮语词典查找。")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -194,6 +255,13 @@ struct CardEditorView: View {
                     ReportIssueView(card: card)
                 }
             }
+            .fileImporter(
+                isPresented: $isShowingAudioImporter,
+                allowedContentTypes: [.audio],
+                allowsMultipleSelection: false
+            ) { result in
+                handleAudioSelection(result)
+            }
         }
     }
 
@@ -212,9 +280,12 @@ struct CardEditorView: View {
     }
 
     private func save() {
-        let storedAudioFileName: String?
+        let storedSharedAudioFileName: String?
+        let storedFrontAudioFileName: String?
+        let storedBackAudioFileName: String?
         do {
-            storedAudioFileName = try storePendingAudioIfNeeded()
+            storedSharedAudioFileName = try storePendingAudioIfNeeded()
+            (storedFrontAudioFileName, storedBackAudioFileName) = try storePendingManualAudioIfNeeded()
         } catch {
             errorMessage = error.localizedDescription
             return
@@ -228,8 +299,16 @@ struct CardEditorView: View {
                 back: back.trimmed,
                 unit: unit,
                 context: viewContext,
-                frontAudioFileName: storedAudioFileName,
-                backAudioFileName: storedAudioFileName
+                frontAudioFileName: finalFrontAudioFileName(
+                    existing: nil,
+                    shared: storedSharedAudioFileName,
+                    manual: storedFrontAudioFileName
+                ),
+                backAudioFileName: finalBackAudioFileName(
+                    existing: nil,
+                    shared: storedSharedAudioFileName,
+                    manual: storedBackAudioFileName
+                )
             )
             unit.updatedAt = now
             unit.notebook.updatedAt = now
@@ -239,17 +318,31 @@ struct CardEditorView: View {
                 back: back.trimmed,
                 notebook: notebook,
                 context: viewContext,
-                frontAudioFileName: storedAudioFileName,
-                backAudioFileName: storedAudioFileName
+                frontAudioFileName: finalFrontAudioFileName(
+                    existing: nil,
+                    shared: storedSharedAudioFileName,
+                    manual: storedFrontAudioFileName
+                ),
+                backAudioFileName: finalBackAudioFileName(
+                    existing: nil,
+                    shared: storedSharedAudioFileName,
+                    manual: storedBackAudioFileName
+                )
             )
             notebook.updatedAt = now
         case .edit(let card):
             card.front = front.trimmed
             card.back = back.trimmed
-            if let storedAudioFileName {
-                card.frontAudioFileName = storedAudioFileName
-                card.backAudioFileName = storedAudioFileName
-            }
+            card.frontAudioFileName = finalFrontAudioFileName(
+                existing: card.frontAudioFileName,
+                shared: storedSharedAudioFileName,
+                manual: storedFrontAudioFileName
+            )
+            card.backAudioFileName = finalBackAudioFileName(
+                existing: card.backAudioFileName,
+                shared: storedSharedAudioFileName,
+                manual: storedBackAudioFileName
+            )
             card.updatedAt = now
             card.unit?.updatedAt = now
             card.notebook.updatedAt = now
@@ -329,10 +422,105 @@ struct CardEditorView: View {
             }
 
             pendingAudioDownload = download
+            pendingFrontAudio = nil
+            pendingBackAudio = nil
+            shouldRemoveFrontAudio = false
+            shouldRemoveBackAudio = false
             audioStatusMessage = "已匹配 \(download.suggestedFileName)，保存后会应用到正反两面。"
         } catch {
             audioStatusMessage = error.localizedDescription
         }
+    }
+
+    private func pendingAudioRow(title: String, attachment: PendingAudioAttachment) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LabeledContent(title, value: attachment.suggestedFileName)
+            Button {
+                _ = audioPlayer.play(data: attachment.data)
+            } label: {
+                Label("试听\(title)", systemImage: "speaker.wave.2")
+            }
+        }
+    }
+
+    private func beginAudioImport(for target: AudioImportTarget) {
+        audioImportTarget = target
+        isShowingAudioImporter = true
+    }
+
+    private func handleAudioSelection(_ result: Result<[URL], Error>) {
+        do {
+            guard let target = audioImportTarget else {
+                return
+            }
+            guard let url = try result.get().first else {
+                return
+            }
+
+            let attachment = try pendingAudioAttachment(from: url)
+            switch target {
+            case .front:
+                pendingFrontAudio = attachment
+                shouldRemoveFrontAudio = false
+                audioStatusMessage = "已选择正面音频，保存后生效。"
+            case .back:
+                pendingBackAudio = attachment
+                shouldRemoveBackAudio = false
+                audioStatusMessage = "已选择背面音频，保存后生效。"
+            case .both:
+                pendingAudioDownload = nil
+                pendingFrontAudio = attachment
+                pendingBackAudio = attachment
+                shouldRemoveFrontAudio = false
+                shouldRemoveBackAudio = false
+                audioStatusMessage = "已选择共用音频，保存后应用到正反两面。"
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        audioImportTarget = nil
+    }
+
+    private func pendingAudioAttachment(from url: URL) throws -> PendingAudioAttachment {
+        let fileName = url.lastPathComponent
+        guard AudioFileStore.isSupportedAudioFile(url) else {
+            throw AudioFileStoreError.unsupportedFormat(fileName)
+        }
+
+        let didAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if didAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        return PendingAudioAttachment(
+            data: try Data(contentsOf: url),
+            suggestedFileName: fileName
+        )
+    }
+
+    private func removeFrontAudio() {
+        pendingAudioDownload = nil
+        pendingFrontAudio = nil
+        shouldRemoveFrontAudio = true
+        audioStatusMessage = "保存后会移除正面音频。"
+    }
+
+    private func removeBackAudio() {
+        pendingAudioDownload = nil
+        pendingBackAudio = nil
+        shouldRemoveBackAudio = true
+        audioStatusMessage = "保存后会移除背面音频。"
+    }
+
+    private func removeAllAudio() {
+        pendingAudioDownload = nil
+        pendingFrontAudio = nil
+        pendingBackAudio = nil
+        shouldRemoveFrontAudio = true
+        shouldRemoveBackAudio = true
+        audioStatusMessage = "保存后会移除正反两面音频。"
     }
 
     private var currentAudioSummary: String? {
@@ -362,6 +550,59 @@ struct CardEditorView: View {
             suggestedFileName: pendingAudioDownload.suggestedFileName
         )
     }
+
+    private func storePendingManualAudioIfNeeded() throws -> (front: String?, back: String?) {
+        if let pendingFrontAudio, pendingFrontAudio == pendingBackAudio {
+            let storedName = try AudioFileStore.storeAudio(
+                data: pendingFrontAudio.data,
+                suggestedFileName: pendingFrontAudio.suggestedFileName
+            )
+            return (storedName, storedName)
+        }
+
+        let front = try pendingFrontAudio.map {
+            try AudioFileStore.storeAudio(data: $0.data, suggestedFileName: $0.suggestedFileName)
+        }
+        let back = try pendingBackAudio.map {
+            try AudioFileStore.storeAudio(data: $0.data, suggestedFileName: $0.suggestedFileName)
+        }
+        return (front, back)
+    }
+
+    private func finalFrontAudioFileName(existing: String?, shared: String?, manual: String?) -> String? {
+        if shouldRemoveFrontAudio {
+            return nil
+        }
+        return manual ?? shared ?? existing
+    }
+
+    private func finalBackAudioFileName(existing: String?, shared: String?, manual: String?) -> String? {
+        if shouldRemoveBackAudio {
+            return nil
+        }
+        return manual ?? shared ?? existing
+    }
+
+    private var hasFrontAudioCandidate: Bool {
+        !shouldRemoveFrontAudio &&
+            (pendingFrontAudio != nil || pendingAudioDownload != nil || editableCard?.frontAudioFileName != nil)
+    }
+
+    private var hasBackAudioCandidate: Bool {
+        !shouldRemoveBackAudio &&
+            (pendingBackAudio != nil || pendingAudioDownload != nil || editableCard?.backAudioFileName != nil)
+    }
+}
+
+private enum AudioImportTarget {
+    case front
+    case back
+    case both
+}
+
+private struct PendingAudioAttachment: Equatable {
+    let data: Data
+    let suggestedFileName: String
 }
 
 private extension String {

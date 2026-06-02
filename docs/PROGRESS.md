@@ -31,6 +31,7 @@ Last updated: 2026-06-02
 - Added CZYZD lookup inside the card editor so a card's front text can fill the back side with structured `潮拼` and `解释`.
 - Added card-editor CZYZD audio matching; matched audio is stored only when the card is saved and is applied to both sides.
 - Added a card-editor audio section that can preview existing front/back audio and newly matched CZYZD audio before saving.
+- Added card-editor controls to manually replace or remove front, back, or shared audio before saving.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -56,6 +57,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after card-editor CZYZD auto-fill on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after card-editor CZYZD audio matching on 2026-06-02: 63 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after card-editor audio preview on 2026-06-02: 65 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after card-editor audio replace/remove on 2026-06-02: 67 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -100,6 +102,7 @@ Last updated: 2026-06-02
 - Card editing can use the card front text to fetch CZYZD and fill the back side; non-empty back text asks for confirmation before overwriting.
 - Card editing can match CZYZD audio from the front text; the audio is saved only when the card is saved and is applied to both front/back playback.
 - Card editing can preview current front/back audio and pending matched audio before saving.
+- Card editing can replace or remove front, back, or shared audio before saving.
 - Individual results can be saved as cards into a newly created notebook.
 - A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
 - Saved dictionary cards attach available CZYZD audio to both front and back playback buttons.
@@ -115,5 +118,5 @@ Last updated: 2026-06-02
 
 ## Next
 
-- Add a direct replace/remove audio workflow in card editing.
 - Add a structured correction workflow from reports into card editing.
+- Add a lightweight card history/audit trail for report-driven corrections.

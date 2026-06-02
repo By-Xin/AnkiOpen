@@ -95,6 +95,10 @@ enum AudioFileStore {
     }
 
     static func storeDownloadedAudio(data: Data, suggestedFileName: String) throws -> String {
+        try storeAudio(data: data, suggestedFileName: suggestedFileName)
+    }
+
+    static func storeAudio(data: Data, suggestedFileName: String) throws -> String {
         let cleanName = URL(fileURLWithPath: suggestedFileName.trimmingCharacters(in: .whitespacesAndNewlines)).lastPathComponent
         guard !cleanName.isEmpty else {
             return ""
