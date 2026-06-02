@@ -70,6 +70,79 @@ struct BackupFlashcard: Codable, Equatable {
     let state: Int16
     let lastReviewAt: Date?
     let reviewLogs: [BackupReviewLog]
+    let reports: [BackupCardReport]
+    let correctionLogs: [BackupCardCorrectionLog]
+
+    init(
+        id: UUID,
+        front: String,
+        back: String,
+        frontAudioFileName: String?,
+        backAudioFileName: String?,
+        createdAt: Date,
+        updatedAt: Date,
+        isArchived: Bool,
+        dueAt: Date,
+        stability: Double,
+        difficulty: Double,
+        elapsedDays: Double,
+        scheduledDays: Double,
+        learningSteps: Int16,
+        reps: Int32,
+        lapses: Int32,
+        state: Int16,
+        lastReviewAt: Date?,
+        reviewLogs: [BackupReviewLog],
+        reports: [BackupCardReport] = [],
+        correctionLogs: [BackupCardCorrectionLog] = []
+    ) {
+        self.id = id
+        self.front = front
+        self.back = back
+        self.frontAudioFileName = frontAudioFileName
+        self.backAudioFileName = backAudioFileName
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.isArchived = isArchived
+        self.dueAt = dueAt
+        self.stability = stability
+        self.difficulty = difficulty
+        self.elapsedDays = elapsedDays
+        self.scheduledDays = scheduledDays
+        self.learningSteps = learningSteps
+        self.reps = reps
+        self.lapses = lapses
+        self.state = state
+        self.lastReviewAt = lastReviewAt
+        self.reviewLogs = reviewLogs
+        self.reports = reports
+        self.correctionLogs = correctionLogs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        front = try container.decode(String.self, forKey: .front)
+        back = try container.decode(String.self, forKey: .back)
+        frontAudioFileName = try container.decodeIfPresent(String.self, forKey: .frontAudioFileName)
+        backAudioFileName = try container.decodeIfPresent(String.self, forKey: .backAudioFileName)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        isArchived = try container.decode(Bool.self, forKey: .isArchived)
+        dueAt = try container.decode(Date.self, forKey: .dueAt)
+        stability = try container.decode(Double.self, forKey: .stability)
+        difficulty = try container.decode(Double.self, forKey: .difficulty)
+        elapsedDays = try container.decode(Double.self, forKey: .elapsedDays)
+        scheduledDays = try container.decode(Double.self, forKey: .scheduledDays)
+        learningSteps = try container.decode(Int16.self, forKey: .learningSteps)
+        reps = try container.decode(Int32.self, forKey: .reps)
+        lapses = try container.decode(Int32.self, forKey: .lapses)
+        state = try container.decode(Int16.self, forKey: .state)
+        lastReviewAt = try container.decodeIfPresent(Date.self, forKey: .lastReviewAt)
+        reviewLogs = try container.decodeIfPresent([BackupReviewLog].self, forKey: .reviewLogs) ?? []
+        reports = try container.decodeIfPresent([BackupCardReport].self, forKey: .reports) ?? []
+        correctionLogs = try container.decodeIfPresent([BackupCardCorrectionLog].self, forKey: .correctionLogs) ?? []
+    }
 }
 
 struct BackupReviewLog: Codable, Equatable {
@@ -78,6 +151,28 @@ struct BackupReviewLog: Codable, Equatable {
     let rating: Int16
     let previousDueAt: Date
     let nextDueAt: Date
+}
+
+struct BackupCardReport: Codable, Equatable {
+    let id: UUID
+    let category: String
+    let note: String
+    let createdAt: Date
+    let resolvedAt: Date?
+}
+
+struct BackupCardCorrectionLog: Codable, Equatable {
+    let id: UUID
+    let reportID: UUID?
+    let createdAt: Date
+    let previousFront: String
+    let previousBack: String
+    let previousFrontAudioFileName: String?
+    let previousBackAudioFileName: String?
+    let nextFront: String
+    let nextBack: String
+    let nextFrontAudioFileName: String?
+    let nextBackAudioFileName: String?
 }
 
 enum BackupExporterError: LocalizedError {
@@ -117,7 +212,7 @@ final class BackupExporter {
         }
 
         return BackupEnvelope(
-            schemaVersion: 3,
+            schemaVersion: 4,
             exportedAt: exportedAt,
             notebooks: notebooks,
             mediaFiles: backupMediaFiles(from: notebooks)
@@ -211,7 +306,9 @@ final class BackupExporter {
                     lapses: card.lapses,
                     state: card.state,
                     lastReviewAt: card.lastReviewAt,
-                    reviewLogs: backupReviewLogs(for: card)
+                    reviewLogs: backupReviewLogs(for: card),
+                    reports: backupReports(for: card),
+                    correctionLogs: backupCorrectionLogs(for: card)
                 )
             }
     }
@@ -231,6 +328,50 @@ final class BackupExporter {
                     rating: log.rating,
                     previousDueAt: log.previousDueAt,
                     nextDueAt: log.nextDueAt
+                )
+            }
+    }
+
+    private func backupReports(for card: FlashcardMO) -> [BackupCardReport] {
+        card.reports
+            .sorted {
+                if $0.createdAt == $1.createdAt {
+                    return $0.category < $1.category
+                }
+                return $0.createdAt < $1.createdAt
+            }
+            .map { report in
+                BackupCardReport(
+                    id: report.id,
+                    category: report.category,
+                    note: report.note,
+                    createdAt: report.createdAt,
+                    resolvedAt: report.resolvedAt
+                )
+            }
+    }
+
+    private func backupCorrectionLogs(for card: FlashcardMO) -> [BackupCardCorrectionLog] {
+        card.correctionLogs
+            .sorted {
+                if $0.createdAt == $1.createdAt {
+                    return $0.id.uuidString < $1.id.uuidString
+                }
+                return $0.createdAt < $1.createdAt
+            }
+            .map { log in
+                BackupCardCorrectionLog(
+                    id: log.id,
+                    reportID: log.report?.id,
+                    createdAt: log.createdAt,
+                    previousFront: log.previousFront,
+                    previousBack: log.previousBack,
+                    previousFrontAudioFileName: log.previousFrontAudioFileName,
+                    previousBackAudioFileName: log.previousBackAudioFileName,
+                    nextFront: log.nextFront,
+                    nextBack: log.nextBack,
+                    nextFrontAudioFileName: log.nextFrontAudioFileName,
+                    nextBackAudioFileName: log.nextBackAudioFileName
                 )
             }
     }

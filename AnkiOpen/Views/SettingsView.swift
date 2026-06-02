@@ -107,6 +107,8 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                             Text("\(importSummary.importedNotebooks) 个笔记本，\(importSummary.importedUnits) 个单元，\(importSummary.importedCards) 张卡片，\(importSummary.importedReviewLogs) 条复习记录")
                                 .font(.footnote)
+                            Text("\(importSummary.importedReports) 条反馈，\(importSummary.importedCorrectionLogs) 条修正记录")
+                                .font(.footnote)
                             Text("已恢复 \(importSummary.importedMediaFiles) 个媒体文件")
                                 .font(.footnote)
                             Text("已跳过 \(importSummary.skippedDuplicates) 个重复项")
@@ -129,7 +131,7 @@ struct SettingsView: View {
                     }
 
                     LabeledContent("本机反馈", value: "\(reports.count)")
-                    Text("反馈目前只保存在本机。等校对流程稳定后，再加入云端提交或导出。")
+                    Text("反馈和修正记录会随 JSON 备份一起导出；后续再加入云端提交。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

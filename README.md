@@ -80,7 +80,7 @@ The app copies selected audio into its local sandbox, so the original files are 
 
 ## Backup Export And Restore
 
-Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio files, FSRS state fields, and review logs. Restore deduplicates existing notebooks, units, cards, and review logs.
+Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio files, FSRS state fields, review logs, card reports, and report-driven correction history. Restore deduplicates existing notebooks, units, cards, review logs, reports, and correction logs.
 
 ## Study Modes
 
@@ -113,6 +113,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] JSON backup export
 - [x] JSON backup restore
 - [x] Audio-bundled JSON backup
+- [x] Report and correction history JSON backup
 - [x] FSRS-6 scheduling defaults
 - [x] DeepSeek rare glyph replacement workflow
 - [x] CZYZD dictionary lookup tab

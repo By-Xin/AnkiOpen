@@ -7,6 +7,8 @@ struct BackupImportSummary: Equatable {
     let importedUnits: Int
     let importedCards: Int
     let importedReviewLogs: Int
+    let importedReports: Int
+    let importedCorrectionLogs: Int
     let importedMediaFiles: Int
     let skippedDuplicates: Int
 }
@@ -45,7 +47,7 @@ final class BackupImporter {
         }
 
         let envelope = try decoder.decode(BackupEnvelope.self, from: data)
-        guard [2, 3].contains(envelope.schemaVersion) else {
+        guard [2, 3, 4].contains(envelope.schemaVersion) else {
             throw BackupImporterError.unsupportedSchema(envelope.schemaVersion)
         }
 
@@ -57,7 +59,7 @@ final class BackupImporter {
         fileName: String = "Backup.json",
         context: NSManagedObjectContext
     ) throws -> BackupImportSummary {
-        guard [2, 3].contains(envelope.schemaVersion) else {
+        guard [2, 3, 4].contains(envelope.schemaVersion) else {
             throw BackupImporterError.unsupportedSchema(envelope.schemaVersion)
         }
 
@@ -65,6 +67,8 @@ final class BackupImporter {
         var importedUnits = 0
         var importedCards = 0
         var importedReviewLogs = 0
+        var importedReports = 0
+        var importedCorrectionLogs = 0
         var importedMediaFiles = 0
         var skippedDuplicates = 0
 
@@ -98,6 +102,20 @@ final class BackupImporter {
                     )
                     importedReviewLogs += reviewLogResult.imported
                     skippedDuplicates += reviewLogResult.skipped
+                    let reportResult = mergeReports(
+                        backupCard.reports,
+                        into: cardResult.card,
+                        context: context
+                    )
+                    importedReports += reportResult.imported
+                    skippedDuplicates += reportResult.skipped
+                    let correctionLogResult = mergeCorrectionLogs(
+                        backupCard.correctionLogs,
+                        into: cardResult.card,
+                        context: context
+                    )
+                    importedCorrectionLogs += correctionLogResult.imported
+                    skippedDuplicates += correctionLogResult.skipped
                 }
             }
         }
@@ -108,6 +126,8 @@ final class BackupImporter {
             importedUnits: importedUnits,
             importedCards: importedCards,
             importedReviewLogs: importedReviewLogs,
+            importedReports: importedReports,
+            importedCorrectionLogs: importedCorrectionLogs,
             importedMediaFiles: importedMediaFiles,
             skippedDuplicates: skippedDuplicates
         )
@@ -203,6 +223,71 @@ final class BackupImporter {
             log.rating = backupLog.rating
             log.previousDueAt = backupLog.previousDueAt
             log.nextDueAt = backupLog.nextDueAt
+            existingIDs.insert(backupLog.id)
+            imported += 1
+        }
+
+        return (imported, skipped)
+    }
+
+    private func mergeReports(
+        _ backupReports: [BackupCardReport],
+        into card: FlashcardMO,
+        context: NSManagedObjectContext
+    ) -> (imported: Int, skipped: Int) {
+        var existingIDs = Set(card.reports.map(\.id))
+        var imported = 0
+        var skipped = 0
+
+        for backupReport in backupReports {
+            guard !existingIDs.contains(backupReport.id) else {
+                skipped += 1
+                continue
+            }
+
+            let report = CardReportMO(context: context)
+            report.id = backupReport.id
+            report.category = backupReport.category
+            report.note = backupReport.note
+            report.createdAt = backupReport.createdAt
+            report.resolvedAt = backupReport.resolvedAt
+            report.card = card
+            existingIDs.insert(backupReport.id)
+            imported += 1
+        }
+
+        return (imported, skipped)
+    }
+
+    private func mergeCorrectionLogs(
+        _ backupLogs: [BackupCardCorrectionLog],
+        into card: FlashcardMO,
+        context: NSManagedObjectContext
+    ) -> (imported: Int, skipped: Int) {
+        var existingIDs = Set(card.correctionLogs.map(\.id))
+        let reportsByID = Dictionary(uniqueKeysWithValues: card.reports.map { ($0.id, $0) })
+        var imported = 0
+        var skipped = 0
+
+        for backupLog in backupLogs {
+            guard !existingIDs.contains(backupLog.id) else {
+                skipped += 1
+                continue
+            }
+
+            let log = CardCorrectionLogMO(context: context)
+            log.id = backupLog.id
+            log.card = card
+            log.report = backupLog.reportID.flatMap { reportsByID[$0] }
+            log.createdAt = backupLog.createdAt
+            log.previousFront = backupLog.previousFront
+            log.previousBack = backupLog.previousBack
+            log.previousFrontAudioFileName = backupLog.previousFrontAudioFileName
+            log.previousBackAudioFileName = backupLog.previousBackAudioFileName
+            log.nextFront = backupLog.nextFront
+            log.nextBack = backupLog.nextBack
+            log.nextFrontAudioFileName = backupLog.nextFrontAudioFileName
+            log.nextBackAudioFileName = backupLog.nextBackAudioFileName
             existingIDs.insert(backupLog.id)
             imported += 1
         }

@@ -15,6 +15,7 @@ Last updated: 2026-06-02
 - Added JSON backup export from Settings, including notebooks, units, cards, audio references, FSRS fields, and review logs.
 - Added JSON backup restore from Settings with duplicate handling for notebooks, units, cards, and review logs.
 - Upgraded backups to `schemaVersion: 3` so referenced audio files are embedded in JSON and restored into local audio storage.
+- Upgraded backups to `schemaVersion: 4` so card reports and report-driven correction logs are exported and restored with v2/v3 compatibility.
 - Integrated the FSRS Swift package at version 5.0.0 through Swift Package Manager.
 - Added an app-local FSRS-6 scheduler with default parameters and retention `0.90`, replacing the earlier simplified fallback in the production review path.
 - Added DeepSeek settings with Keychain API key storage, V4 Flash/V4 Pro model selection, and rare glyph replacement suggestions.
@@ -60,6 +61,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after card-editor audio preview on 2026-06-02: 65 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after card-editor audio replace/remove on 2026-06-02: 67 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after report-driven correction history on 2026-06-02: 68 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after report/correction backup on 2026-06-02: 70 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -113,10 +115,10 @@ Last updated: 2026-06-02
 
 - Settings now offers `Create JSON Backup`.
 - Settings now offers `Import JSON Backup`.
-- The backup schema is versioned with `schemaVersion: 3`.
-- JSON backups include notebooks, units, cards, audio files, scheduling fields, and review logs.
-- Restore deduplicates notebooks, units, cards, and review logs.
-- Restore still accepts legacy `schemaVersion: 2` backups without embedded media files.
+- The backup schema is versioned with `schemaVersion: 4`.
+- JSON backups include notebooks, units, cards, audio files, scheduling fields, review logs, feedback reports, and correction logs.
+- Restore deduplicates notebooks, units, cards, review logs, feedback reports, and correction logs.
+- Restore still accepts legacy `schemaVersion: 2` backups without embedded media files and `schemaVersion: 3` backups without report history.
 
 ## Reports
 
@@ -126,5 +128,4 @@ Last updated: 2026-06-02
 
 ## Next
 
-- Add backup/export coverage for report and correction history.
 - Add richer report analytics once daily use exposes the common failure modes.
