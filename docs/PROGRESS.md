@@ -22,6 +22,7 @@ Last updated: 2026-06-02
 - Replaced the static rare glyph image fallback flow with a DeepSeek suggestion flow that caches replacement suggestions and can apply them to affected cards.
 - Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, Chaoshan pronunciation, cleaned definitions, and remote audio playback.
 - Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
+- Added import result unit summaries with per-unit card counts and direct navigation into imported units.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
@@ -66,6 +67,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after report/correction backup on 2026-06-02: 70 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Feedback analytics overview on 2026-06-02: 71 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Feedback filtering and search on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after import result unit navigation on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -92,6 +94,7 @@ Last updated: 2026-06-02
 - Supported audio extensions: `mp3`, `m4a`, `aac`, `wav`, `caf`, `aiff`, `aif`.
 - Audio files are copied into app-local storage under Application Support.
 - CZYZD lookup headers include `czyzd`, `dictionary`, `lookup`, `查词`, `词典`, and `潮语词典`. Existing non-empty back text is preserved.
+- After import, the result summary shows each imported unit, the number of cards added to it, and a direct link into that unit.
 
 ## Rare Glyph Replacement
 

@@ -1,6 +1,15 @@
 import CoreData
 import Foundation
 
+struct ImportUnitSummary: Equatable, Identifiable {
+    let name: String
+    let importedCards: Int
+
+    var id: String {
+        name
+    }
+}
+
 struct ImportSummary: Equatable {
     let fileName: String
     let totalRows: Int
@@ -8,6 +17,7 @@ struct ImportSummary: Equatable {
     let skippedRows: Int
     let audioFilesImported: Int
     let unitNames: [String]
+    let unitSummaries: [ImportUnitSummary]
     let skippedRowDetails: [String]
     let errors: [String]
     let glyphWarnings: [String]
@@ -22,6 +32,7 @@ struct ImportSummary: Equatable {
         skippedRows: Int,
         audioFilesImported: Int,
         unitNames: [String] = [],
+        unitSummaries: [ImportUnitSummary] = [],
         skippedRowDetails: [String] = [],
         errors: [String],
         glyphWarnings: [String] = [],
@@ -35,6 +46,7 @@ struct ImportSummary: Equatable {
         self.skippedRows = skippedRows
         self.audioFilesImported = audioFilesImported
         self.unitNames = unitNames
+        self.unitSummaries = unitSummaries
         self.skippedRowDetails = skippedRowDetails
         self.errors = errors
         self.glyphWarnings = glyphWarnings
@@ -139,6 +151,7 @@ final class CSVImporter {
         var errors = plan.errors + plan.audioWarnings
         var importedCardIDs: [UUID] = []
         var dictionaryLookupTermsByCardID: [UUID: String] = [:]
+        var importedCardsByUnitName: [String: Int] = [:]
 
         for row in plan.rows {
             let unit = NotebookUnitMO.findOrCreate(
@@ -172,7 +185,15 @@ final class CSVImporter {
             if let dictionaryLookupTerm = row.dictionaryLookupTerm {
                 dictionaryLookupTermsByCardID[card.id] = dictionaryLookupTerm
             }
+            importedCardsByUnitName[unit.name, default: 0] += 1
             imported += 1
+        }
+
+        let unitSummaries = plan.unitNames.map { unitName in
+            ImportUnitSummary(
+                name: unitName,
+                importedCards: importedCardsByUnitName[unitName, default: 0]
+            )
         }
 
         let summary = ImportSummary(
@@ -182,6 +203,7 @@ final class CSVImporter {
             skippedRows: plan.skippedRows,
             audioFilesImported: audioImported,
             unitNames: plan.unitNames,
+            unitSummaries: unitSummaries,
             skippedRowDetails: plan.skippedRowDetails,
             errors: errors,
             glyphWarnings: plan.glyphWarnings,

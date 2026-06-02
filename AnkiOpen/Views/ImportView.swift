@@ -144,6 +144,24 @@ struct ImportView: View {
                         if !summary.unitNames.isEmpty {
                             LabeledContent("单元", value: listed(summary.unitNames))
                         }
+                        if !summary.unitSummaries.isEmpty {
+                            ForEach(summary.unitSummaries) { unitSummary in
+                                if let unit = importedUnit(named: unitSummary.name) {
+                                    NavigationLink {
+                                        UnitDetailView(unit: unit)
+                                    } label: {
+                                        HStack {
+                                            Label(unitSummary.name, systemImage: "folder")
+                                            Spacer()
+                                            Text("\(unitSummary.importedCards) 张")
+                                                .foregroundStyle(.secondary)
+                                        }
+                                    }
+                                } else {
+                                    LabeledContent(unitSummary.name, value: "\(unitSummary.importedCards) 张")
+                                }
+                            }
+                        }
                         if summary.issueCount > 0 {
                             NavigationLink {
                                 ImportIssueListView(
@@ -231,6 +249,12 @@ struct ImportView: View {
 
     private func existingDestinationNotebook() -> NotebookMO? {
         notebooks.first { $0.id == selectedNotebookID }
+    }
+
+    private func importedUnit(named name: String) -> NotebookUnitMO? {
+        importedNotebook?.units.first {
+            $0.name.caseInsensitiveCompare(name) == .orderedSame
+        }
     }
 
     private func destinationNotebook() -> NotebookMO? {
