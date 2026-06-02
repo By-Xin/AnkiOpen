@@ -65,6 +65,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after report-driven correction history on 2026-06-02: 68 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after report/correction backup on 2026-06-02: 70 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Feedback analytics overview on 2026-06-02: 71 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Feedback filtering and search on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
