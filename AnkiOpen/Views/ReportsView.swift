@@ -26,7 +26,7 @@ struct ReportsView: View {
     var body: some View {
         List {
             Section {
-                Picker("Status", selection: $filter) {
+                Picker("状态", selection: $filter) {
                     ForEach(ReportStatusFilter.allCases) { filter in
                         Text(filter.title).tag(filter)
                     }
@@ -56,7 +56,7 @@ struct ReportsView: View {
                 }
             }
         }
-        .navigationTitle("Reports")
+        .navigationTitle("反馈")
     }
 }
 
@@ -102,31 +102,31 @@ private struct ReportDetailView: View {
 
     var body: some View {
         Form {
-            Section("Status") {
-                LabeledContent("Type", value: report.categoryTitle)
-                LabeledContent("Created", value: report.createdAt.formatted(date: .abbreviated, time: .shortened))
+            Section("状态") {
+                LabeledContent("类型", value: report.categoryTitle)
+                LabeledContent("创建时间", value: report.createdAt.formatted(date: .abbreviated, time: .shortened))
                 if let resolvedAt = report.resolvedAt {
-                    LabeledContent("Resolved", value: resolvedAt.formatted(date: .abbreviated, time: .shortened))
+                    LabeledContent("已处理", value: resolvedAt.formatted(date: .abbreviated, time: .shortened))
                 } else {
-                    LabeledContent("Resolved", value: "No")
+                    LabeledContent("已处理", value: "否")
                 }
             }
 
-            Section("Card") {
-                LabeledContent("Notebook", value: report.card.notebook.name)
+            Section("卡片") {
+                LabeledContent("笔记本", value: report.card.notebook.name)
                 if let unit = report.card.unit {
-                    LabeledContent("Unit", value: unit.name)
+                    LabeledContent("单元", value: unit.name)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Front")
+                    Text("正面")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     FlashcardText(text: report.card.front, size: 17, relativeTo: .body, weight: .regular)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Back")
+                    Text("背面")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     FlashcardText(text: report.card.back, size: 17, relativeTo: .body, weight: .regular)
@@ -135,12 +135,12 @@ private struct ReportDetailView: View {
                 Button {
                     isShowingCardEditor = true
                 } label: {
-                    Label("Edit Card", systemImage: "pencil")
+                    Label("编辑卡片", systemImage: "pencil")
                 }
             }
 
             if !report.note.isEmpty {
-                Section("Note") {
+                Section("备注") {
                     Text(report.note)
                 }
             }
@@ -149,16 +149,16 @@ private struct ReportDetailView: View {
                 Button {
                     toggleResolved()
                 } label: {
-                    Label(report.isResolved ? "Reopen Report" : "Mark Resolved", systemImage: report.isResolved ? "arrow.uturn.backward" : "checkmark.circle")
+                    Label(report.isResolved ? "重新打开反馈" : "标记为已处理", systemImage: report.isResolved ? "arrow.uturn.backward" : "checkmark.circle")
                 }
             }
         }
-        .navigationTitle("Report")
+        .navigationTitle("反馈详情")
         .sheet(isPresented: $isShowingCardEditor) {
             CardEditorView(mode: .edit(report.card))
         }
-        .alert("Report Error", isPresented: .constant(errorMessage != nil), actions: {
-            Button("OK") { errorMessage = nil }
+        .alert("反馈错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
         }, message: {
             Text(errorMessage ?? "")
         })
@@ -189,18 +189,18 @@ private enum ReportStatusFilter: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .open:
-            return "Open"
+            return "未处理"
         case .resolved:
-            return "Resolved"
+            return "已处理"
         }
     }
 
     var emptyTitle: String {
         switch self {
         case .open:
-            return "No Open Reports"
+            return "没有未处理反馈"
         case .resolved:
-            return "No Resolved Reports"
+            return "没有已处理反馈"
         }
     }
 
@@ -216,9 +216,9 @@ private enum ReportStatusFilter: String, CaseIterable, Identifiable {
     var emptyMessage: String {
         switch self {
         case .open:
-            return "New card issue reports will appear here until they are marked resolved."
+            return "新的卡片问题会显示在这里，直到标记为已处理。"
         case .resolved:
-            return "Resolved card issue reports will appear here for later review."
+            return "已处理的问题会保留在这里，方便后续复查。"
         }
     }
 }

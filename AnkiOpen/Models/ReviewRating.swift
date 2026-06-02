@@ -10,10 +10,10 @@ enum ReviewRating: Int16, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .again: return "Again"
-        case .hard: return "Hard"
-        case .good: return "Good"
-        case .easy: return "Easy"
+        case .again: return "重来"
+        case .hard: return "困难"
+        case .good: return "良好"
+        case .easy: return "简单"
         }
     }
 }

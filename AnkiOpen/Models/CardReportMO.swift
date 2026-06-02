@@ -36,7 +36,7 @@ extension CardReportMO {
     }
 
     var categoryTitle: String {
-        ReportCategory(rawValue: category)?.title ?? "Other"
+        ReportCategory(rawValue: category)?.title ?? "其他"
     }
 
     func markResolved(at date: Date = Date()) {
@@ -60,15 +60,15 @@ enum ReportCategory: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .audioMismatch:
-            return "Audio mismatch"
+            return "音频不匹配"
         case .pronunciation:
-            return "Pronunciation / pinyin error"
+            return "读音/拼音错误"
         case .translation:
-            return "Translation error"
+            return "释义错误"
         case .typo:
-            return "Typo"
+            return "错别字"
         case .other:
-            return "Other"
+            return "其他"
         }
     }
 }

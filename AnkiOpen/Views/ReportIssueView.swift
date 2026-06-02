@@ -11,13 +11,13 @@ struct ReportIssueView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Card") {
-                    LabeledContent("Front", value: card.front)
-                    LabeledContent("Back", value: card.back)
+                Section("卡片") {
+                    LabeledContent("正面", value: card.front)
+                    LabeledContent("背面", value: card.back)
                 }
 
-                Section("Issue") {
-                    Picker("Type", selection: $category) {
+                Section("问题") {
+                    Picker("类型", selection: $category) {
                         ForEach(ReportCategory.allCases) { category in
                             Text(category.title).tag(category)
                         }
@@ -27,17 +27,17 @@ struct ReportIssueView: View {
                         .frame(minHeight: 120)
                 }
             }
-            .navigationTitle("Report Issue")
+            .navigationTitle("反馈问题")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Submit", action: submit)
+                    Button("提交", action: submit)
                 }
             }
-            .alert("Report Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("反馈错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })

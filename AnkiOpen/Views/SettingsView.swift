@@ -24,13 +24,13 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Review Scheduler") {
+                Section("复习算法") {
                     HStack(spacing: 12) {
                         LeadingSymbol(systemImage: "calendar.badge.clock")
                         VStack(alignment: .leading, spacing: 4) {
                             Text("FSRS")
                                 .font(.headline)
-                            Text("Retention 0.90 · FSRS-6 defaults")
+                            Text("目标记忆率 0.90 · FSRS-6 默认参数")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -42,18 +42,18 @@ struct SettingsView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
 
-                    Picker("Model", selection: $deepSeekModel) {
+                    Picker("模型", selection: $deepSeekModel) {
                         ForEach(DeepSeekModel.allCases) { model in
                             Text(model.title).tag(model)
                         }
                     }
 
-                    LabeledContent("Endpoint", value: "api.deepseek.com")
+                    LabeledContent("接口", value: "api.deepseek.com")
 
                     Button {
                         saveDeepSeekSettings()
                     } label: {
-                        Label("Save DeepSeek Settings", systemImage: "key")
+                        Label("保存 DeepSeek 设置", systemImage: "key")
                     }
 
                     if let deepSeekStatusMessage {
@@ -62,30 +62,30 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Text("Used by Rare Glyphs to ask DeepSeek for practical replacement characters. V4 Flash is the default for speed.")
+                    Text("用于生僻字功能：让 DeepSeek 给出更适合显示和学习的替代字。默认使用 V4 Flash，优先保证速度。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
-                Section("Data") {
-                    LabeledContent("Storage", value: "Local Core Data")
-                    LabeledContent("Sync", value: "Off")
+                Section("数据") {
+                    LabeledContent("存储", value: "本机 Core Data")
+                    LabeledContent("同步", value: "关闭")
 
                     Button {
                         createBackup()
                     } label: {
-                        Label("Create JSON Backup", systemImage: "externaldrive.badge.timemachine")
+                        Label("创建 JSON 备份", systemImage: "externaldrive.badge.timemachine")
                     }
 
                     Button {
                         isShowingBackupImporter = true
                     } label: {
-                        Label("Import JSON Backup", systemImage: "tray.and.arrow.down")
+                        Label("导入 JSON 备份", systemImage: "tray.and.arrow.down")
                     }
 
                     if let backupURL {
                         ShareLink(item: backupURL) {
-                            Label("Share Backup", systemImage: "square.and.arrow.up")
+                            Label("分享备份", systemImage: "square.and.arrow.up")
                         }
                         Text(backupURL.lastPathComponent)
                             .font(.footnote)
@@ -94,55 +94,55 @@ struct SettingsView: View {
 
                     if let importSummary {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Last Restore")
+                            Text("上次恢复")
                                 .font(.headline)
                             Text(importSummary.fileName)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
-                            Text("\(importSummary.importedNotebooks) notebooks, \(importSummary.importedUnits) units, \(importSummary.importedCards) cards, \(importSummary.importedReviewLogs) logs")
+                            Text("\(importSummary.importedNotebooks) 个笔记本，\(importSummary.importedUnits) 个单元，\(importSummary.importedCards) 张卡片，\(importSummary.importedReviewLogs) 条复习记录")
                                 .font(.footnote)
-                            Text("\(importSummary.importedMediaFiles) media files restored")
+                            Text("已恢复 \(importSummary.importedMediaFiles) 个媒体文件")
                                 .font(.footnote)
-                            Text("\(importSummary.skippedDuplicates) duplicates skipped")
+                            Text("已跳过 \(importSummary.skippedDuplicates) 个重复项")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
 
-                Section("Reports") {
+                Section("反馈") {
                     NavigationLink {
                         ReportsView()
                     } label: {
                         HStack {
-                            Label("Reports", systemImage: "exclamationmark.bubble")
+                            Label("反馈", systemImage: "exclamationmark.bubble")
                             Spacer()
-                            Text("\(openReportsCount) open")
+                            Text("\(openReportsCount) 个未处理")
                                 .foregroundStyle(.secondary)
                         }
                     }
 
-                    LabeledContent("Local reports", value: "\(reports.count)")
-                    Text("Reports are saved locally for now. Cloud submission/export can be added after the correction workflow is stable.")
+                    LabeledContent("本机反馈", value: "\(reports.count)")
+                    Text("反馈目前只保存在本机。等校对流程稳定后，再加入云端提交或导出。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
-                Section("Text") {
+                Section("文字") {
                     NavigationLink {
                         RareGlyphsView()
                     } label: {
-                        Label("Rare Glyphs", systemImage: "textformat.alt")
+                        Label("生僻字", systemImage: "textformat.alt")
                     }
                 }
 
-                Section("Open Source") {
-                    LabeledContent("License", value: "MIT")
+                Section("开源") {
+                    LabeledContent("许可证", value: "MIT")
                 }
             }
             .scrollContentBackground(.hidden)
             .background(AppPalette.paper.ignoresSafeArea())
-            .navigationTitle("Settings")
+            .navigationTitle("设置")
             .fileImporter(
                 isPresented: $isShowingBackupImporter,
                 allowedContentTypes: [.json],
@@ -150,8 +150,8 @@ struct SettingsView: View {
             ) { result in
                 importBackup(result)
             }
-            .alert("Backup Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("备份错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -195,8 +195,8 @@ struct SettingsView: View {
             try DeepSeekSettingsStore.saveAPIKey(deepSeekAPIKey)
             DeepSeekSettingsStore.selectedModel = deepSeekModel
             deepSeekStatusMessage = deepSeekAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                ? "API key cleared."
-                : "DeepSeek settings saved."
+                ? "API Key 已清空。"
+                : "DeepSeek 设置已保存。"
         } catch {
             errorMessage = error.localizedDescription
         }

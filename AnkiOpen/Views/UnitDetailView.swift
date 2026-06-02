@@ -44,9 +44,9 @@ struct UnitDetailView: View {
                     HStack {
                         LeadingSymbol(systemImage: "rectangle.stack.badge.play")
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Study This Unit")
+                            Text("学习这个单元")
                                 .font(.headline)
-                            Text("\(cards.count) active cards")
+                            Text("\(cards.count) 张可用卡片")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -60,7 +60,7 @@ struct UnitDetailView: View {
                     }
                 } label: {
                     Label(
-                        isFillingAudio ? "Filling CZYZD Audio..." : "Fill Missing CZYZD Audio",
+                        isFillingAudio ? "正在补全潮语音频..." : "补全缺失的潮语音频",
                         systemImage: "speaker.wave.2.badge.plus"
                     )
                 }
@@ -69,10 +69,10 @@ struct UnitDetailView: View {
             }
 
             if let czyzdSummary {
-                Section("CZYZD Audio") {
-                    LabeledContent("Checked", value: "\(czyzdSummary.checkedCards)")
-                    LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
-                    LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
+                Section("潮语音频") {
+                    LabeledContent("检查", value: "\(czyzdSummary.checkedCards)")
+                    LabeledContent("匹配", value: "\(czyzdSummary.matchedCards)")
+                    LabeledContent("失败", value: "\(czyzdSummary.failedCards)")
                     if let messages = czyzdSummary.messageSummary {
                         Text(messages)
                             .font(.footnote)
@@ -81,7 +81,7 @@ struct UnitDetailView: View {
                 }
             }
 
-            Section("Cards") {
+            Section("卡片") {
                 ForEach(filteredCards) { card in
                     Button {
                         cardToEdit = card
@@ -106,11 +106,11 @@ struct UnitDetailView: View {
                                 )
                                     .foregroundStyle(.secondary)
                                 if GlyphDiagnostics.containsRiskyGlyphs(card.front + card.back) {
-                                    Label("Rare glyphs", systemImage: "textformat.alt")
+                                    Label("可能含有生僻字", systemImage: "textformat.alt")
                                         .font(.caption)
                                         .foregroundStyle(AppPalette.cinnabar)
                                 }
-                                Text("Due \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
+                                Text("到期 \(card.dueAt.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
                             }
@@ -121,7 +121,7 @@ struct UnitDetailView: View {
                         Button(role: .destructive) {
                             archive(card)
                         } label: {
-                            Label("Archive", systemImage: "archivebox")
+                            Label("归档", systemImage: "archivebox")
                         }
                     }
                 }
@@ -129,13 +129,13 @@ struct UnitDetailView: View {
         }
         .listStyle(.insetGrouped)
         .appScreenBackground()
-        .searchable(text: $searchText, prompt: "Search cards")
+        .searchable(text: $searchText, prompt: "搜索卡片")
         .overlay {
             if cards.isEmpty {
                 EmptyStateView(
-                    title: "No Cards",
+                    title: "还没有卡片",
                     systemImage: "rectangle.stack",
-                    message: "Add a card or import a CSV into this unit."
+                    message: "可以新建卡片，或把 CSV 导入到这个单元。"
                 )
             }
         }
@@ -145,7 +145,7 @@ struct UnitDetailView: View {
                 Button {
                     isShowingAddCard = true
                 } label: {
-                    Label("Add Card", systemImage: "plus")
+                    Label("新建卡片", systemImage: "plus")
                 }
             }
         }
@@ -155,8 +155,8 @@ struct UnitDetailView: View {
         .sheet(item: $cardToEdit) { card in
             CardEditorView(mode: .edit(card))
         }
-        .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-            Button("OK") { errorMessage = nil }
+        .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
         }, message: {
             Text(errorMessage ?? "")
         })

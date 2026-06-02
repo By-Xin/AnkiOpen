@@ -33,9 +33,9 @@ struct NotebookDetailView: View {
                     HStack {
                         LeadingSymbol(systemImage: "rectangle.stack.badge.play")
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Study Due Cards")
+                            Text("复习到期卡片")
                                 .font(.headline)
-                            Text("\(notebook.activeCardsCount) active cards")
+                            Text("\(notebook.activeCardsCount) 张可用卡片")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -49,7 +49,7 @@ struct NotebookDetailView: View {
                     }
                 } label: {
                     Label(
-                        isFillingAudio ? "Filling CZYZD Audio..." : "Fill Missing CZYZD Audio",
+                        isFillingAudio ? "正在补全潮语音频..." : "补全缺失的潮语音频",
                         systemImage: "speaker.wave.2.badge.plus"
                     )
                 }
@@ -58,10 +58,10 @@ struct NotebookDetailView: View {
             }
 
             if let czyzdSummary {
-                Section("CZYZD Audio") {
-                    LabeledContent("Checked", value: "\(czyzdSummary.checkedCards)")
-                    LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
-                    LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
+                Section("潮语音频") {
+                    LabeledContent("检查", value: "\(czyzdSummary.checkedCards)")
+                    LabeledContent("匹配", value: "\(czyzdSummary.matchedCards)")
+                    LabeledContent("失败", value: "\(czyzdSummary.failedCards)")
                     if let messages = czyzdSummary.messageSummary {
                         Text(messages)
                             .font(.footnote)
@@ -70,7 +70,7 @@ struct NotebookDetailView: View {
                 }
             }
 
-            Section("Units") {
+            Section("单元") {
                 ForEach(units) { unit in
                     NavigationLink {
                         UnitDetailView(unit: unit)
@@ -81,12 +81,12 @@ struct NotebookDetailView: View {
                                 Text(unit.name)
                                     .font(.headline.weight(.semibold))
                                     .foregroundStyle(AppPalette.ink)
-                                Text("Unit \(unit.sortIndex + 1)")
+                                Text("第 \(unit.sortIndex + 1) 单元")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
-                            MetricPill(value: "\(unit.activeCardsCount)", label: "cards", tint: AppPalette.amber)
+                            MetricPill(value: "\(unit.activeCardsCount)", label: "卡片", tint: AppPalette.amber)
                         }
                     }
                     .appListRow()
@@ -94,7 +94,7 @@ struct NotebookDetailView: View {
                         Button {
                             unitToEdit = unit
                         } label: {
-                            Label("Rename", systemImage: "pencil")
+                            Label("重命名", systemImage: "pencil")
                         }
                         .tint(.blue)
                     }
@@ -102,7 +102,7 @@ struct NotebookDetailView: View {
                         Button(role: .destructive) {
                             delete(unit)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("删除", systemImage: "trash")
                         }
                     }
                 }
@@ -113,9 +113,9 @@ struct NotebookDetailView: View {
         .overlay {
             if units.isEmpty {
                 EmptyStateView(
-                    title: "No Units",
+                    title: "还没有单元",
                     systemImage: "folder",
-                    message: "Create a unit or import a CSV into this notebook."
+                    message: "可以新建单元，或把 CSV 导入到这个笔记本。"
                 )
             }
         }
@@ -125,7 +125,7 @@ struct NotebookDetailView: View {
                 Button {
                     isShowingAddUnit = true
                 } label: {
-                    Label("Add Unit", systemImage: "plus")
+                    Label("新建单元", systemImage: "plus")
                 }
             }
         }
@@ -136,8 +136,8 @@ struct NotebookDetailView: View {
         .sheet(item: $unitToEdit) { unit in
             UnitEditorView(mode: .edit(unit))
         }
-        .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-            Button("OK") { errorMessage = nil }
+        .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
         }, message: {
             Text(errorMessage ?? "")
         })

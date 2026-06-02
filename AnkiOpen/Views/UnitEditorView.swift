@@ -25,22 +25,22 @@ struct UnitEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Unit") {
-                    TextField("Unit name", text: $name)
+                Section("单元") {
+                    TextField("单元名称", text: $name)
                 }
             }
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
+                    Button("保存", action: save)
                         .disabled(name.trimmed.isEmpty)
                 }
             }
-            .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -49,8 +49,8 @@ struct UnitEditorView: View {
 
     private var title: String {
         switch mode {
-        case .create: return "New Unit"
-        case .edit: return "Rename Unit"
+        case .create: return "新建单元"
+        case .edit: return "重命名单元"
         }
     }
 

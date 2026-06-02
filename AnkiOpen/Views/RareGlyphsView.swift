@@ -22,14 +22,14 @@ struct RareGlyphsView: View {
         List {
             if items.isEmpty {
                 EmptyStateView(
-                    title: "No Rare Glyphs",
+                    title: "没有发现生僻字",
                     systemImage: "textformat.alt",
-                    message: "Imported cards do not currently contain high-risk glyphs."
+                    message: "当前导入的卡片里没有高风险字形。"
                 )
                 .frame(maxWidth: .infinity)
                 .listRowBackground(Color.clear)
             } else {
-                Section("Glyphs") {
+                Section("生僻字") {
                     ForEach(items) { item in
                         NavigationLink {
                             RareGlyphDetailView(item: item)
@@ -43,7 +43,7 @@ struct RareGlyphsView: View {
                                     Text(item.finding.category.rawValue)
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
-                                    Text("\(item.occurrences) occurrences in \(item.cards.count) cards")
+                                    Text("\(item.occurrences) 次，分布在 \(item.cards.count) 张卡片")
                                         .font(.caption)
                                         .foregroundStyle(.tertiary)
                                     GlyphSuggestionStatusLabel(finding: item.finding)
@@ -54,7 +54,7 @@ struct RareGlyphsView: View {
                 }
             }
         }
-        .navigationTitle("Rare Glyphs")
+        .navigationTitle("生僻字")
     }
 }
 
@@ -67,23 +67,23 @@ private struct RareGlyphDetailView: View {
 
     var body: some View {
         List {
-            Section("Glyph") {
+            Section("字形") {
                 HStack(spacing: 16) {
                     GlyphPreview(scalar: item.finding.scalar, size: 76)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent("Code point", value: item.finding.codePoint)
-                        LabeledContent("Range", value: item.finding.category.rawValue)
-                        LabeledContent("Occurrences", value: "\(item.occurrences)")
-                        LabeledContent("DeepSeek", value: suggestion?.replacement ?? "No suggestion")
+                        LabeledContent("码位", value: item.finding.codePoint)
+                        LabeledContent("范围", value: item.finding.category.rawValue)
+                        LabeledContent("出现次数", value: "\(item.occurrences)")
+                        LabeledContent("DeepSeek", value: suggestion?.replacement ?? "暂无建议")
                     }
                 }
             }
 
-            Section("DeepSeek Replacement") {
+            Section("DeepSeek 替代字") {
                 if let suggestion {
                     VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent("Replace with", value: suggestion.replacement)
+                        LabeledContent("替换为", value: suggestion.replacement)
                         Text(suggestion.explanation)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -92,7 +92,7 @@ private struct RareGlyphDetailView: View {
                     Button {
                         applySuggestion(suggestion)
                     } label: {
-                        Label("Apply to \(item.cards.count) Cards", systemImage: "wand.and.stars")
+                        Label("应用到 \(item.cards.count) 张卡片", systemImage: "wand.and.stars")
                     }
                 }
 
@@ -102,17 +102,17 @@ private struct RareGlyphDetailView: View {
                     if isLoading {
                         ProgressView()
                     } else {
-                        Label("Ask DeepSeek", systemImage: "sparkles")
+                        Label("询问 DeepSeek", systemImage: "sparkles")
                     }
                 }
                 .disabled(isLoading)
 
-                Text("DeepSeek suggests a practical display replacement. Review the suggestion before applying it to cards.")
+                Text("DeepSeek 会给出更适合显示和学习的替代字。应用前请先检查建议是否符合语义。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
-            Section("Cards") {
+            Section("相关卡片") {
                 ForEach(item.cards) { card in
                     VStack(alignment: .leading, spacing: 6) {
                         FlashcardText(
@@ -133,7 +133,7 @@ private struct RareGlyphDetailView: View {
                         )
                         .foregroundStyle(.secondary)
 
-                        Text("\(card.notebook.name) / \(card.unit?.name ?? "Default")")
+                        Text("\(card.notebook.name) / \(card.unit?.name ?? "默认单元")")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                     }
@@ -144,8 +144,8 @@ private struct RareGlyphDetailView: View {
         .onAppear {
             suggestion = GlyphReplacementSuggestionStore.suggestion(for: item.finding.scalar)
         }
-        .alert("DeepSeek Error", isPresented: .constant(errorMessage != nil), actions: {
-            Button("OK") { errorMessage = nil }
+        .alert("DeepSeek 错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
         }, message: {
             Text(errorMessage ?? "")
         })

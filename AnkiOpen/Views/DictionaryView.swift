@@ -8,6 +8,7 @@ struct DictionaryView: View {
     @State private var entries: [CZYZDDictionaryEntry] = []
     @State private var isSearching = false
     @State private var isBuildingNotebook = false
+    @State private var isSavingEntry = false
     @State private var entryToSave: CZYZDDictionaryEntry?
     @State private var saveNotebookName = CZYZDDictionaryNotebookBuilder.defaultNotebookName
     @State private var builderNotebookName = CZYZDDictionaryNotebookBuilder.defaultNotebookName
@@ -20,10 +21,10 @@ struct DictionaryView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Search") {
+                Section("查词") {
                     HStack {
                         LeadingSymbol(systemImage: "magnifyingglass")
-                        TextField("Word or phrase", text: $query)
+                        TextField("输入字或词组", text: $query)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .submitLabel(.search)
@@ -41,21 +42,21 @@ struct DictionaryView: View {
                     .appListRow()
                 }
 
-                Section("Dictionary Notebook") {
-                    TextField("Notebook name", text: $builderNotebookName)
+                Section("词典笔记本") {
+                    TextField("笔记本名称", text: $builderNotebookName)
                         .disabled(isBuildingNotebook)
 
-                    Stepper("Batch size: \(builderBatchSize)", value: $builderBatchSize, in: 5...50, step: 5)
+                    Stepper("每批数量：\(builderBatchSize)", value: $builderBatchSize, in: 5...50, step: 5)
                         .disabled(isBuildingNotebook)
 
-                    LabeledContent("Progress", value: "\(min(builderNextIndex, CZYZDDictionaryNotebookBuilder.commonCharacterTerms.count)) / \(CZYZDDictionaryNotebookBuilder.commonCharacterTerms.count)")
+                    LabeledContent("进度", value: "\(min(builderNextIndex, CZYZDDictionaryNotebookBuilder.commonCharacterTerms.count)) / \(CZYZDDictionaryNotebookBuilder.commonCharacterTerms.count)")
 
                     Button {
                         Task {
                             await buildDictionaryNotebook()
                         }
                     } label: {
-                        Label(isBuildingNotebook ? "Downloading..." : "Download Next Batch", systemImage: "square.and.arrow.down")
+                        Label(isBuildingNotebook ? "下载中..." : "下载下一批", systemImage: "square.and.arrow.down")
                     }
                     .disabled(isBuildingNotebook || builderNextIndex >= CZYZDDictionaryNotebookBuilder.commonCharacterTerms.count)
 
@@ -63,28 +64,29 @@ struct DictionaryView: View {
                         builderNextIndex = 0
                         notebookSummary = nil
                     } label: {
-                        Label("Reset Batch Progress", systemImage: "arrow.counterclockwise")
+                        Label("重置批量进度", systemImage: "arrow.counterclockwise")
                     }
                     .disabled(isBuildingNotebook || builderNextIndex == 0)
 
-                    Text("This uses a bundled common-character seed list and downloads in small batches so progress can be resumed later.")
+                    Text("这里会从内置常用字列表开始，小批量下载词典内容；中断后可以继续。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
                 if isBuildingNotebook {
                     Section {
-                        ProgressView("Building dictionary notebook...")
+                        ProgressView("正在生成词典笔记本...")
                             .frame(maxWidth: .infinity)
                     }
                 }
 
                 if let notebookSummary {
-                    Section("Last Notebook Update") {
-                        LabeledContent("Checked", value: "\(notebookSummary.checkedTerms)")
-                        LabeledContent("Added", value: "\(notebookSummary.addedCards)")
-                        LabeledContent("Skipped", value: "\(notebookSummary.skippedCards)")
-                        LabeledContent("Failed", value: "\(notebookSummary.failedTerms)")
+                    Section("上次更新") {
+                        LabeledContent("检查", value: "\(notebookSummary.checkedTerms)")
+                        LabeledContent("新增", value: "\(notebookSummary.addedCards)")
+                        LabeledContent("跳过", value: "\(notebookSummary.skippedCards)")
+                        LabeledContent("失败", value: "\(notebookSummary.failedTerms)")
+                        LabeledContent("音频", value: "\(notebookSummary.audioFilesAdded)")
                         if let messages = notebookSummary.messageSummary {
                             Text(messages)
                                 .font(.footnote)
@@ -101,7 +103,7 @@ struct DictionaryView: View {
                 }
 
                 if !entries.isEmpty {
-                    Section("Results") {
+                    Section("结果") {
                         ForEach(entries) { entry in
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(alignment: .firstTextBaseline) {
@@ -112,7 +114,7 @@ struct DictionaryView: View {
                                     Spacer()
 
                                     Button {
-                                        saveNotebookName = "\(entry.term) Dictionary"
+                                        saveNotebookName = "\(entry.term) 词典"
                                         entryToSave = entry
                                     } label: {
                                         Image(systemName: "plus.rectangle.on.rectangle")
@@ -172,9 +174,9 @@ struct DictionaryView: View {
                 } else if !query.trimmed.isEmpty, !isSearching {
                     Section {
                         EmptyStateView(
-                            title: "No Results",
+                            title: "没有结果",
                             systemImage: "book.closed",
-                            message: "Try a single character or an exact phrase."
+                            message: "可以尝试单字，或输入精确词组。"
                         )
                     }
                     .listRowBackground(Color.clear)
@@ -182,39 +184,45 @@ struct DictionaryView: View {
             }
             .listStyle(.insetGrouped)
             .appScreenBackground()
-            .navigationTitle("Dictionary")
+            .navigationTitle("潮语词典")
             .sheet(item: $entryToSave) { entry in
                 NavigationStack {
                     Form {
-                        Section("Card") {
-                            LabeledContent("Front", value: entry.term)
+                        Section("卡片") {
+                            LabeledContent("正面", value: entry.term)
                             Text(CZYZDDictionaryNotebookBuilder.cardBackText(from: entry))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
 
-                        Section("New Notebook") {
-                            TextField("Notebook name", text: $saveNotebookName)
+                        Section("新笔记本") {
+                            TextField("笔记本名称", text: $saveNotebookName)
+                            if isSavingEntry {
+                                ProgressView("正在保存并下载音频...")
+                            }
                         }
                     }
-                    .navigationTitle("Save Entry")
+                    .navigationTitle("保存词条")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") {
+                            Button("取消") {
                                 entryToSave = nil
                             }
+                            .disabled(isSavingEntry)
                         }
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("Save") {
-                                saveEntry(entry)
+                            Button("保存") {
+                                Task {
+                                    await saveEntry(entry)
+                                }
                             }
-                            .disabled(saveNotebookName.trimmed.isEmpty)
+                            .disabled(saveNotebookName.trimmed.isEmpty || isSavingEntry)
                         }
                     }
                 }
             }
-            .alert("Dictionary Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("词典错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -222,9 +230,14 @@ struct DictionaryView: View {
     }
 
     @MainActor
-    private func saveEntry(_ entry: CZYZDDictionaryEntry) {
+    private func saveEntry(_ entry: CZYZDDictionaryEntry) async {
+        isSavingEntry = true
+        defer {
+            isSavingEntry = false
+        }
+
         do {
-            notebookSummary = try CZYZDDictionaryNotebookBuilder().addEntry(
+            notebookSummary = try await CZYZDDictionaryNotebookBuilder().addEntry(
                 entry,
                 toNewNotebookNamed: saveNotebookName,
                 context: viewContext

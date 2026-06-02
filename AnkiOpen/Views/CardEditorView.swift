@@ -30,12 +30,12 @@ struct CardEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Front") {
+                Section("正面") {
                     TextEditor(text: $front)
                         .flashcardCJKFont(size: 17, relativeTo: .body)
                         .frame(minHeight: 110)
                     if let warning = GlyphDiagnostics.warningSummary(for: front) {
-                        Label("Rare glyphs", systemImage: "textformat.alt")
+                        Label("可能含有生僻字", systemImage: "textformat.alt")
                             .font(.caption)
                             .foregroundStyle(.orange)
                         Text(warning)
@@ -43,12 +43,12 @@ struct CardEditorView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                Section("Back") {
+                Section("背面") {
                     TextEditor(text: $back)
                         .flashcardCJKFont(size: 17, relativeTo: .body)
                         .frame(minHeight: 110)
                     if let warning = GlyphDiagnostics.warningSummary(for: back) {
-                        Label("Rare glyphs", systemImage: "textformat.alt")
+                        Label("可能含有生僻字", systemImage: "textformat.alt")
                             .font(.caption)
                             .foregroundStyle(.orange)
                         Text(warning)
@@ -58,11 +58,11 @@ struct CardEditorView: View {
                 }
 
                 if editableCard != nil {
-                    Section("Report") {
+                    Section("反馈") {
                         Button {
                             isShowingReport = true
                         } label: {
-                            Label("Report Card Issue", systemImage: "exclamationmark.bubble")
+                            Label("反馈卡片问题", systemImage: "exclamationmark.bubble")
                         }
                     }
                 }
@@ -70,15 +70,15 @@ struct CardEditorView: View {
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
+                    Button("保存", action: save)
                         .disabled(front.trimmed.isEmpty || back.trimmed.isEmpty)
                 }
             }
-            .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -92,8 +92,8 @@ struct CardEditorView: View {
 
     private var title: String {
         switch mode {
-        case .create, .createInNotebook: return "New Card"
-        case .edit: return "Edit Card"
+        case .create, .createInNotebook: return "新建卡片"
+        case .edit: return "编辑卡片"
         }
     }
 

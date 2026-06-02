@@ -11,33 +11,33 @@ enum StudyMode: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .due:
-            return "Due"
+            return "到期"
         case .all:
-            return "All"
+            return "全部"
         case .notDue:
-            return "Forced"
+            return "强制"
         }
     }
 
     var emptyTitle: String {
         switch self {
         case .due:
-            return "No Due Cards"
+            return "今天没有到期卡片"
         case .all:
-            return "No Cards"
+            return "没有卡片"
         case .notDue:
-            return "No Forced Cards"
+            return "没有可强制学习的卡片"
         }
     }
 
     var emptyMessage: String {
         switch self {
         case .due:
-            return "You are caught up for now."
+            return "当前已经复习完成。"
         case .all:
-            return "Add or import cards to start studying."
+            return "新建或导入卡片后即可开始学习。"
         case .notDue:
-            return "There are no not-yet-due cards in this selection."
+            return "当前选择范围里没有尚未到期的卡片。"
         }
     }
 }

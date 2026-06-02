@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
 
 ## Done
 
@@ -22,6 +22,10 @@ Last updated: 2026-06-01
 - Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, Chaoshan pronunciation, cleaned definitions, and remote audio playback.
 - Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
+- Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
+- Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
+- Moved Study answer/rating controls into a safe-area bottom inset so they no longer cover card text.
+- Added CZYZD audio download when saving dictionary entries or batch-building dictionary notebooks; stored audio is attached to both sides of the generated card.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -42,13 +46,15 @@ Last updated: 2026-06-01
 - Passed Xcode tests after CZYZD dictionary lookup on 2026-06-01: 52 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CSV CZYZD auto-fill on 2026-06-01: 54 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CZYZD dictionary parsing cleanup on 2026-06-01: 55 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Chinese home/localization and CZYZD dictionary audio card saving on 2026-06-02: 60 unit/app tests and 1 UI launch smoke test.
+- Built and installed the app to the connected iPhone on 2026-06-02. Launch was blocked by iOS because the device was locked.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
 ## Current Study Behavior
 
-- `Due` loads unarchived cards with `dueAt <= now`, ordered by due date.
-- `All` loads all unarchived cards in the selected notebook scope.
-- `Forced` loads unarchived cards with `dueAt > now`, ordered by due date.
+- `到期` loads unarchived cards with `dueAt <= now`, ordered by due date.
+- `全部` loads all unarchived cards in the selected notebook scope.
+- `强制` loads unarchived cards with `dueAt > now`, ordered by due date.
 - It supports reviewing all notebooks, one selected notebook, or one selected unit.
 - All modes write review logs and update the card's FSRS-6 state fields when a rating is selected.
 - New cards enter same-day learning steps for `Again`, `Hard`, and `Good`; `Easy` graduates directly to review.
@@ -82,6 +88,7 @@ Last updated: 2026-06-01
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
 - Individual results can be saved as cards into a newly created notebook.
 - A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
+- Saved dictionary cards attach available CZYZD audio to both front and back playback buttons.
 
 ## Backup Export And Restore
 
@@ -94,5 +101,5 @@ Last updated: 2026-06-01
 
 ## Next
 
-- Replace the default app icon and add a basic visual identity.
+- Relaunch on the connected iPhone after the device is unlocked.
 - Wire dictionary lookup into card editing so pinyin/definition can be auto-filled from CZYZD.

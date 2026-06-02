@@ -17,6 +17,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - FSRS-6 spaced repetition scheduling with default retention `0.90`
 - DeepSeek-powered rare glyph replacement suggestions from Settings and Rare Glyphs
 - CZYZD dictionary lookup for Chaoshan words, pronunciation, meanings, and available audio
+- Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
 
 ## Development
 
@@ -78,17 +79,17 @@ Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The gen
 
 ## Study Modes
 
-- `Due`: scheduled review only. Shows unarchived cards whose `dueAt` is earlier than or equal to now.
-- `All`: custom study over all unarchived cards in the selected notebook scope.
-- `Forced`: forced learning for unarchived cards that are not due yet.
+- `到期`: scheduled review only. Shows unarchived cards whose `dueAt` is earlier than or equal to now.
+- `全部`: custom study over all unarchived cards in the selected notebook scope.
+- `强制`: forced learning for unarchived cards that are not due yet.
 
 All modes still write review logs and update the card's next due date when a rating is selected.
 
 ## Dictionary
 
-The Dictionary tab searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
+The 潮语词典 page searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
 
-Dictionary results can be saved into a new notebook as flashcards. The Dictionary tab also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
+Dictionary results can be saved into a new notebook as flashcards. When CZYZD provides audio, the app downloads the clip into local storage and attaches it to both card sides. The Dictionary page also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
 
 ## Progress
 
@@ -109,7 +110,9 @@ Dictionary results can be saved into a new notebook as flashcards. The Dictionar
 - [x] CSV CZYZD dictionary auto-fill column
 - [x] Save CZYZD dictionary entries into notebooks
 - [x] Batch CZYZD common-character notebook builder
-- [ ] App icon and polished visual identity
+- [x] App icon and polished visual identity
+- [x] Hierarchical Chinese home screen and localized core workflows
+- [x] Attach CZYZD audio when saving dictionary cards
 - [ ] TestFlight/App Store setup
 
 ## License

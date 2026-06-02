@@ -14,7 +14,7 @@ struct GlyphDiagnostics {
         }
 
         var suggestionStatusTitle: String {
-            hasSuggestion ? "DeepSeek suggestion saved" : "Needs DeepSeek suggestion"
+            hasSuggestion ? "已保存 DeepSeek 建议" : "需要 DeepSeek 建议"
         }
     }
 
@@ -48,16 +48,16 @@ struct GlyphDiagnostics {
         }
 
         let visible = findings.prefix(limit).map { finding in
-            "\(finding.codePoint) (\(finding.category.rawValue), \(finding.suggestionStatusTitle.lowercased()))"
+            "\(finding.codePoint) (\(finding.category.rawValue), \(finding.suggestionStatusTitle))"
         }
-        let suffix = findings.count > limit ? " +\(findings.count - limit) more" : ""
+        let suffix = findings.count > limit ? " +\(findings.count - limit) 个" : ""
         return visible.joined(separator: ", ") + suffix
     }
 
     static func importWarnings(front: String, back: String, sourceLine: Int) -> [String] {
         [
-            importWarning(side: "front", text: front, sourceLine: sourceLine),
-            importWarning(side: "back", text: back, sourceLine: sourceLine)
+            importWarning(side: "正面", text: front, sourceLine: sourceLine),
+            importWarning(side: "背面", text: back, sourceLine: sourceLine)
         ].compactMap { $0 }
     }
 
@@ -65,7 +65,7 @@ struct GlyphDiagnostics {
         guard let summary = warningSummary(for: text) else {
             return nil
         }
-        return "Line \(sourceLine): \(side) contains rare glyphs: \(summary)"
+        return "第 \(sourceLine) 行：\(side)含有生僻字：\(summary)"
     }
 
     private static func category(for value: UInt32) -> Category? {

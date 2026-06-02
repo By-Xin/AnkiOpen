@@ -34,14 +34,14 @@ struct ImportView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Destination") {
-                    Toggle("Create new notebook", isOn: $isCreatingNotebook)
+                Section("导入位置") {
+                    Toggle("新建笔记本", isOn: $isCreatingNotebook)
 
                     if isCreatingNotebook {
-                        TextField("Notebook name", text: $newNotebookName)
+                        TextField("笔记本名称", text: $newNotebookName)
                     } else {
-                        Picker("Notebook", selection: $selectedNotebookID) {
-                            Text("Select").tag(UUID?.none)
+                        Picker("笔记本", selection: $selectedNotebookID) {
+                            Text("请选择").tag(UUID?.none)
                             ForEach(notebooks) { notebook in
                                 Text(notebook.name).tag(Optional(notebook.id))
                             }
@@ -49,62 +49,62 @@ struct ImportView: View {
                     }
                 }
 
-                Section("CSV Format") {
-                    Label("Required: front, back", systemImage: "checkmark.seal")
-                    Label("Units: unit", systemImage: "folder")
-                    Label("Audio: audio or frontAudio/backAudio", systemImage: "speaker.wave.2")
-                    Label("Dictionary: czyzd or 查词", systemImage: "character.book.closed")
-                    Text("Chinese headers are supported: 汉字, 读音, 单元, 音频, 查词. Empty unit values import into Default. Select referenced audio files or the folder that contains them.")
+                Section("CSV 格式") {
+                    Label("必填列：front, back", systemImage: "checkmark.seal")
+                    Label("单元列：unit", systemImage: "folder")
+                    Label("音频列：audio 或 frontAudio/backAudio", systemImage: "speaker.wave.2")
+                    Label("词典列：czyzd 或 查词", systemImage: "character.book.closed")
+                    Text("也支持中文表头：汉字、读音、单元、音频、查词。单元为空时会导入到默认单元。若 CSV 引用了本地音频，请同时选择音频文件或所在文件夹。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
                 Section {
-                    Toggle("Auto-fill CZYZD dictionary after import", isOn: $autoFillCZYZDDictionary)
+                    Toggle("导入后自动补全潮语词典", isOn: $autoFillCZYZDDictionary)
                         .disabled(isImporting)
 
-                    Toggle("Auto-match CZYZD audio after import", isOn: $autoMatchCZYZDAudio)
+                    Toggle("导入后自动匹配潮语音频", isOn: $autoMatchCZYZDAudio)
                         .disabled(isImporting)
 
                     Button {
                         isShowingImporter = true
                     } label: {
-                        Label("Choose CSV and Audio", systemImage: "doc.badge.plus")
+                        Label("选择 CSV 和音频", systemImage: "doc.badge.plus")
                     }
                     .disabled(!hasDestination || isImporting)
                 }
 
                 if let preview {
-                    Section("Preview") {
-                        LabeledContent("File", value: preview.fileName)
-                        LabeledContent("Destination", value: destinationName)
-                        LabeledContent("Rows", value: "\(preview.totalRows)")
-                        LabeledContent("Will import", value: "\(preview.importableRows)")
-                        LabeledContent("Will skip", value: "\(preview.skippedRows)")
-                        LabeledContent("Duplicates", value: "\(preview.duplicateRows)")
-                        LabeledContent("Dictionary lookups", value: "\(preview.dictionaryLookupRows)")
-                        LabeledContent("Issues", value: "\(preview.issueCount)")
+                    Section("预览") {
+                        LabeledContent("文件", value: preview.fileName)
+                        LabeledContent("目标", value: destinationName)
+                        LabeledContent("总行数", value: "\(preview.totalRows)")
+                        LabeledContent("将导入", value: "\(preview.importableRows)")
+                        LabeledContent("将跳过", value: "\(preview.skippedRows)")
+                        LabeledContent("重复", value: "\(preview.duplicateRows)")
+                        LabeledContent("词典查询", value: "\(preview.dictionaryLookupRows)")
+                        LabeledContent("问题", value: "\(preview.issueCount)")
 
                         if !preview.units.isEmpty {
-                            LabeledContent("Units", value: listed(preview.units))
+                            LabeledContent("单元", value: listed(preview.units))
                         }
 
                         if !preview.missingAudioFiles.isEmpty {
-                            LabeledContent("Missing audio", value: listed(preview.missingAudioFiles))
+                            LabeledContent("缺失音频", value: listed(preview.missingAudioFiles))
                         }
 
                         if !preview.unsupportedAudioFiles.isEmpty {
-                            LabeledContent("Unsupported audio", value: listed(preview.unsupportedAudioFiles))
+                            LabeledContent("不支持的音频", value: listed(preview.unsupportedAudioFiles))
                         }
 
                         if preview.issueCount > 0 {
                             NavigationLink {
                                 ImportIssueListView(
-                                    title: "Preview Issues",
+                                    title: "预览问题",
                                     sections: previewIssueSections(preview)
                                 )
                             } label: {
-                                Label("Review Issues", systemImage: "exclamationmark.triangle")
+                                Label("查看问题", systemImage: "exclamationmark.triangle")
                             }
                         }
 
@@ -113,55 +113,55 @@ struct ImportView: View {
                                 await confirmImport()
                             }
                         } label: {
-                            Label(isImporting ? "Importing..." : "Import Previewed Rows", systemImage: "checkmark.circle")
+                            Label(isImporting ? "导入中..." : "导入预览内容", systemImage: "checkmark.circle")
                         }
                         .disabled(!preview.canImport || isImporting)
 
                         Button(role: .cancel) {
                             clearPendingPreview()
                         } label: {
-                            Label("Cancel Preview", systemImage: "xmark.circle")
+                            Label("取消预览", systemImage: "xmark.circle")
                         }
                     }
                 }
 
                 if let summary {
-                    Section("Last Import") {
-                        LabeledContent("File", value: summary.fileName)
+                    Section("上次导入") {
+                        LabeledContent("文件", value: summary.fileName)
                         if let importedNotebook {
                             NavigationLink {
                                 NotebookDetailView(notebook: importedNotebook)
                             } label: {
-                                Label("Open \(importedNotebook.name)", systemImage: "books.vertical")
+                                Label("打开 \(importedNotebook.name)", systemImage: "books.vertical")
                             }
                         }
-                        LabeledContent("Rows", value: "\(summary.totalRows)")
-                        LabeledContent("Imported", value: "\(summary.importedRows)")
-                        LabeledContent("Skipped", value: "\(summary.skippedRows)")
-                        LabeledContent("Audio", value: "\(summary.audioFilesImported)")
-                        LabeledContent("Dictionary lookups", value: "\(summary.dictionaryLookupRows)")
-                        LabeledContent("Issues", value: "\(summary.issueCount)")
+                        LabeledContent("总行数", value: "\(summary.totalRows)")
+                        LabeledContent("已导入", value: "\(summary.importedRows)")
+                        LabeledContent("已跳过", value: "\(summary.skippedRows)")
+                        LabeledContent("音频", value: "\(summary.audioFilesImported)")
+                        LabeledContent("词典查询", value: "\(summary.dictionaryLookupRows)")
+                        LabeledContent("问题", value: "\(summary.issueCount)")
                         if !summary.unitNames.isEmpty {
-                            LabeledContent("Units", value: listed(summary.unitNames))
+                            LabeledContent("单元", value: listed(summary.unitNames))
                         }
                         if summary.issueCount > 0 {
                             NavigationLink {
                                 ImportIssueListView(
-                                    title: "Import Issues",
+                                    title: "导入问题",
                                     sections: summaryIssueSections(summary)
                                 )
                             } label: {
-                                Label("Review Issues", systemImage: "exclamationmark.triangle")
+                                Label("查看问题", systemImage: "exclamationmark.triangle")
                             }
                         }
                     }
                 }
 
                 if let czyzdSummary {
-                    Section("CZYZD Audio") {
-                        LabeledContent("Checked", value: "\(czyzdSummary.checkedCards)")
-                        LabeledContent("Matched", value: "\(czyzdSummary.matchedCards)")
-                        LabeledContent("Failed", value: "\(czyzdSummary.failedCards)")
+                    Section("潮语音频") {
+                        LabeledContent("检查", value: "\(czyzdSummary.checkedCards)")
+                        LabeledContent("匹配", value: "\(czyzdSummary.matchedCards)")
+                        LabeledContent("失败", value: "\(czyzdSummary.failedCards)")
                         if let messages = czyzdSummary.messageSummary {
                             Text(messages)
                                 .font(.footnote)
@@ -171,10 +171,10 @@ struct ImportView: View {
                 }
 
                 if let czyzdDictionarySummary {
-                    Section("CZYZD Dictionary") {
-                        LabeledContent("Checked", value: "\(czyzdDictionarySummary.checkedCards)")
-                        LabeledContent("Updated", value: "\(czyzdDictionarySummary.updatedCards)")
-                        LabeledContent("Failed", value: "\(czyzdDictionarySummary.failedCards)")
+                    Section("潮语词典") {
+                        LabeledContent("检查", value: "\(czyzdDictionarySummary.checkedCards)")
+                        LabeledContent("更新", value: "\(czyzdDictionarySummary.updatedCards)")
+                        LabeledContent("失败", value: "\(czyzdDictionarySummary.failedCards)")
                         if let messages = czyzdDictionarySummary.messageSummary {
                             Text(messages)
                                 .font(.footnote)
@@ -185,7 +185,7 @@ struct ImportView: View {
             }
             .scrollContentBackground(.hidden)
             .background(AppPalette.paper.ignoresSafeArea())
-            .navigationTitle("Import")
+            .navigationTitle("导入")
             .onAppear {
                 if selectedNotebookID == nil {
                     selectedNotebookID = notebooks.first?.id
@@ -207,8 +207,8 @@ struct ImportView: View {
             ) { result in
                 handleFileSelection(result)
             }
-            .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -226,7 +226,7 @@ struct ImportView: View {
         if isCreatingNotebook {
             return newNotebookName.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return existingDestinationNotebook()?.name ?? "Select"
+        return existingDestinationNotebook()?.name ?? "请选择"
     }
 
     private func existingDestinationNotebook() -> NotebookMO? {
@@ -252,7 +252,7 @@ struct ImportView: View {
             czyzdDictionarySummary = nil
             let urls = try result.get()
             guard hasDestination, let csvURL = csvURL(from: urls) else {
-                errorMessage = "Select one CSV file and any referenced audio files."
+                errorMessage = "请选择一个 CSV 文件，以及 CSV 引用到的音频文件。"
                 return
             }
 
@@ -280,7 +280,7 @@ struct ImportView: View {
 
         do {
             guard let csvURL = pendingCSVURL, let notebook = destinationNotebook() else {
-                errorMessage = "Choose a CSV file and destination before importing."
+                errorMessage = "请先选择 CSV 文件和导入位置。"
                 return
             }
 
@@ -328,24 +328,24 @@ struct ImportView: View {
 
     private func listed(_ values: [String], limit: Int = 8) -> String {
         let visibleValues = values.prefix(limit)
-        let suffix = values.count > limit ? " +\(values.count - limit) more" : ""
+        let suffix = values.count > limit ? " +\(values.count - limit) 个" : ""
         return visibleValues.joined(separator: ", ") + suffix
     }
 
     private func previewIssueSections(_ preview: ImportPreview) -> [ImportIssueSection] {
         [
-            ImportIssueSection(title: "Skipped Rows", systemImage: "forward.end", items: preview.skippedRowDetails),
-            ImportIssueSection(title: "Row Errors", systemImage: "exclamationmark.triangle", items: preview.errors),
-            ImportIssueSection(title: "Audio", systemImage: "speaker.wave.2", items: preview.audioWarnings),
-            ImportIssueSection(title: "Glyphs", systemImage: "textformat.alt", items: preview.glyphWarnings)
+            ImportIssueSection(title: "跳过的行", systemImage: "forward.end", items: preview.skippedRowDetails),
+            ImportIssueSection(title: "行错误", systemImage: "exclamationmark.triangle", items: preview.errors),
+            ImportIssueSection(title: "音频", systemImage: "speaker.wave.2", items: preview.audioWarnings),
+            ImportIssueSection(title: "生僻字", systemImage: "textformat.alt", items: preview.glyphWarnings)
         ].filter { !$0.items.isEmpty }
     }
 
     private func summaryIssueSections(_ summary: ImportSummary) -> [ImportIssueSection] {
         [
-            ImportIssueSection(title: "Skipped Rows", systemImage: "forward.end", items: summary.skippedRowDetails),
-            ImportIssueSection(title: "Import Errors", systemImage: "exclamationmark.triangle", items: summary.errors),
-            ImportIssueSection(title: "Glyphs", systemImage: "textformat.alt", items: summary.glyphWarnings)
+            ImportIssueSection(title: "跳过的行", systemImage: "forward.end", items: summary.skippedRowDetails),
+            ImportIssueSection(title: "导入错误", systemImage: "exclamationmark.triangle", items: summary.errors),
+            ImportIssueSection(title: "生僻字", systemImage: "textformat.alt", items: summary.glyphWarnings)
         ].filter { !$0.items.isEmpty }
     }
 }

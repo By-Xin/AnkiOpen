@@ -25,21 +25,21 @@ struct NotebookEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Notebook name", text: $name)
+                TextField("笔记本名称", text: $name)
                     .textInputAutocapitalization(.words)
             }
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
+                    Button("保存", action: save)
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .alert("Error", isPresented: .constant(errorMessage != nil), actions: {
-                Button("OK") { errorMessage = nil }
+            .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+                Button("好的") { errorMessage = nil }
             }, message: {
                 Text(errorMessage ?? "")
             })
@@ -48,8 +48,8 @@ struct NotebookEditorView: View {
 
     private var title: String {
         switch mode {
-        case .create: return "New Notebook"
-        case .edit: return "Rename Notebook"
+        case .create: return "新建笔记本"
+        case .edit: return "重命名笔记本"
         }
     }
 
