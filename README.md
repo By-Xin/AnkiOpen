@@ -29,6 +29,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Feedback reports with analytics, 7-day trend overview, card correction history, type filtering, and search
 - Import results show per-unit card counts with direct links into imported units
 - Persistent import history with direct links back to imported notebooks
+- In-app release and daily acceptance checklist from Settings
 - Unit detail shows archived cards separately and can restore them into study queues
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
 - Home dashboard with due, active, archived, missing-audio, and open-feedback counts
@@ -111,6 +112,10 @@ This export is meant for lightweight review, spreadsheet editing, and sharing. F
 
 Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The generated backup contains notebooks, units, cards, audio files, FSRS state fields, review logs, card reports, and report-driven correction history. Restore deduplicates existing notebooks, units, cards, review logs, reports, and correction logs.
 
+## Release Checklist
+
+Settings includes a Chinese `发布与验收清单` page with persistent checkboxes for daily CSV import, study, audio, backup, dictionary, feedback correction, and TestFlight/App Store readiness checks. It is meant as the repeatable checklist before installing to a phone or preparing an external build.
+
 ## Study Modes
 
 - `到期`: scheduled review only. Shows unarchived cards whose `dueAt` is earlier than or equal to now.
@@ -172,7 +177,8 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Archived card visibility and restore controls
 - [x] Home dashboard learning overview
 - [x] Home dashboard review activity metrics
-- [ ] TestFlight/App Store setup
+- [x] In-app release and acceptance checklist
+- [ ] TestFlight/App Store account setup
 
 ## License
 

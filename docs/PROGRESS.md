@@ -47,6 +47,7 @@ Last updated: 2026-06-02
 - Added a Feedback analytics overview with open/resolved counts, correction-log count, leading open issue category, and category breakdowns.
 - Added a Feedback 7-day trend overview with new/resolved report counts, total resolution rate, and daily mini-bars.
 - Added Feedback type filtering and search across issue category, note, card front/back text, notebook, and unit.
+- Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -88,6 +89,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Review History browser on 2026-06-02: 82 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Review History and Feedback CSV export on 2026-06-02: 84 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Feedback 7-day trend analytics on 2026-06-02: 85 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after release and daily acceptance checklist on 2026-06-02: 86 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -167,6 +169,12 @@ Last updated: 2026-06-02
 
 - Review History can export the current filtered review log list to CSV, including reviewed time, rating, card location, front/back text, and due-date changes.
 
+## Release Checklist
+
+- Settings includes `发布与验收清单`.
+- The checklist covers daily CSV import, study completion, audio playback, JSON backup, dictionary lookup, DeepSeek cleanup, feedback correction, CSV feedback export, local/CI tests, signing, privacy notes, and phone/TestFlight readiness.
+- Checklist progress is stored locally, so checked items persist after relaunch and can be reset.
+
 ## Next
 
-- Prepare a lightweight TestFlight/App Store setup checklist once daily-use flows stabilize further.
+- Add App Store Connect/TestFlight account steps once a paid Apple Developer account is ready.
