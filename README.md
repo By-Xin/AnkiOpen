@@ -7,7 +7,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - iOS 16+ native app
 - Local Core Data persistence
 - Notebook and unit CRUD
-- Flashcard CRUD and archive
+- Flashcard CRUD, archive, and restore from unit detail
 - CSV import with `front,back`, optional `unit`, optional `audio`, or optional `frontAudio,backAudio` columns
 - Optional CSV `czyzd` / `查词` column for CZYZD dictionary auto-fill
 - Study flow with `Due`, `All`, and `Forced` modes, using `Again`, `Hard`, `Good`, `Easy`
@@ -25,6 +25,7 @@ AnkiOpen is an open-source, offline-first iOS flashcard app built with SwiftUI a
 - Feedback reports with analytics, card correction history, type filtering, and search
 - Import results show per-unit card counts with direct links into imported units
 - Persistent import history with direct links back to imported notebooks
+- Unit detail shows archived cards separately and can restore them into study queues
 - Chinese-first interface with a hierarchical home screen instead of a bottom tab bar
 
 ## Development
@@ -136,6 +137,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Feedback type filter and search
 - [x] Import result unit summary and navigation
 - [x] Persistent import history
+- [x] Archived card visibility and restore controls
 - [ ] TestFlight/App Store setup
 
 ## License

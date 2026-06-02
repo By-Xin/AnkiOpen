@@ -83,4 +83,14 @@ extension FlashcardMO {
         card.unit = unit
         return card
     }
+
+    func archive(at date: Date = Date()) {
+        isArchived = true
+        updatedAt = date
+    }
+
+    func restore(at date: Date = Date()) {
+        isArchived = false
+        updatedAt = date
+    }
 }

@@ -6,7 +6,7 @@ Last updated: 2026-06-02
 
 - Created native iOS SwiftUI project targeting iOS 16+.
 - Added local Core Data persistence with notebook, unit, card, review log, and import batch entities.
-- Implemented notebook CRUD, unit CRUD, card CRUD, card archive, CSV import, due-card query, and study review flow.
+- Implemented notebook CRUD, unit CRUD, card CRUD, card archive/restore, CSV import, due-card query, and study review flow.
 - Added `Notebook -> Unit -> Card` navigation and unit-scoped study entry points.
 - Added optional CSV audio import with shared audio or separate front/back audio columns.
 - Added optional CSV `unit` column. Blank unit values import into `Default`; numeric values import as `Unit 1`, `Unit 2`, etc.
@@ -24,6 +24,7 @@ Last updated: 2026-06-02
 - Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
 - Added import result unit summaries with per-unit card counts and direct navigation into imported units.
 - Added persistent import history on the Import screen with recent batches, counts, issue indicators, timestamps, and links back to imported notebooks.
+- Added archived card visibility and restore controls inside unit detail so archived cards can be recovered into study queues.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
@@ -70,6 +71,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after Feedback filtering and search on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after import result unit navigation on 2026-06-02: 72 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after persistent import history on 2026-06-02: 73 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after archived card restore controls on 2026-06-02: 74 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -78,6 +80,7 @@ Last updated: 2026-06-02
 - `到期` loads unarchived cards with `dueAt <= now`, ordered by due date.
 - `全部` loads all unarchived cards in the selected notebook scope.
 - `强制` loads unarchived cards with `dueAt > now`, ordered by due date.
+- Archived cards are excluded from all study queues until they are restored from the unit detail screen.
 - It supports reviewing all notebooks, one selected notebook, or one selected unit.
 - All modes write review logs and update the card's FSRS-6 state fields when a rating is selected.
 - New cards enter same-day learning steps for `Again`, `Hard`, and `Good`; `Easy` graduates directly to review.
