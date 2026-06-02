@@ -147,3 +147,27 @@ enum StudyQueueOrder {
         return cards.shuffled()
     }
 }
+
+struct StudySessionSummary: Equatable {
+    private var ratingCounts: [ReviewRating: Int] = [:]
+
+    var reviewedCount: Int {
+        ratingCounts.values.reduce(0, +)
+    }
+
+    var hasReviewed: Bool {
+        reviewedCount > 0
+    }
+
+    mutating func record(_ rating: ReviewRating) {
+        ratingCounts[rating, default: 0] += 1
+    }
+
+    mutating func reset() {
+        ratingCounts.removeAll()
+    }
+
+    func count(for rating: ReviewRating) -> Int {
+        ratingCounts[rating, default: 0]
+    }
+}

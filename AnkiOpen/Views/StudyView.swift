@@ -13,6 +13,7 @@ struct StudyView: View {
     @State private var isShowingBack = false
     @State private var errorMessage: String?
     @State private var cardToReport: FlashcardMO?
+    @State private var sessionSummary = StudySessionSummary()
     @StateObject private var audioPlayer = AudioPlaybackController()
 
     private let scheduler = ReviewScheduler()
@@ -136,6 +137,8 @@ struct StudyView: View {
                     }
                     .padding(.bottom, 112)
                 }
+            } else if sessionSummary.hasReviewed {
+                completionSummary
             } else {
                 EmptyStateView(
                     title: studyMode.emptyTitle,
@@ -144,6 +147,71 @@ struct StudyView: View {
                 )
                 .frame(maxHeight: .infinity)
             }
+        }
+    }
+
+    private var completionSummary: some View {
+        ScrollView {
+            VStack(spacing: 18) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 44, weight: .medium))
+                    .foregroundStyle(AppPalette.tea)
+                    .frame(width: 76, height: 76)
+                    .background(AppPalette.teaSoft, in: RoundedRectangle(cornerRadius: 8))
+
+                VStack(spacing: 6) {
+                    Text("本轮学习完成")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(AppPalette.ink)
+                    Text("已复习 \(sessionSummary.reviewedCount) 张卡片")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
+                    ForEach(ReviewRating.allCases) { rating in
+                        MetricPill(
+                            value: "\(sessionSummary.count(for: rating))",
+                            label: rating.title,
+                            tint: tint(for: rating)
+                        )
+                    }
+                }
+
+                VStack(spacing: 10) {
+                    Button {
+                        reloadDueCards()
+                    } label: {
+                        Label("重新检查到期卡片", systemImage: "arrow.clockwise")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    if studyMode != .notDue {
+                        Button {
+                            studyMode = .notDue
+                            isShuffleEnabled = true
+                        } label: {
+                            Label("强制学习未到期卡片", systemImage: "forward")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+                    if studyMode != .all || !isShuffleEnabled {
+                        Button {
+                            studyMode = .all
+                            isShuffleEnabled = true
+                        } label: {
+                            Label("随机学习全部卡片", systemImage: "shuffle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity)
         }
     }
 
@@ -249,6 +317,7 @@ struct StudyView: View {
             dueCards = StudyQueueOrder.apply(to: cards, shuffle: isShuffleEnabled)
             currentIndex = 0
             isShowingBack = false
+            sessionSummary.reset()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -258,6 +327,7 @@ struct StudyView: View {
         do {
             _ = try scheduler.review(card: card, rating: rating, reviewedAt: Date(), context: viewContext)
             try viewContext.save()
+            sessionSummary.record(rating)
             dueCards.removeAll { $0.objectID == card.objectID }
             currentIndex = min(currentIndex, max(0, dueCards.count - 1))
             isShowingBack = false

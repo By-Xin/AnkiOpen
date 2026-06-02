@@ -28,6 +28,7 @@ Last updated: 2026-06-02
 - Added persistent import history on the Import screen with recent batches, counts, issue indicators, timestamps, and links back to imported notebooks.
 - Added archived card visibility and restore controls inside unit detail so archived cards can be recovered into study queues.
 - Added a Chinese home dashboard with due, active, archived, missing-audio, and open-feedback counts plus notebook due subtitles.
+- Added a Study completion summary with reviewed-card count, per-rating counts, and quick continuation actions.
 - Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Replaced the bottom tab bar with a hierarchical Chinese home screen: 开始学习, 工具, and 笔记本.
 - Localized the main visible workflows into Chinese, including study, import, dictionary, settings, card editing, reports, and rare glyphs.
@@ -78,6 +79,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after notebook/unit CSV export on 2026-06-02: 76 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after CSV archived-state import on 2026-06-02: 78 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after home dashboard overview on 2026-06-02: 79 unit/app tests and 1 UI launch smoke test.
+- Passed Xcode tests after Study completion summary on 2026-06-02: 80 unit/app tests and 1 UI launch smoke test.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.
 
@@ -90,6 +92,7 @@ Last updated: 2026-06-02
 - It supports reviewing all notebooks, one selected notebook, or one selected unit.
 - All modes write review logs and update the card's FSRS-6 state fields when a rating is selected.
 - New cards enter same-day learning steps for `Again`, `Hard`, and `Good`; `Easy` graduates directly to review.
+- Completed study queues show a session summary with reviewed-card count and rating breakdowns, plus actions to recheck due cards, force-study future cards, or shuffle all cards.
 
 ## CSV Import
 
