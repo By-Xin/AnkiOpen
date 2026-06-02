@@ -65,6 +65,20 @@ enum CoreDataModelFactory {
             attribute("resolvedAt", .dateAttributeType, optional: true)
         ]
 
+        let cardCorrectionLog = entity(name: "CardCorrectionLog", className: CardCorrectionLogMO.self)
+        cardCorrectionLog.properties = [
+            attribute("id", .UUIDAttributeType, optional: false),
+            attribute("createdAt", .dateAttributeType, optional: false),
+            attribute("previousFront", .stringAttributeType, optional: false),
+            attribute("previousBack", .stringAttributeType, optional: false),
+            attribute("previousFrontAudioFileName", .stringAttributeType, optional: true),
+            attribute("previousBackAudioFileName", .stringAttributeType, optional: true),
+            attribute("nextFront", .stringAttributeType, optional: false),
+            attribute("nextBack", .stringAttributeType, optional: false),
+            attribute("nextFrontAudioFileName", .stringAttributeType, optional: true),
+            attribute("nextBackAudioFileName", .stringAttributeType, optional: true)
+        ]
+
         let importBatch = entity(name: "ImportBatch", className: ImportBatchMO.self)
         importBatch.properties = [
             attribute("id", .UUIDAttributeType, optional: false),
@@ -101,6 +115,16 @@ enum CoreDataModelFactory {
         flashcardReports.inverseRelationship = reportCard
         reportCard.inverseRelationship = flashcardReports
 
+        let flashcardCorrectionLogs = relationship("correctionLogs", destination: cardCorrectionLog, toMany: true, deleteRule: .cascadeDeleteRule)
+        let correctionLogCard = relationship("card", destination: flashcard, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
+        flashcardCorrectionLogs.inverseRelationship = correctionLogCard
+        correctionLogCard.inverseRelationship = flashcardCorrectionLogs
+
+        let reportCorrectionLogs = relationship("correctionLogs", destination: cardCorrectionLog, toMany: true, deleteRule: .nullifyDeleteRule)
+        let correctionLogReport = relationship("report", destination: cardReport, toMany: false, deleteRule: .nullifyDeleteRule)
+        reportCorrectionLogs.inverseRelationship = correctionLogReport
+        correctionLogReport.inverseRelationship = reportCorrectionLogs
+
         let notebookImportBatches = relationship("importBatches", destination: importBatch, toMany: true, deleteRule: .cascadeDeleteRule)
         let importBatchNotebook = relationship("notebook", destination: notebook, toMany: false, deleteRule: .nullifyDeleteRule, optional: false)
         notebookImportBatches.inverseRelationship = importBatchNotebook
@@ -108,12 +132,13 @@ enum CoreDataModelFactory {
 
         notebook.properties.append(contentsOf: [notebookFlashcards, notebookUnits, notebookImportBatches])
         unit.properties.append(contentsOf: [unitNotebook, unitFlashcards])
-        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardUnit, flashcardReviewLogs, flashcardReports])
+        flashcard.properties.append(contentsOf: [flashcardNotebook, flashcardUnit, flashcardReviewLogs, flashcardReports, flashcardCorrectionLogs])
         reviewLog.properties.append(reviewLogCard)
-        cardReport.properties.append(reportCard)
+        cardReport.properties.append(contentsOf: [reportCard, reportCorrectionLogs])
+        cardCorrectionLog.properties.append(contentsOf: [correctionLogCard, correctionLogReport])
         importBatch.properties.append(importBatchNotebook)
 
-        model.entities = [notebook, unit, flashcard, reviewLog, cardReport, importBatch]
+        model.entities = [notebook, unit, flashcard, reviewLog, cardReport, cardCorrectionLog, importBatch]
         return model
     }()
 

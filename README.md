@@ -127,6 +127,7 @@ The card editor can also query CZYZD using the current front text and fill the b
 - [x] Card editor CZYZD audio matching
 - [x] Card editor audio preview
 - [x] Card editor audio replace/remove
+- [x] Report-driven card correction history
 - [ ] TestFlight/App Store setup
 
 ## License

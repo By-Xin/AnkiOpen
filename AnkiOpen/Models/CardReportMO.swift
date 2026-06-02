@@ -9,6 +9,7 @@ final class CardReportMO: NSManagedObject, Identifiable {
     @NSManaged var createdAt: Date
     @NSManaged var resolvedAt: Date?
     @NSManaged var card: FlashcardMO
+    @NSManaged var correctionLogs: Set<CardCorrectionLogMO>
 }
 
 extension CardReportMO {

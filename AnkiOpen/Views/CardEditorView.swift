@@ -32,15 +32,18 @@ struct CardEditorView: View {
 
     private let dictionaryLookup: CZYZDDictionaryLookingUp
     private let audioResolver: CZYZDAudioResolving
+    private let onSave: ((FlashcardMO) -> Void)?
 
     init(
         mode: Mode,
         dictionaryLookup: CZYZDDictionaryLookingUp = CZYZDDictionaryLookup(),
-        audioResolver: CZYZDAudioResolving = CZYZDAudioResolver()
+        audioResolver: CZYZDAudioResolving = CZYZDAudioResolver(),
+        onSave: ((FlashcardMO) -> Void)? = nil
     ) {
         self.mode = mode
         self.dictionaryLookup = dictionaryLookup
         self.audioResolver = audioResolver
+        self.onSave = onSave
         switch mode {
         case .create, .createInNotebook:
             _front = State(initialValue: "")
@@ -292,9 +295,10 @@ struct CardEditorView: View {
         }
 
         let now = Date()
+        let savedCard: FlashcardMO
         switch mode {
         case .create(let unit):
-            _ = FlashcardMO.insert(
+            savedCard = FlashcardMO.insert(
                 front: front.trimmed,
                 back: back.trimmed,
                 unit: unit,
@@ -313,7 +317,7 @@ struct CardEditorView: View {
             unit.updatedAt = now
             unit.notebook.updatedAt = now
         case .createInNotebook(let notebook):
-            _ = FlashcardMO.insert(
+            savedCard = FlashcardMO.insert(
                 front: front.trimmed,
                 back: back.trimmed,
                 notebook: notebook,
@@ -331,6 +335,7 @@ struct CardEditorView: View {
             )
             notebook.updatedAt = now
         case .edit(let card):
+            savedCard = card
             card.front = front.trimmed
             card.back = back.trimmed
             card.frontAudioFileName = finalFrontAudioFileName(
@@ -350,6 +355,7 @@ struct CardEditorView: View {
 
         do {
             try viewContext.save()
+            onSave?(savedCard)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

@@ -52,6 +52,7 @@
 		A00000000000000000000154 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000054 /* Assets.xcassets */; };
 		A00000000000000000000155 /* CZYZDChaopinImageTextResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000055 /* CZYZDChaopinImageTextResolver.swift */; };
 		A00000000000000000000156 /* DeepSeekDictionaryParsingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000056 /* DeepSeekDictionaryParsingClient.swift */; };
+		A00000000000000000000158 /* CardCorrectionLogMO.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000058 /* CardCorrectionLogMO.swift */; };
 		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
 		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
 		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
@@ -133,6 +134,7 @@
 		A00000000000000000000054 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000055 /* CZYZDChaopinImageTextResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDChaopinImageTextResolver.swift; sourceTree = "<group>"; };
 		A00000000000000000000056 /* DeepSeekDictionaryParsingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekDictionaryParsingClient.swift; sourceTree = "<group>"; };
+		A00000000000000000000058 /* CardCorrectionLogMO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardCorrectionLogMO.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
 		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
 		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
@@ -193,6 +195,7 @@
 				A00000000000000000000007 /* ReviewLogMO.swift */,
 				A00000000000000000000008 /* ImportBatchMO.swift */,
 				A00000000000000000000034 /* CardReportMO.swift */,
+				A00000000000000000000058 /* CardCorrectionLogMO.swift */,
 				A00000000000000000000009 /* ReviewRating.swift */,
 				A00000000000000000000028 /* NotebookUnitMO.swift */,
 			);
@@ -434,6 +437,7 @@
 				A00000000000000000000107 /* ReviewLogMO.swift in Sources */,
 				A00000000000000000000108 /* ImportBatchMO.swift in Sources */,
 				A00000000000000000000134 /* CardReportMO.swift in Sources */,
+				A00000000000000000000158 /* CardCorrectionLogMO.swift in Sources */,
 				A00000000000000000000109 /* ReviewRating.swift in Sources */,
 				A00000000000000000000129 /* NotebookUnitMO.swift in Sources */,
 				A00000000000000000000110 /* DueCardQuery.swift in Sources */,
