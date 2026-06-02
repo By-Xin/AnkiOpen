@@ -4,20 +4,35 @@ import SwiftUI
 struct NotebooksView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest private var notebooks: FetchedResults<NotebookMO>
+    @FetchRequest private var cards: FetchedResults<FlashcardMO>
+    @FetchRequest private var reports: FetchedResults<CardReportMO>
     @State private var isShowingAddNotebook = false
     @State private var notebookToEdit: NotebookMO?
     @State private var errorMessage: String?
+    @State private var now = Date()
 
     init() {
         let request = NotebookMO.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \NotebookMO.updatedAt, ascending: false)]
         _notebooks = FetchRequest(fetchRequest: request, animation: .default)
+
+        let cardRequest = FlashcardMO.fetchRequest()
+        cardRequest.sortDescriptors = [NSSortDescriptor(keyPath: \FlashcardMO.dueAt, ascending: true)]
+        _cards = FetchRequest(fetchRequest: cardRequest, animation: .default)
+
+        let reportRequest = CardReportMO.fetchRequest()
+        reportRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CardReportMO.createdAt, ascending: false)]
+        _reports = FetchRequest(fetchRequest: reportRequest, animation: .default)
+    }
+
+    private var metrics: HomeDashboardMetrics {
+        HomeDashboardMetrics(cards: Array(cards), reports: Array(reports), at: now)
     }
 
     var body: some View {
         NavigationStack {
             List {
-                Section("开始") {
+                Section("今日") {
                     NavigationLink {
                         StudyView()
                     } label: {
@@ -27,12 +42,23 @@ struct NotebooksView: View {
                                 Text("开始学习")
                                     .font(.headline.weight(.semibold))
                                     .foregroundStyle(AppPalette.ink)
-                                Text("复习所有已到期的卡片，也可以开启随机学习")
+                                Text(metrics.dueCards == 0 ? "今天没有到期卡片，也可以强制学习或随机复习" : "\(metrics.dueCards) 张到期，按 FSRS 顺序复习")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
+                            Spacer(minLength: 12)
+                            MetricPill(value: "\(metrics.dueCards)", label: "到期", tint: AppPalette.cinnabar)
                         }
                     }
+                    .appListRow()
+
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
+                        MetricPill(value: "\(metrics.activeCards)", label: "可用")
+                        MetricPill(value: "\(metrics.archivedCards)", label: "归档", tint: .secondary)
+                        MetricPill(value: "\(metrics.missingAudioCards)", label: "缺音频", tint: AppPalette.amber)
+                        MetricPill(value: "\(metrics.openReports)", label: "反馈", tint: AppPalette.cinnabar)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .appListRow()
                 }
 
@@ -79,7 +105,7 @@ struct NotebooksView: View {
                                         Text(notebook.name)
                                             .font(.headline.weight(.semibold))
                                             .foregroundStyle(AppPalette.ink)
-                                        Text("更新于 \(notebook.updatedAt.formatted(date: .abbreviated, time: .omitted))")
+                                        Text(notebookSubtitle(for: notebook))
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
@@ -106,6 +132,9 @@ struct NotebooksView: View {
             .appScreenBackground()
             .navigationTitle("潮语闪卡")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                now = Date()
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -136,5 +165,14 @@ struct NotebooksView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func notebookSubtitle(for notebook: NotebookMO) -> String {
+        let updated = notebook.updatedAt.formatted(date: .abbreviated, time: .omitted)
+        let dueCount = notebook.dueCardsCount(at: now)
+        guard dueCount > 0 else {
+            return "更新于 \(updated)"
+        }
+        return "更新于 \(updated) · \(dueCount) 张到期"
     }
 }
