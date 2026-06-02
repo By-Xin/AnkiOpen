@@ -21,6 +21,7 @@ Last updated: 2026-06-01
 - Replaced the static rare glyph image fallback flow with a DeepSeek suggestion flow that caches replacement suggestions and can apply them to affected cards.
 - Added a Dictionary tab backed by CZYZD lookup for Chaoshan words, Chaoshan pronunciation, cleaned definitions, and remote audio playback.
 - Added optional CSV `czyzd` / `查词` dictionary lookup columns. Rows with a blank back can now be imported when a lookup term is provided, then enriched from CZYZD after import.
+- Added Dictionary actions to save a CZYZD result into a new notebook and to build a `CZYZD Dictionary` notebook from a bundled common-character seed list in resumable batches.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
@@ -79,6 +80,8 @@ Last updated: 2026-06-01
 - Results display the matched term, CZYZD Chaoshan pronunciation image under `潮拼`, cleaned definition text under `解释`, and a speaker button when CZYZD exposes an audio clip.
 - Mandarin pinyin and source labels such as `字义` are filtered out of the main dictionary result.
 - Exact phrase matches are preferred; phrase lookups do not fall back to the first character when the phrase itself has no entry.
+- Individual results can be saved as cards into a newly created notebook.
+- A batch builder downloads a bundled common-character seed list in small batches into `CZYZD Dictionary`, stores progress locally, and skips duplicate cards in that notebook.
 
 ## Backup Export And Restore
 

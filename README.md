@@ -88,6 +88,8 @@ All modes still write review logs and update the card's next due date when a rat
 
 The Dictionary tab searches CZYZD directly. It returns exact phrase matches when possible, shows the CZYZD Chaoshan pronunciation image under `潮拼`, shows cleaned definition text under `解释`, and plays remote dictionary audio when CZYZD provides a clip. Mandarin pinyin and source labels such as `字义` are filtered out of the main result. Phrase lookups avoid falling back to the first character when no exact phrase entry is found.
 
+Dictionary results can be saved into a new notebook as flashcards. The Dictionary tab also includes a resumable common-character builder that downloads a small bundled seed list from CZYZD in batches and adds results to a `CZYZD Dictionary` notebook, skipping duplicate cards in that notebook.
+
 ## Progress
 
 - [x] Xcode iOS project scaffold
@@ -105,6 +107,8 @@ The Dictionary tab searches CZYZD directly. It returns exact phrase matches when
 - [x] DeepSeek rare glyph replacement workflow
 - [x] CZYZD dictionary lookup tab
 - [x] CSV CZYZD dictionary auto-fill column
+- [x] Save CZYZD dictionary entries into notebooks
+- [x] Batch CZYZD common-character notebook builder
 - [ ] App icon and polished visual identity
 - [ ] TestFlight/App Store setup
 

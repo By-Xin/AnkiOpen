@@ -47,6 +47,7 @@
 		A00000000000000000000148 /* CZYZDDictionaryLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000048 /* CZYZDDictionaryLookup.swift */; };
 		A00000000000000000000149 /* DictionaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000049 /* DictionaryView.swift */; };
 		A00000000000000000000151 /* CZYZDDictionaryEnrichmentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000051 /* CZYZDDictionaryEnrichmentService.swift */; };
+		A00000000000000000000152 /* CZYZDDictionaryNotebookBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */; };
 		A00000000000000000000139 /* glyph_u2003e.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000039 /* glyph_u2003e.png */; };
 		A00000000000000000000140 /* glyph_u28468.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000040 /* glyph_u28468.png */; };
 		A00000000000000000000141 /* glyph_u2b897.png in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000041 /* glyph_u2b897.png */; };
@@ -122,6 +123,7 @@
 		A00000000000000000000048 /* CZYZDDictionaryLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryLookup.swift; sourceTree = "<group>"; };
 		A00000000000000000000049 /* DictionaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryView.swift; sourceTree = "<group>"; };
 		A00000000000000000000051 /* CZYZDDictionaryEnrichmentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryEnrichmentService.swift; sourceTree = "<group>"; };
+		A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CZYZDDictionaryNotebookBuilder.swift; sourceTree = "<group>"; };
 		A00000000000000000000039 /* glyph_u2003e.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2003e.png; sourceTree = "<group>"; };
 		A00000000000000000000040 /* glyph_u28468.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u28468.png; sourceTree = "<group>"; };
 		A00000000000000000000041 /* glyph_u2b897.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = glyph_u2b897.png; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				A00000000000000000000046 /* DeepSeekGlyphSuggestionClient.swift */,
 				A00000000000000000000048 /* CZYZDDictionaryLookup.swift */,
 				A00000000000000000000051 /* CZYZDDictionaryEnrichmentService.swift */,
+				A00000000000000000000052 /* CZYZDDictionaryNotebookBuilder.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 				A00000000000000000000146 /* DeepSeekGlyphSuggestionClient.swift in Sources */,
 				A00000000000000000000148 /* CZYZDDictionaryLookup.swift in Sources */,
 				A00000000000000000000151 /* CZYZDDictionaryEnrichmentService.swift in Sources */,
+				A00000000000000000000152 /* CZYZDDictionaryNotebookBuilder.swift in Sources */,
 				A00000000000000000000137 /* FlashcardText.swift in Sources */,
 				A00000000000000000000138 /* RareGlyphsView.swift in Sources */,
 				A00000000000000000000149 /* DictionaryView.swift in Sources */,
