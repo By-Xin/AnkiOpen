@@ -85,6 +85,13 @@ struct NotebooksView: View {
                     .appListRow()
 
                     NavigationLink {
+                        MissingAudioCardsView()
+                    } label: {
+                        Label("缺音频卡片", systemImage: "speaker.slash")
+                    }
+                    .appListRow()
+
+                    NavigationLink {
                         ReviewHistoryView()
                     } label: {
                         Label("复习记录", systemImage: "clock.arrow.circlepath")
@@ -386,5 +393,228 @@ private struct ReviewHistoryDetailView: View {
         .sheet(isPresented: $isShowingCardEditor) {
             CardEditorView(mode: .edit(log.card))
         }
+    }
+}
+
+private struct MissingAudioCardsView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest private var cards: FetchedResults<FlashcardMO>
+    @State private var searchText = ""
+    @State private var scope: MissingAudioScope = .all
+    @State private var cardToEdit: FlashcardMO?
+    @State private var isFillingAudio = false
+    @State private var czyzdSummary: CZYZDAudioAttachmentSummary?
+    @State private var errorMessage: String?
+
+    private let czyzdAttachmentService = CZYZDAudioAttachmentService()
+
+    init() {
+        let request = FlashcardMO.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isArchived == NO AND (frontAudioFileName == nil OR backAudioFileName == nil)"
+        )
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \FlashcardMO.updatedAt, ascending: false),
+            NSSortDescriptor(keyPath: \FlashcardMO.createdAt, ascending: false)
+        ]
+        _cards = FetchRequest(fetchRequest: request, animation: .default)
+    }
+
+    private var allMissingCards: [FlashcardMO] {
+        cards.filter(\.isMissingAudio)
+    }
+
+    private var filteredCards: [FlashcardMO] {
+        let filter = MissingAudioCardFilter(scope: scope, searchText: searchText)
+        return allMissingCards.filter(filter.matches)
+    }
+
+    private var summary: MissingAudioSummary {
+        MissingAudioSummary(cards: allMissingCards)
+    }
+
+    var body: some View {
+        List {
+            Section("概览") {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                    MetricPill(value: "\(summary.total)", label: "总数", tint: AppPalette.amber)
+                    MetricPill(value: "\(summary.missingFront)", label: "缺正面", tint: AppPalette.cinnabar)
+                    MetricPill(value: "\(summary.missingBack)", label: "缺背面", tint: AppPalette.tea)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button {
+                    Task {
+                        await fillAllMissingAudio()
+                    }
+                } label: {
+                    Label(
+                        isFillingAudio ? "正在批量补全..." : "批量补全潮语音频",
+                        systemImage: "speaker.wave.2.badge.plus"
+                    )
+                }
+                .disabled(isFillingAudio || allMissingCards.isEmpty)
+
+                Text("会优先复用卡片另一面已有的本地音频；两面都缺时，再按正面文字从 CZYZD 匹配音频。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let czyzdSummary {
+                Section("本次处理") {
+                    LabeledContent("检查", value: "\(czyzdSummary.checkedCards)")
+                    LabeledContent("匹配", value: "\(czyzdSummary.matchedCards)")
+                    LabeledContent("失败", value: "\(czyzdSummary.failedCards)")
+                    if let messages = czyzdSummary.messageSummary {
+                        Text(messages)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Section("筛选") {
+                Picker("范围", selection: $scope) {
+                    ForEach(MissingAudioScope.allCases) { scope in
+                        Text(scope.title).tag(scope)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section("卡片") {
+                if filteredCards.isEmpty {
+                    EmptyStateView(
+                        title: allMissingCards.isEmpty ? "音频都已补齐" : "没有匹配的卡片",
+                        systemImage: "speaker.wave.2",
+                        message: allMissingCards.isEmpty ? "当前没有未归档的缺音频卡片。" : "换一个关键词或筛选范围再试。"
+                    )
+                    .frame(maxWidth: .infinity)
+                    .listRowBackground(Color.clear)
+                } else {
+                    ForEach(filteredCards) { card in
+                        Button {
+                            cardToEdit = card
+                        } label: {
+                            MissingAudioCardRow(card: card)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .appScreenBackground()
+        .navigationTitle("缺音频卡片")
+        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索卡片、笔记本或单元")
+        .sheet(item: $cardToEdit) { card in
+            CardEditorView(mode: .edit(card))
+        }
+        .alert("错误", isPresented: .constant(errorMessage != nil), actions: {
+            Button("好的") { errorMessage = nil }
+        }, message: {
+            Text(errorMessage ?? "")
+        })
+    }
+
+    @MainActor
+    private func fillAllMissingAudio() async {
+        isFillingAudio = true
+        defer {
+            isFillingAudio = false
+        }
+
+        var summaries: [CZYZDAudioAttachmentSummary] = []
+        let notebooks = uniqueNotebooks(from: allMissingCards)
+        for notebook in notebooks {
+            summaries.append(
+                await czyzdAttachmentService.attachMissingAudio(
+                    in: notebook,
+                    context: viewContext
+                )
+            )
+        }
+        czyzdSummary = CZYZDAudioAttachmentSummary.combined(summaries)
+    }
+
+    private func uniqueNotebooks(from cards: [FlashcardMO]) -> [NotebookMO] {
+        var seen = Set<UUID>()
+        var notebooks: [NotebookMO] = []
+        for card in cards {
+            guard !seen.contains(card.notebook.id) else {
+                continue
+            }
+            seen.insert(card.notebook.id)
+            notebooks.append(card.notebook)
+        }
+        return notebooks
+    }
+}
+
+private struct MissingAudioSummary: Equatable {
+    let total: Int
+    let missingFront: Int
+    let missingBack: Int
+
+    init(cards: [FlashcardMO]) {
+        total = cards.filter(\.isMissingAudio).count
+        missingFront = cards.filter { $0.isMissingAudio && $0.frontAudioFileName == nil }.count
+        missingBack = cards.filter { $0.isMissingAudio && $0.backAudioFileName == nil }.count
+    }
+}
+
+private struct MissingAudioCardRow: View {
+    @ObservedObject var card: FlashcardMO
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            LeadingSymbol(systemImage: "speaker.slash", tint: AppPalette.amber)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Text(card.missingAudioTitle)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppPalette.cinnabar)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(AppPalette.cinnabar.opacity(0.12), in: Capsule())
+                    Spacer(minLength: 8)
+                }
+
+                FlashcardText(
+                    text: card.front,
+                    size: 16,
+                    relativeTo: .headline,
+                    weight: .semibold,
+                    lineLimit: 2
+                )
+                .foregroundStyle(AppPalette.ink)
+
+                FlashcardText(
+                    text: card.back,
+                    size: 14,
+                    relativeTo: .subheadline,
+                    weight: .regular,
+                    lineLimit: 2
+                )
+                .foregroundStyle(.secondary)
+
+                Text(card.locationTitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private extension CZYZDAudioAttachmentSummary {
+    static func combined(_ summaries: [CZYZDAudioAttachmentSummary]) -> CZYZDAudioAttachmentSummary {
+        CZYZDAudioAttachmentSummary(
+            checkedCards: summaries.reduce(0) { $0 + $1.checkedCards },
+            matchedCards: summaries.reduce(0) { $0 + $1.matchedCards },
+            failedCards: summaries.reduce(0) { $0 + $1.failedCards },
+            messages: summaries.flatMap(\.messages)
+        )
     }
 }

@@ -214,7 +214,7 @@ final class CZYZDAudioAttachmentService {
         let request = FlashcardMO.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \FlashcardMO.createdAt, ascending: true)]
         request.predicate = NSPredicate(
-            format: "id IN %@ AND frontAudioFileName == nil AND isArchived == NO",
+            format: "id IN %@ AND (frontAudioFileName == nil OR backAudioFileName == nil) AND isArchived == NO",
             cardIDs
         )
         return await attachMissingAudio(matching: request, failedFetchCount: cardIDs.count, context: context)
@@ -230,13 +230,13 @@ final class CZYZDAudioAttachmentService {
 
         if let unit {
             request.predicate = NSPredicate(
-                format: "notebook == %@ AND unit == %@ AND frontAudioFileName == nil AND isArchived == NO",
+                format: "notebook == %@ AND unit == %@ AND (frontAudioFileName == nil OR backAudioFileName == nil) AND isArchived == NO",
                 notebook,
                 unit
             )
         } else {
             request.predicate = NSPredicate(
-                format: "notebook == %@ AND frontAudioFileName == nil AND isArchived == NO",
+                format: "notebook == %@ AND (frontAudioFileName == nil OR backAudioFileName == nil) AND isArchived == NO",
                 notebook
             )
         }
@@ -267,6 +267,11 @@ final class CZYZDAudioAttachmentService {
 
         for card in cards {
             do {
+                if attachExistingAudioIfPossible(to: card) {
+                    matched += 1
+                    continue
+                }
+
                 guard let download = try await resolver.downloadAudio(for: card.front) else {
                     continue
                 }
@@ -303,5 +308,21 @@ final class CZYZDAudioAttachmentService {
             failedCards: failed,
             messages: messages
         )
+    }
+
+    private func attachExistingAudioIfPossible(to card: FlashcardMO) -> Bool {
+        if card.frontAudioFileName == nil, let backAudioFileName = card.backAudioFileName {
+            card.frontAudioFileName = backAudioFileName
+            card.updatedAt = Date()
+            return true
+        }
+
+        if card.backAudioFileName == nil, let frontAudioFileName = card.frontAudioFileName {
+            card.backAudioFileName = frontAudioFileName
+            card.updatedAt = Date()
+            return true
+        }
+
+        return false
     }
 }
