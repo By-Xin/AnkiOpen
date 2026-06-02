@@ -57,6 +57,7 @@ Last updated: 2026-06-02
 - Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
+- Stabilized GitHub CI by running the deterministic `AnkiOpenTests` suite there; the UI launch smoke test remains part of local simulator acceptance because GitHub runners can fail before app assertions with simulator background-assertion timeouts.
 - Created the public GitHub repository and pushed `main`: https://github.com/By-Xin/AnkiOpen
 - Built and launched the app in the iPhone 17 simulator on iOS 26.5.
 - Created initial GitHub Issues for FSRS, CSV import polish, backup/export, visual polish, and CI.

@@ -45,6 +45,8 @@ Open `AnkiOpen.xcodeproj` in Xcode, select the `AnkiOpen` scheme, and run on an 
 
 The project references [`open-spaced-repetition/swift-fsrs`](https://github.com/open-spaced-repetition/swift-fsrs). Xcode will resolve the package automatically when network access is available. The production review path currently uses the app-local FSRS-6 scheduler because `swift-fsrs` 5.0.0 does not expose the needed scheduling API publicly.
 
+GitHub CI runs the deterministic `AnkiOpenTests` suite. The UI launch smoke test is kept for local simulator acceptance because hosted macOS runners can fail before app assertions while acquiring simulator background assertions.
+
 DeepSeek integration uses the OpenAI-compatible `https://api.deepseek.com/chat/completions` endpoint. Add an API key in Settings, then use it for rare glyph replacement suggestions and optional CZYZD dictionary result cleanup.
 
 ## CSV Import

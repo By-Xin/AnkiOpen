@@ -49,5 +49,6 @@ jobs:
             -project AnkiOpen.xcodeproj \
             -scheme AnkiOpen \
             -destination "platform=iOS Simulator,name=$SIMULATOR_NAME" \
+            -only-testing:AnkiOpenTests \
             -derivedDataPath DerivedData \
             CODE_SIGNING_ALLOWED=NO
