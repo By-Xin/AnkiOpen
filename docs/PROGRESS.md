@@ -58,6 +58,7 @@ Last updated: 2026-06-03
 - Localized default and numeric unit names to `默认单元` / `单元 N`, added startup migration from legacy `Default` / `Unit N`, and localized import, backup, audio, DeepSeek, glyph, and CZYZD error messages.
 - Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
 - Added a Settings privacy and data-flow disclosure covering local storage, user-controlled imports/backups, CZYZD requests, DeepSeek requests, Keychain API key storage, and no-tracking first-release behavior.
+- Added an App Store privacy manifest declaring no tracking, no collected data types, and `CA92.1` app-only UserDefaults access for checklist/settings state.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Stabilized GitHub CI by running the deterministic `AnkiOpenTests` suite there; the UI launch smoke test remains part of local simulator acceptance because GitHub runners can fail before app assertions with simulator background-assertion timeouts.
