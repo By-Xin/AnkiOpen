@@ -51,6 +51,14 @@
    gh run list --repo By-Xin/AnkiOpen --branch main --limit 5
    ```
 
+5. 确认 App Store privacy manifest 有效：
+
+   ```bash
+   plutil -lint AnkiOpen/Resources/PrivacyInfo.xcprivacy
+   ```
+
+   第一版 manifest 应声明不追踪、不收集数据类型，并为 `UserDefaults` required-reason API 使用 `CA92.1`。App 内保存发布清单、DeepSeek 开关和其他设置状态时会用到 UserDefaults。
+
 ## 生成本地 Release Archive
 
 ```bash
@@ -65,6 +73,13 @@ xcodebuild archive \
 ```
 
 如果 archive validation 出现方向相关警告，确认 `AnkiOpen/Info.plist` 包含 full-screen portrait metadata。
+
+确认 archive 内包含 privacy manifest：
+
+```bash
+plutil -lint \
+  build/AnkiOpen-FirstRelease.xcarchive/Products/Applications/AnkiOpen.app/PrivacyInfo.xcprivacy
+```
 
 ## 导出 Development IPA
 
@@ -100,6 +115,18 @@ xcodebuild -exportArchive \
 ```
 
 Xcode 可能提示 `development` export method deprecated。第一版本地装机可以接受；后续上 TestFlight 时应改为 App Store Connect 分发流程。
+
+## App Store Connect 隐私填写
+
+第一版的实际行为：
+
+- 不包含广告、第三方分析 SDK、账号画像或跨 App/网站追踪。
+- 笔记本、单元、卡片、复习记录、反馈、修正历史和音频默认保存在本机。
+- CSV、音频和 JSON 备份只在用户主动选择、导入、创建或分享时处理。
+- 使用潮语词典、导入后自动查词、批量构建词典笔记本或自动补全潮语音频时，会向 CZYZD 请求词条或音频。
+- 只有用户填写 DeepSeek API Key 并主动使用生僻字建议或词典清洗时，才会向 DeepSeek 发送相关字词或词典文本；API Key 存在本机 Keychain。
+
+App Store Connect 隐私问卷应按上面实际行为填写。不要把 development IPA 上传为 App Store build；TestFlight/App Store 需要 distribution signing 和 App Store Connect 上传流程。
 
 ## 真机安装和启动
 
