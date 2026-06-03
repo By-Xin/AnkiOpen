@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-06-02
+Last updated: 2026-06-03
 
 ## Done
 
@@ -57,6 +57,7 @@ Last updated: 2026-06-02
 - Added audio integrity checks so cards with stored audio file names but missing local files are treated as audio issues in Study, card editing, maintenance metrics, and the missing-audio repair queue.
 - Localized default and numeric unit names to `默认单元` / `单元 N`, added startup migration from legacy `Default` / `Unit N`, and localized import, backup, audio, DeepSeek, glyph, and CZYZD error messages.
 - Added a Settings release and daily acceptance checklist with persistent checkboxes for CSV import, study, audio, backup, dictionary, feedback correction, signing, and phone/TestFlight readiness.
+- Added a Settings privacy and data-flow disclosure covering local storage, user-controlled imports/backups, CZYZD requests, DeepSeek requests, Keychain API key storage, and no-tracking first-release behavior.
 - Added unit test coverage for CSV import, unit import, audio import, duplicate handling, study mode queries, unit-scoped due queries, FSRS-6 review scheduling, CZYZD dictionary parsing, CZYZD import enrichment, DeepSeek suggestion parsing, backup export, backup restore, media restore, and v2 backup compatibility.
 - Added a UI launch smoke test.
 - Stabilized GitHub CI by running the deterministic `AnkiOpenTests` suite there; the UI launch smoke test remains part of local simulator acceptance because GitHub runners can fail before app assertions with simulator background-assertion timeouts.
@@ -111,6 +112,7 @@ Last updated: 2026-06-02
 - Passed Xcode tests after audio integrity checks on 2026-06-02: 99 unit/app tests and 1 UI launch smoke test.
 - Passed Xcode tests after Chinese unit-name migration and localized error messages on 2026-06-02: 100 unit/app tests and 1 UI launch smoke test.
 - Passed local first-release validation on 2026-06-02: 100 unit/app tests, 1 UI launch smoke test, Release archive, development IPA export, and GitHub Actions run `26829166120`.
+- Passed Xcode tests after adding the privacy and data-flow disclosure on 2026-06-03: 101 unit/app tests.
 - Built, installed, and launched the app on the connected iPhone on 2026-06-02.
 - Built, installed, and launched the Chinese unit-name migration build on the connected iPhone on 2026-06-02.
 - Manual simulator smoke test passed: create notebook, create card, study due card, reveal answer, rate `Good`, and confirm the due queue clears.

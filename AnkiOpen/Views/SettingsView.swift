@@ -77,6 +77,12 @@ struct SettingsView: View {
                     LabeledContent("存储", value: "本机 Core Data")
                     LabeledContent("同步", value: "关闭")
 
+                    NavigationLink {
+                        PrivacyDisclosureView()
+                    } label: {
+                        Label("隐私与数据说明", systemImage: "lock.shield")
+                    }
+
                     Button {
                         createBackup()
                     } label: {
@@ -222,6 +228,73 @@ struct SettingsView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+}
+
+struct PrivacyDisclosureItem: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let detail: String
+}
+
+enum PrivacyDisclosureLibrary {
+    static let items: [PrivacyDisclosureItem] = [
+        PrivacyDisclosureItem(
+            id: "local-storage",
+            title: "本机离线存储",
+            detail: "笔记本、单元、卡片、复习记录、反馈、修正历史和音频文件默认只保存在本机。App 第一版不使用账号系统，也不自动同步到云端。"
+        ),
+        PrivacyDisclosureItem(
+            id: "csv-backup",
+            title: "导入和备份由你控制",
+            detail: "CSV、音频文件和 JSON 备份只在你主动选择文件、创建备份或分享备份时处理。备份文件可能包含卡片内容、反馈记录和本地音频。"
+        ),
+        PrivacyDisclosureItem(
+            id: "czyzd-network",
+            title: "潮语词典和音频请求",
+            detail: "使用潮语词典查询、导入后自动查词、批量构建词典笔记本或自动补全潮语音频时，App 会向 CZYZD 查询对应词条和音频。"
+        ),
+        PrivacyDisclosureItem(
+            id: "deepseek-network",
+            title: "DeepSeek 只在配置后使用",
+            detail: "只有当你在设置中填写 API Key，并主动使用生僻字建议或开启词典清洗时，App 才会向 DeepSeek 发送需要处理的字词或词典文本。API Key 保存在本机 Keychain。"
+        ),
+        PrivacyDisclosureItem(
+            id: "no-tracking",
+            title: "第一版不做行为追踪",
+            detail: "App 不包含广告、第三方分析 SDK、账号画像或远程学习统计。发布前仍需要在 App Store Connect 中按实际功能填写隐私问卷。"
+        )
+    ]
+}
+
+private struct PrivacyDisclosureView: View {
+    var body: some View {
+        List {
+            Section("概览") {
+                Text("AnkiOpen 第一版以本机离线学习为主。外部网络请求只在你使用潮语词典、潮语音频匹配，或配置 DeepSeek 后触发。")
+                    .font(.body)
+                    .foregroundStyle(AppPalette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Section("数据流向") {
+                ForEach(PrivacyDisclosureLibrary.items) { item in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(item.title)
+                            .font(.headline)
+                            .foregroundStyle(AppPalette.ink)
+                        Text(item.detail)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .appScreenBackground()
+        .navigationTitle("隐私与数据")
     }
 }
 
