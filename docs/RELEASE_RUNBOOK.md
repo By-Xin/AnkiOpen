@@ -2,6 +2,8 @@
 
 本文档记录 AnkiOpen 第一版的本地打包、真机安装、GitHub Release、以及常见设备连接问题排查。
 
+App Store Connect 文案、隐私问卷草案、TestFlight review notes 和截图清单见 `docs/APP_STORE_METADATA.md`。
+
 ## 当前发布状态
 
 - Release tag: `v0.1.0`

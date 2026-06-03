@@ -127,6 +127,7 @@ Settings includes `Create JSON Backup` and `Import JSON Backup` actions. The gen
 Settings includes a Chinese `发布与验收清单` page with persistent checkboxes for daily CSV import, study, audio, backup, dictionary, feedback correction, and TestFlight/App Store readiness checks. It is meant as the repeatable checklist before installing to a phone or preparing an external build.
 
 For local release packaging, phone installation, and `devicectl` troubleshooting, see [`docs/RELEASE_RUNBOOK.md`](docs/RELEASE_RUNBOOK.md).
+For TestFlight/App Store copy, review notes, privacy answers, and screenshot planning, see [`docs/APP_STORE_METADATA.md`](docs/APP_STORE_METADATA.md).
 
 ## Study Modes
 
